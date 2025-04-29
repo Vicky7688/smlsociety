@@ -1,0 +1,91 @@
+.formInputsReport {
+    padding: .295rem .620rem;
+    font-size: .8620rem !important;
+}
+
+.formInputsSelectReport {
+    padding: .295rem 2.45rem .295rem 0.620rem;
+    font-size: .8620rem !important;
+}
+
+.iconsColorCustom {
+    color: #7367f0 !important;
+}
+
+.table th {
+    text-transform: uppercase;
+    font-size: 0.812rem !important;
+    letter-spacing: 0px !important;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.50rem .4rem !important;
+}
+
+.inputesPaddingReport {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+}
+
+.verticleAlignCenterReport {
+    vertical-align: middle !important;
+}
+
+.reportMisAddBtnCustom {
+    padding-inline: 1rem !important;
+    padding-block: .8rem !important;
+}
+
+.reportBtnInput {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-end !important;
+}
+
+.reportSmallBtnCustom{
+    padding-inline: 1rem !important;
+    padding-block: .55rem !important;
+    border-width: 0px !important;
+}
+
+.smallBtnCustom .btn-primary:active {
+    background-color: #7367f0 !important;
+}
+
+@media screen and (max-width: 465px) {
+
+    .misPrintBtnResponsive {
+        justify-content: flex-start !important;
+    }
+
+}
+
+@media screen and (max-width: 425px) {
+
+    .inputesPaddingReport {
+        width: 100% !important;
+    }
+
+}
+
+@media screen and (max-width: 310px) {
+    .reportBtnCustom{
+        display: block !important;
+    }
+
+    .reportBtnCustom a.reportSmallBtnCustom {
+        margin: 0 !important;
+    }
+
+    .reportBtnCustom .dropdown {
+        margin-top: .25rem !important;
+    }
+}
+
+@media screen and (max-width: 215px) {
+    .reportBtnCustom a.reportSmallBtnCustom {
+        margin-top: .25rem !important;
+    }
+}

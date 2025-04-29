@@ -1,0 +1,1236 @@
+@extends('layouts.app')
+
+@section('content')
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="card page_headings cards mb-4">
+            <div class="card-body py-2">
+                <div class="row justify-content-between">
+                    <div class="col-md-6 d-flex align-items-center  savingAccountHeading">
+                        <h4 class=""><span class="text-muted fw-light">Transactions / Loan / </span>Cash Credit Limit
+                            Recovery</h4>
+                    </div>
+                    <div class="col-md-3 accountHolderDetails">
+                        <h6 class=""><span class="text-muted fw-light">Name: </span><span id="member_name"></span></h6>
+                        {{--  <h6 class="pt-2"><span class="text-muted fw-light">Father Name: </span><span id="member_fathername"></span></h6>  --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 mb-4 cards">
+                <div class="card">
+                    <div class="card-body cardHeadingTitle">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="tab-content tableContent mt-2" id="myTabsContent">
+                                    <div class="tab-pane fade show active" id="rd_details" role="tabpanel"
+                                        aria-labelledby="rd-details-tab">
+                                        <!-- Content for Account Details tab -->
+                                        <form id="cclform">
+                                            <div class="rd_details-modern">
+                                                <div class="rd_details_inner">
+                                                    <div class="row">
+                                                        <input type="text" hidden name="account_number"
+                                                            id="account_number">
+                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3saving_column">
+                                                            <label class="form-label" for="opening date">DATE</label>
+                                                            <input type="text" id="opening_date" name="opening_date"
+                                                                value="{{ Session::get('currentdate') }}"
+                                                                class="form-control form-control-sm transactionDate">
+                                                        </div>
+
+                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3 saving_column">
+                                                            <label class="form-label" for="Member Type">MEMBER TYPE</label>
+                                                            <select name="member_type" id="member_type"
+                                                                class="form-select form-select-sm"
+                                                                onchange="memberType(this)">
+                                                                <option value="Member">Member</option>
+                                                                <option value="Staff">Staff</option>
+                                                                <option value="NonMember">Nominal Member</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3 saving_column">
+                                                            <label class="form-label" for="account_no_label">CCL A/c</label>
+                                                            <input type="text" id="ccl_account" name="ccl_account"
+                                                                class="form-control form-control-sm"
+                                                                onkeyup="getmemberlist(this)" autocomplete="off">
+                                                            <div id="accountList" class="accountList"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 mt-1" id="tabless">
+            <div class="tabledata card tablee">
+                <div class="card-body" style="overflow-x: auto;">
+                    <table class="table datatables-order table-bordered" id="datatabless" style="width:100%">
+                        <thead class="table_head thead-light">
+                            <tr>
+                                <th>DATE</th>
+                                <th>Mem. No</th>
+                                <th>CCL AC</th>
+                                <th>CCL AMT.</th>
+                                <th>Used CCL</th>
+                                <th>RECEIVED CCL</th>
+                                <th>BAL. CCL</th>
+                                <th>ROI%</th>
+                                <th>Tenure</th>
+                                <th>END DATE</th>
+                                <th>STATUS</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountTbody">
+                            <tr>
+                                <td colspan="10">No Record Available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="ccltrfdModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalreciveTitle">CCL Transfer To Saving</h5>
+                        <small class="modal-title membernamesssss" id="membernamesssss" style="color: white"></small>
+                    </div>
+                    <div class="modal-body">
+                        <form id="ccltrfdForm" name="ccltrfdForm">
+                            <div class="row">
+                                <h6 class="modal-title membername" id="membername"></h6>
+
+
+                                <input type="hidden" name="cclId" id="cclId">
+                                <input type="hidden" name="savingId" id="savingId">
+                                <input type="hidden" name="cclmemberType" id="cclmemberType">
+
+
+                                <div class="col-md-3 pt-2">
+                                    <label class="form-label">TRFD Date</label>
+                                    <input id="transcationDate" type="text" name="transcationDate"
+                                        class="form-control" placeholder="DD-MM-YYYY" value="{{ date('d-m-Y') }}"
+                                        onblur="previousinterest(this)" />
+                                </div>
+
+                                <div class="col-md-3 pt-2">
+                                    <label class="form-label">Saving A/c</label>
+                                    <input id="saving_account" type="text" name="saving_account" readonly
+                                        class="form-control" placeholder="Saving Account No" />
+                                </div>
+
+                                <input id="balance_amount" type="hidden" name="balance_amount" class="form-control" />
+
+                                <div class="col-md-3 pt-2">
+                                    <label class="form-label">Transfer Amount</label>
+                                    <input id="trfdamount" type="text" name="trfdamount" class="form-control"
+                                        placeholder="TRFD Amount" oninput="checkExceedBalanceCcl(this)" />
+                                </div>
+
+                                <div class="col-md-3 pt-2">
+                                    <label class="form-label">Interest Amount</label>
+                                    <input id="trfd_interest_amount" type="text" name="trfd_interest_amount"
+                                        class="form-control" placeholder="TRFD Amount"
+                                        oninput="checkExceedBalanceCcl(this)" />
+                                </div>
+
+
+                                <div class="col-md-6 pt-2">
+                                    <label class="form-label">Narration</label>
+                                    <input type="text" name="narration" id="narration" class="form-control "
+                                        autocomplete="off">
+                                </div>
+                            </div>
+
+                    </div>
+                    <hr class="my-3">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger closetrfdbutton">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="ledgerModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalreciveTitle">CCL Ledger</h5>
+                        <small class="modal-title membernamesssss" id="dsds" style="color: white"></small>
+                    </div>
+                    <div class="col-md-12 mt-1" id="tablesss">
+                        <div class="tabledata card tablee">
+                            <div class="card-body" style="overflow-x: auto;">
+                                <table class="tables datatables-order table-bordered" id="" style="width:100%">
+                                    <thead class="table_head thead-light">
+                                        <tr>
+                                            <th>CCL DATE</th>
+                                            <th>CCL Disburse</th>
+                                            <th>Withdraw Amt.</th>
+                                            <th>Deposit Amt.</th>
+                                            <th>Received Intt.</th>
+                                            <th>Bal. Amt.</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ledgersbody">
+                                        <tr>
+                                            <td colspan="7">No Record Available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalreciveTitle">CCL Recovey</h5>
+                        <small class="modal-title membernamesssss" id="nmm" style="color: white"></small>
+
+                        {{--  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>  --}}
+                    </div>
+                    <div class="modal-body">
+                        <form id="cclRecoveryForm" name="cclRecoveryForm">
+                            <div class="row">
+                                <input type="hidden" name="cclid" id="cclid">
+                                <input type="hidden" name="rcclmemberType" id="rcclmemberType">
+
+
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">Receipt Date</label>
+                                    <input id="receipt_date" type="text" name="receipt_date" class="form-control "
+                                        placeholder="DD-MM-YYYY" value="{{ date('d-m-Y') }}"
+                                        onkeyup="checkdateinterest(this)" />
+                                </div>
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">Principal</label>
+                                    <input id="principal" type="text" name="principal" class="form-control"
+                                        placeholder="Principal Amount" />
+                                </div>
+
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">ROI%</label>
+                                    <input id="rate_of_interest" type="text" name="rate_of_interest"
+                                        class="form-control" placeholder="Rate Of Interest" />
+                                </div>
+
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">Interest Amount</label>
+                                    <input id="interest_amount" type="text" name="interest_amount"
+                                        class="form-control" placeholder="Interest Amount"/
+                                        oninput="changeinterestAmount(this)">
+                                </div>
+
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">Total Amount</label>
+                                    <input id="total_amount" type="text" name="total_amount" class="form-control"
+                                        placeholder="Total Amount" />
+                                </div>
+
+                                <div class="col-md-4 pt-2">
+                                    <label class="form-label">Receipt Amount</label>
+                                    <input id="receipt_amount" type="text" name="receipt_amount" class="form-control"
+                                        onkeyup="checkRecoveryNoExceed(this)" placeholder="Receipt Amount" />
+                                </div>
+
+                                <div class="col-md-6 pt-2">
+                                    <label class="form-label">Narration</label>
+                                    <input type="text" name="receipt_narration" id="receipt_narration"
+                                        class="form-control " autocomplete="off">
+                                </div>
+                            </div>
+
+                    </div>
+                    <hr class="my-3">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger receiptclosebtn">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+
+
+@push('script')
+    <script>
+        {{--  ccl_account memberType  --}}
+
+        function memberType(ele) {
+            // Clear the fields
+            $('#ccl_account').val('');
+            $('#member_name').text('');
+            $('.membernamesssss').text('');
+            $('#balance_amount').val('');
+            $('#rcclmemberType').val('');
+
+            // Reload the table content
+            $('#datatabless').load(location.href + ' .table');
+        }
+
+
+
+        function dateFormat(date) {
+            let dates = new Date(date);
+            let daysss = dates.getDate();
+            let monthss = dates.getMonth() + 1;
+            let yearss = dates.getFullYear();
+
+            daysss = daysss < 10 ? `0${daysss}` : daysss;
+            monthss = monthss < 10 ? `0${monthss}` : monthss;
+            let formattedDate = `${daysss}-${monthss}-${yearss}`;
+            return formattedDate;
+        }
+
+
+        function getmemberlist(ele) {
+            let accountNo = $(ele).val();
+            let memberType = $('#member_type').val();
+
+            $.ajax({
+                url: "{{ route('getcclaccountlist') }}",
+                type: 'POST',
+                data: {
+                    memberType: memberType,
+                    accountNo: accountNo
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: "json",
+                success: function(res) {
+                    let accountListDropdown = $('#accountList');
+                    accountListDropdown.empty();
+
+                    if (res.status === 'success') {
+                        let allDetails = res.allDetails;
+
+                        if (Array.isArray(allDetails) && allDetails.length > 0) {
+                            allDetails.forEach((data) => {
+                                accountListDropdown.append(
+                                    `<div class="membernumber" data-id="${data.cclNo}">${data.cclNo}</div>`
+                                );
+                            });
+
+                        } else {
+                            $('#datatabless').load(location.href + ' .table');
+                            accountListDropdown.append(`<div class="membernumber">No Account Found</div>`);
+                            notify(res.messages || 'No accounts available.', 'warning');
+                        }
+                    } else {
+                        accountListDropdown.append(`<div class="membernumber">No Account Found</div>`);
+                        notify(res.messages || 'No accounts available.', 'warning');
+                    }
+                }
+            });
+        }
+
+
+        function recoveryDatashow(cclDetails, allmemberlist) {
+            let accountTbody = $('#accountTbody');
+            accountTbody.empty(); // Clear previous rows
+
+            // Update member name in the header
+            $('#member_name').text(allmemberlist.name);
+            $('.membernamesssss').text('Name :- ' + allmemberlist.name);
+
+            let dates = new Date(cclDetails.ccl_Date);
+            let daysss = dates.getDate();
+            let monthss = dates.getMonth() + 1;
+            let yearss = dates.getFullYear();
+
+            daysss = daysss < 10 ? `0${daysss}` : daysss;
+            monthss = monthss < 10 ? `0${monthss}` : monthss;
+            let formattedDate = `${daysss}-${monthss}-${yearss}`;
+
+            let tenure = [];
+
+
+            if (cclDetails.year && parseInt(cclDetails.year) > 0) {
+                tenure.push(`${cclDetails.year}-Y`);
+            }
+            if (cclDetails.month && parseInt(cclDetails.month) > 0) {
+                tenure.push(`${cclDetails.month}-M`);
+            }
+            if (cclDetails.days && parseInt(cclDetails.days) > 0) {
+                tenure.push(`${cclDetails.days}-D`);
+            }
+
+
+            if (tenure.length === 0) {
+                tenure = 'N/A';
+            } else {
+                tenure = tenure.join(', ');
+            }
+
+            let balance = 0;
+            let balancelimit = 0;
+
+            let trfdAmount = parseFloat(cclDetails.trfd_amount);
+            let cclAmount = parseFloat(cclDetails.ccl_amount);
+            let recovery_amount = parseFloat(cclDetails.recovery_amount);
+
+            balance = cclAmount - trfdAmount + recovery_amount;
+
+            balancelimit = cclAmount - trfdAmount + recovery_amount;
+
+
+            let endDate = dateFormat(cclDetails.ccl_end_Date);
+            let usedccl = trfdAmount - recovery_amount;
+
+
+            $('#balance_amount').val(balancelimit);
+            $('#rcclmemberType').val(cclDetails.memberType);
+
+            let row = `
+                <tr>
+                    <td>${formattedDate}</td>
+                    <td>${cclDetails.membership}</td>
+                    <td>${cclDetails.cclNo}</td>
+                    <td>${cclDetails.ccl_amount}</td>
+                    <td>${usedccl}</td>
+                    <td>${recovery_amount}</td>
+                    <td>${balance}</td>
+                    <td>${cclDetails.interest}</td>
+                    <td>${tenure}</td>
+                    <td>${endDate}</td>
+                    <td>${cclDetails.status}</td>
+                    <td class="text-end-right">
+                        <button
+                            style="background-color: #037034; color: white; border: none; padding: 5px 10px;"
+                            data-id="${cclDetails.ids}"
+                            class="btn transfer">
+                            Transfer
+                        </button>
+                        <button
+                            style="background-color: #685dd8; color: white; border: none; padding: 5px 10px;"
+                            data-id="${cclDetails.ids}"
+                            class="btn receipt">
+                            Receipt
+                        </button>
+                        <button
+                            style="background-color: #ea5455; color: white; border: none; padding: 5px 10px;"
+                            data-id="${cclDetails.ids}"
+                            class="btn viewledgers">
+                            View Ledger
+                        </button>
+                    </td>
+                </tr>`;
+            accountTbody.append(row);
+        }
+
+        function checkExceedBalanceCcl(ele) {
+            let balanceAmount = parseFloat($('#balance_amount').val());
+            let enteredAmount = parseFloat($(ele).val());
+
+            if (isNaN(enteredAmount) || enteredAmount <= 0) {
+                notify('Please enter a valid deposit amount greater than zero.', 'warning');
+                $(ele).val('');
+                return;
+            }
+
+            if (isNaN(balanceAmount) || balanceAmount <= 0) {
+                notify('Invalid balance amount. Please check the balance.', 'warning');
+                return;
+            }
+
+            if (enteredAmount > balanceAmount) {
+                $('#trfdamount').val('');
+                notify('Entered Amount Exceeds the allowed Balance Amount.', 'warning');
+                return;
+            }
+
+            notify('Amount is valid.', 'success');
+        }
+
+
+        function checkdateinterest(ele) {
+            let lastDate = $(ele).val();
+            let id = $('#cclid').val();
+            let receipt_date = $('#receipt_date').val();
+
+            $.ajax({
+                url: "{{ route('checkinterestdatewise') }}",
+                type: 'POST',
+                data: {
+                    id: id,
+                    receipt_date: receipt_date
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: "json",
+                success: function(res) {
+                    if (res.status === 'success') {
+                        let prinicpal = parseFloat(res.principal);
+                        let totalInterest = parseFloat(res.totalInterest);
+
+                        let interestRate = parseFloat(res.interestRate);
+                        let days = parseFloat(res.days);
+
+                        let interest_amount = 0;
+                        let granTotal = 0;
+
+                        if (prinicpal || totalInterest || interestRate || days) {
+                            interest_amount = Math.round((((prinicpal * interestRate) / 100) / 365) * days);
+                            granTotal = prinicpal + interest_amount;
+                            $('#cclid').val(id);
+                            $('#principal').val(prinicpal).prop('readonly', true);
+                            $('#rate_of_interest').val(interestRate).prop('readonly', true);
+                            $('#interest_amount').val(interest_amount);
+                            $('#total_amount').val(granTotal);
+                        } else {
+                            $('#principal').val('').prop('readonly', true);
+                            $('#rate_of_interest').val('').prop('readonly', true);
+                            $('#interest_amount').val('');
+                            $('#total_amount').val('');
+                        }
+
+                        $('#receiptModal').modal('show');
+                    } else {
+                        notify(res.messages, 'warning');
+                    }
+                }
+            });
+        }
+
+        function checkRecoveryNoExceed(ele) {
+            let principal = $('#principal').val();
+            let enteredAmount = $(ele).val();
+
+            if (isNaN(enteredAmount) || enteredAmount <= 0) {
+                notify('Please enter a valid deposit amount greater than zero.', 'warning');
+                $(ele).val('');
+                return;
+            }
+
+            if (isNaN(principal) || principal <= 0) {
+                notify('Invalid balance amount. Please check the balance.', 'warning');
+                return;
+            }
+
+            if (enteredAmount > principal) {
+                $('#receipt_amount').val('');
+                notify('Entered Amount Exceeds the allowed Principal Amount.', 'warning');
+                return;
+            }
+
+            notify('Amount is valid.', 'success');
+
+        }
+
+        function previousinterest(ele) {
+            let lastDate = $(ele).val();
+            let id = $('#cclId').val();
+            let receipt_date = $('#transcationDate').val();
+
+            $.ajax({
+                url: "{{ route('checktrfdinterestdatewise') }}",
+                type: 'POST',
+                data: {
+                    id: id,
+                    receipt_date: receipt_date
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: "json",
+                success: function(res) {
+                    if (res.status === 'success') {
+                        let prinicpal = parseFloat(res.principal);
+                        let totalInterest = parseFloat(res.totalInterest);
+
+                        let interestRate = parseFloat(res.interestRate);
+                        let days = parseFloat(res.days);
+
+                        let interest_amount = 0;
+                        let granTotal = 0;
+
+                        if (prinicpal || totalInterest || interestRate || days) {
+                            interest_amount = Math.round((((prinicpal * interestRate) / 100) / 365) * days);
+                            granTotal = prinicpal + interest_amount;
+                            $('#cclid').val(id);
+                            $('#trfd_interest_amount').val(interest_amount).prop('readonly', true);
+                        } else {
+                            $('#cclid').val('');
+                            $('#trfd_interest_amount').val('').prop('readonly', true);
+                        }
+                    } else {
+                        notify(res.messages, 'warning');
+                    }
+                }
+            });
+        }
+
+        function changeinterestAmount(ele) {
+            let principal = parseFloat($('#principal').val());
+            let interest_amount = parseFloat($(ele).val());
+            let total_amount = 0;
+
+            if (!isNaN(principal) || !isNaN(interest_amount)) {
+                total_amount = principal + interest_amount;
+                $('#total_amount').val(total_amount);
+            } else {
+                return notify('Entered Valid Amount', 'warning');
+            }
+        }
+
+
+        function getMonthName(dateString) {
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const date = new Date(dateString);
+            const monthName = months[date.getMonth()];
+            const year = date.getFullYear();
+            return `${monthName} ${year}`;
+        }
+
+
+        $(document).ready(function() {
+            $(document).on('click', '.membernumber', function(event) {
+                event.preventDefault();
+                let selectaccount = $(this).data('id');
+                let memberType = $('#member_type').val();
+
+                $('#ccl_account').val(selectaccount);
+                $('#accountList').empty();
+
+                $.ajax({
+                    url: "{{ route('getcclaccount') }}",
+                    type: 'POST',
+                    data: {
+                        memberType: memberType,
+                        selectaccount: selectaccount
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            let cclDetails = res.cclDetails;
+                            let allmemberlist = res.allmemberlist;
+                            if (cclDetails && allmemberlist) {
+                                recoveryDatashow(cclDetails, allmemberlist);
+                            } else {
+                                let accountTbody = $('accountTbody');
+                                accountTbody.empty();
+                                accountTbody.append(
+                                    `<tr><td colspan="10">No Record Available</td></tr>`);
+                            }
+
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.transfer', function(event) {
+                event.preventDefault();
+
+                let id = $(this).data('id');
+                let transcationDate = $('#transcationDate').val();
+
+                $.ajax({
+                    url: "{{ route('cclamounttrfdsaving') }}",
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        transcationDate: transcationDate
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            let cclDetails = res.cclDetails;
+                            let saving_account = res.saving_account;
+                            let principal = parseFloat(res.principal);
+                            let interestRate = parseFloat(res.interestRate);
+                            let days = parseFloat(res.days);
+                            let interest_amount = 0;
+
+                            if (cclDetails && saving_account || principal || interestRate ||
+                                days) {
+
+                                interest_amount = Math.round((((principal * interestRate) /
+                                    100) / 365) * days);
+
+                                $('#cclId').val(cclDetails.id);
+                                $('#savingId').val(saving_account.id);
+                                $('#saving_account').val(saving_account.accountNo);
+                                $('#cclmemberType').val(cclDetails.memberType);
+                                $('#trfd_interest_amount').val(interest_amount).prop('readonly',
+                                    true);
+                            } else {
+                                $('#cclId').val('');
+                                $('#saving_account').val('');
+                                $('#balance_amount').val('');
+                                $('#savingId').val('');
+                                $('#cclmemberType').val('');
+                                $('#trfd_interest_amount').val('').prop('readonly', true);
+
+                            }
+                            $('#ccltrfdModal').modal('show');
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.closetrfdbutton', function(event) {
+                event.preventDefault();
+                $('#saving_account').val(0);
+                $('#trfdamount').val(0);
+                $('#trfd_interest_amount').val(0);
+                $('#narration').val(0);
+                $('#ccltrfdModal').modal('hide');
+            });
+
+            $(document).on('click', '.receiptclosebtn', function(event) {
+                event.preventDefault();
+                $('#rcclmemberType').val(0);
+                $('#principal').val(0);
+                $('#rate_of_interest').val(0);
+                $('#interest_amount').val(0);
+                $('#total_amount').val(0);
+                $('#receipt_amount').val(0);
+                $('#receipt_narration').val(0);
+                $('#receiptModal').modal('hide');
+            });
+
+
+            $(document).on('submit', '#ccltrfdForm', function(event) {
+                event.preventDefault();
+
+                let formData = $(this).serialize();
+
+                $.ajax({
+                    url: "{{ route('ccltrfdtosavingaccount') }}",
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            let cclDetails = res.cclDetails;
+                            let allmemberlist = res.allmemberlist;
+                            if (cclDetails && allmemberlist) {
+                                $('#ccltrfdModal').modal('hide');
+                                $('#ccltrfdForm')[0].reset();
+                                recoveryDatashow(cclDetails, allmemberlist);
+                            } else {
+                                let accountTbody = $('#accountTbody');
+                                accountTbody.empty();
+                                accountTbody.append(
+                                    `<tr><td colspan="10">No Record Available</td></tr>`);
+                            }
+
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+
+
+            $(document).on('click', '.viewledgers', function(event) {
+                event.preventDefault();
+
+                let id = $(this).data('id');
+                let currentDate = $('#opening_date').val();
+
+                $.ajax({
+                    url: "{{ route('viewcclledgers') }}",
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        currentDate: currentDate
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+
+                            let ledgersbody = $('#ledgersbody');
+                            ledgersbody.empty();
+
+                            let cclDetails = res.cclDetails;
+                            let payments = res.payments;
+
+                            if (cclDetails) {
+                                let openingDate = dateFormat(cclDetails.ccl_Date);
+                                disburmentAmount = parseFloat(cclDetails.ccl_amount);
+                                interestRate = parseFloat(cclDetails.interest);
+                                ledgersbody.append(`<tr>
+                                    <td>${openingDate}</td>
+                                    <td>${disburmentAmount}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td></td>
+                                </tr>`);
+                            } else {
+                                ledgersbody.append(
+                                    `<tr><td colspan="7">No Record Available</td></tr>`);
+                            }
+
+                            {{--  if (Array.isArray(payments) && payments.length > 0) {
+                                let monthlyData = {};
+                                let monthsProcessed = new Set();
+                                let tempRows = [];
+                                let lastClosingBalance = 0;  --}}
+
+
+                                //_________________________________________________________________________
+                                //_________________________________________________________________________
+                                //_________________________this code useable________________________________
+                                {{--  let previousInterestrecoverable = 0;
+
+                                payments.forEach((data, index) => {
+                                    let transcationDate = dateFormat(data.transcationDate);
+                                    let withdraw = parseFloat(data.transfer_amount) || 0;
+                                    let recovery_amount = parseFloat(data.recovey_amount) || 0;
+                                    let interest = parseFloat(data.interest_amount) || 0;
+                                    let month = getMonthName(data.transcationDate);
+                                    let days_diff = parseFloat(data.days_diff);
+
+                                    // Initialize monthly data if it doesn't exist
+                                    if (!monthlyData[month]) {
+                                        monthlyData[month] = {
+                                            totalInterest: 0,
+                                            balance: lastClosingBalance,
+                                            newAmount: 0,
+                                            transactions: []
+                                        };
+                                    }
+
+                                    monthlyData[month].totalInterest += interest;
+                                    monthlyData[month].balance += withdraw - recovery_amount;
+
+                                    // Calculate `aaamounts` for the current row
+                                    let aaamounts = monthlyData[month].balance;
+
+                                    if (index > 0) {
+                                        aaamounts += previousInterestrecoverable;
+                                    }
+                                    let currentInterestrecoverable = Math.round(((((aaamounts * interestRate) / 100) / 365) * days_diff));
+                                    let bbb = monthlyData[month].balance + currentInterestrecoverable;
+
+                                    let rowHTML = `
+                                        <tr>
+                                            <td>${transcationDate}</td>
+                                            <td>-</td>
+                                            <td>${withdraw.toFixed(2)}</td>
+                                            <td>${recovery_amount.toFixed(2)}</td>
+                                            <td>${interest.toFixed(2)}</td>
+                                             <td>${currentInterestrecoverable.toFixed(2)}</td> <!-- Show currentInterestrecoverable -->
+                                            <td>${monthlyData[month].balance.toFixed(2)}</td>
+                                            <td>${bbb.toFixed(2)}</td>
+                                            <td style="width:85px;">
+                                                <button class="btn ccltrfddeletebtn p-1" data-id="${data.id}">
+                                                    <i class="fa-solid fa-trash iconsColorCustom"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                    monthlyData[month].transactions.push(rowHTML);
+                                    ledgersbody.append(rowHTML);
+                                    previousInterestrecoverable = currentInterestrecoverable;
+                                    monthlyData[month].newAmount = monthlyData[month].balance;
+                                    lastClosingBalance = monthlyData[month].newAmount;
+                                });  --}}
+
+                                //_________________________________________________________________________
+                                //_________________________________________________________________________
+
+
+
+                                if (Array.isArray(payments) && payments.length > 0) {
+                                    let monthlyData = {};  // Object to store monthly totals
+                                    let monthsProcessed = new Set();  // To track months we've already processed
+                                    let tempRows = [];  // Temporary array to store rows for each month
+                                    let previousMonthClosingBalance = 0;  // Variable to store the previous month's closing balance
+
+                                    payments.forEach((data) => {
+                                        let transcationDate = dateFormat(data.transcationDate);
+                                        let withdraw = parseFloat(data.transfer_amount) || 0;
+                                        let recovery_amount = parseFloat(data.recovey_amount) || 0;
+                                        let interest = parseFloat(data.interest_amount) || 0;
+                                        let month = getMonthName(data.transcationDate);
+
+                                        // Initialize monthly data if not exists
+                                        if (!monthlyData[month]) {
+                                            monthlyData[month] = {
+                                                totalInterest: 0,
+                                                balance: previousMonthClosingBalance,
+                                                newAmount: 0,
+                                                transactions: []
+                                            };
+                                        }
+
+                                        // Add the interest to total interest and calculate balance for the month
+                                        monthlyData[month].totalInterest += interest;
+                                        monthlyData[month].balance += withdraw - recovery_amount;
+
+                                        // Save the transaction row for the current month
+                                        monthlyData[month].transactions.push(`
+                                            <tr>
+                                                <td>${transcationDate}</td>
+                                                <td>-</td>
+                                                <td>${withdraw.toFixed(2)}</td>
+                                                <td>${recovery_amount.toFixed(2)}</td>
+                                                <td>${interest.toFixed(2)}</td>
+                                                <td>${monthlyData[month].balance.toFixed(2)}</td>
+                                                <td style="width:85px;">
+                                                    <button class="btn ccltrfddeletebtn p-1" data-id="${data.id}">
+                                                        <i class="fa-solid fa-trash iconsColorCustom"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `);
+
+                                        // Update the new amount after each transaction
+                                        monthlyData[month].newAmount = monthlyData[month].balance + monthlyData[month].totalInterest;
+                                    });
+
+                                    // Append transactions and closing balance for each month
+                                    for (let month in monthlyData) {
+                                        let { totalInterest, newAmount, transactions } = monthlyData[month];
+
+                                        // Append all transactions for the current month
+                                        transactions.forEach(row => ledgersbody.append(row));
+
+                                        // Append the closing balance after all transactions for the month
+                                        ledgersbody.append(`
+                                            <tr>
+                                                <td colspan="4"><strong>Closing Balance : - ${month}</strong></td>
+                                                <td><strong>${totalInterest.toFixed(2)}</strong></td>
+                                                <td><strong>${newAmount.toFixed(2)}</strong></td>
+                                                <td></td>
+                                                <td>-</td>
+                                        <td></td>
+                                            </tr>
+                                        `);
+                                    }
+                                }
+
+
+
+
+
+                            {{--  }  --}}
+                            $('#ledgerModal').modal('show');
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+
+
+
+
+            $(document).on('click', '.ccltrfddeletebtn', function(event) {
+                event.preventDefault();
+
+                let id = $(this).data('id');
+                let ccl_account = $('#ccl_account').val();
+                let member_type = $('#member_type').val();
+
+                // Validate inputs
+                if (!id || !ccl_account || !member_type) {
+                    Swal.fire({
+                        title: "Error!",
+                        text: "Invalid data. Please refresh the page and try again.",
+                        icon: "error",
+                        confirmButtonText: "OK"
+                    });
+                    return;
+                }
+
+                $('#ledgerModal').modal('hide');
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: `You are about to delete transaction ID #${id}. This action cannot be undone!`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+                        $('#ledgerModal').modal('hide');
+
+                        Swal.fire({
+                            title: "Deleting...",
+                            text: "Please wait while we delete the transaction.",
+                            icon: "info",
+                            allowOutsideClick: false,
+                            allowEscapeKey: false,
+                            showConfirmButton: false
+                        });
+
+
+                        $.ajax({
+                            url: "{{ route('deleteccltrfdpayment') }}",
+                            type: 'POST',
+                            data: {
+                                id: id,
+                                ccl_account: ccl_account,
+                                member_type: member_type
+                            },
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            dataType: "json",
+                            success: function(res) {
+                                $('.ccltrfddeletebtn').prop('disabled', false);
+
+                                if (res.status === 'success') {
+                                    if (res.cclDetails && res.allmemberlist) {
+                                        recoveryDatashow(res.cclDetails, res
+                                            .allmemberlist);
+                                    } else {
+                                        $('#accountTbody').empty().append(
+                                            `<tr><td colspan="10">No Record Available</td></tr>`
+                                        );
+                                    }
+
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: `Transaction ID #${id} has been successfully deleted.`,
+                                        icon: "success",
+                                        confirmButtonText: "OK"
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Warning!",
+                                        text: res.messages ||
+                                            "Deletion failed. Please try again.",
+                                        icon: "warning",
+                                        confirmButtonText: "OK"
+                                    });
+                                }
+                            },
+                            error: function(jqXHR, textStatus) {
+                                $('.ccltrfddeletebtn').prop('disabled', false);
+
+                                if (textStatus === "timeout") {
+                                    Swal.fire({
+                                        title: "Timeout!",
+                                        text: "The server is taking too long to respond. Please try again later.",
+                                        icon: "error",
+                                        confirmButtonText: "OK"
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Error!",
+                                        text: "Something went wrong. Please try again.",
+                                        icon: "error",
+                                        confirmButtonText: "OK"
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.receipt', function(event) {
+                event.preventDefault();
+                let id = $(this).data('id');
+                let receipt_date = $('#receipt_date').val();
+
+                $.ajax({
+                    url: "{{ route('recieptcclamount') }}",
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        receipt_date: receipt_date
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            let principal = parseFloat(res.principal);
+                            let interestRate = parseFloat(res.interestRate);
+                            let days = parseFloat(res.days);
+                            let interest_amount = 0;
+                            let grandTotal = 0;
+
+
+
+                            if (principal || interestRate || days) {
+                                interest_amount = Math.round((((principal * interestRate) /
+                                    100) / 365) * days);
+                                grandTotal = principal + interest_amount;
+
+                                $('#cclid').val(id);
+                                $('#principal').val(principal).prop('readonly', true);
+                                $('#rate_of_interest').val(interestRate).prop('readonly', true);
+                                $('#interest_amount').val(interest_amount);
+                                $('#total_amount').val(grandTotal);
+
+                            } else {
+                                $('#principal').val('').prop('readonly', true);
+                                $('#rate_of_interest').val('').prop('readonly', true);
+                                $('#interest_amount').val('');
+                                $('#total_amount').val('');
+                            }
+
+                            $('#receiptModal').modal('show');
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+            $(document).on('submit', '#cclRecoveryForm', function(event) {
+                event.preventDefault();
+
+                let formData = $(this).serialize();
+
+                $.ajax({
+                    url: "{{ route('cclrecoverInsert') }}",
+                    type: 'POST',
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.status === 'success') {
+                            let cclDetails = res.cclDetails;
+                            let allmemberlist = res.allmemberlist;
+                            if (cclDetails && allmemberlist) {
+                                $('#receiptModal').modal('hide');
+                                $('#cclRecoveryForm')[0].reset();
+                                recoveryDatashow(cclDetails, allmemberlist);
+                            } else {
+                                let accountTbody = $('#accountTbody');
+                                accountTbody.empty();
+                                accountTbody.append(
+                                    `<tr><td colspan="10">No Record Available</td></tr>`);
+                            }
+                        } else {
+                            notify(res.messages, 'warning');
+                        }
+                    }
+                });
+            });
+
+
+        });
+    </script>
+@endpush
+
+
+
+@push('style')
+    <style>
+        .swal2-container {
+            z-index: 1060 !important;
+            /* Ensure SweetAlert always appears above Bootstrap modals */
+        }
+
+        button.btn.editbtn,
+        button.btn.deletebtn {
+            padding: 0 !important;
+        }
+
+        .pt-3 {
+            padding-top: 1.5rem !important;
+        }
+
+        .clickable-cell {
+            color: #7367f0 !important;
+        }
+
+        .saving_column {
+            position: relative;
+        }
+
+        .saving_column .error {
+
+            bottom: -30px;
+            left: 12px;
+            margin: 0;
+            min-height: 38px;
+        }
+
+        .accountList {
+            position: absolute;
+            left: 12px;
+            bottom: 0px;
+            transform: translateY(90%);
+            width: calc(100% - 24px);
+            background-color: aliceblue;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            max-height: 100px;
+            overflow-y: auto;
+            z-index: 99;
+            padding-left: 11px;
+        }
+
+        .accountHolderDetails {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .thead-light tr th {
+            background-color: #7367f0;
+            color: white !important;
+        }
+
+        .form-label {
+            text-transform: capitalize;
+        }
+    </style>
+@endpush

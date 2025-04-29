@@ -1,0 +1,418 @@
+body {
+    overflow-x: hidden;
+}
+/* custom css globally for btns */
+.three-btns {
+    width: 100%;
+    display: inline-block;
+    padding-top: 22px !important;
+}
+/* end */
+.modal .modal-header {
+    background-color: #7367f0;
+    padding: 15px 24px;
+}
+
+.modal .modal-body {
+    padding-bottom: 0;
+}
+
+.modal .modal-header h5 {
+    color: #fff !important;
+}
+
+.modalDialogCustom {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.totalamountclass{
+    margin-left: 4rem;
+}
+
+.alert-info td {
+    text-align: start;
+    padding-top: 10px !important;
+}
+
+#debittbody td {
+    font-size: 0.9375rem !important;
+    padding: 5px 0;
+}
+
+.tablee table th,
+.tablee table td {
+    padding: 8px !important;
+    text-align: center;
+}
+
+table th {
+    padding-top: 0.55rem;
+    padding-bottom: 0.55rem;
+}
+
+.dataTable {
+    border: 1px solid #ddd !important;
+}
+
+.table_head tr {
+    background-color: #7367f0;
+}
+
+.table_head tr th {
+    color: #fff !important;
+}
+
+.page_headings h4 {
+    margin-bottom: 0;
+}
+
+.buttonss {
+    display: flex;
+    gap: 24px;
+}
+
+#layout-menu .menu-item.active>.menu-link:not(.menu-toggle) {
+    background: unset;
+    box-shadow: unset;
+    color: unset !important;
+}
+
+#layout-menu .menu-item.active>.menu-link.active {
+    background: #f4f4f5;
+    /* color: #2e2e2e !important; */
+}
+
+.saving_column {
+    position: relative;
+}
+
+.saving_column p {
+    position: absolute;
+    bottom: -30px;
+    left: 12px;
+    margin: 0;
+    min-height: 38px;
+}
+
+.accountHolderDetails {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media screen and (max-width: 768px) {
+    .accountHolderDetails {
+        padding-top: 12px !important;
+    }
+
+}
+
+
+.savingColumnButton {
+    width: 100%;
+}
+
+
+.menu-vertical .app-brand {
+    margin: 15px 0.875rem 0 1rem;
+}
+
+.cards {
+    margin-bottom: 1rem !important;
+}
+
+
+.app-brand-logo.demo {
+    width: 50px;
+    height: 50px;
+}
+
+.app-brand a {
+    width: 50%;
+    text-align: end;
+}
+
+.app-brand-link {
+    justify-content: center;
+}
+
+.app-brand-logo img {
+    width: 100%;
+}
+
+.app-brand {
+    padding: 0 !important;
+}
+
+.layout-navbar {
+    height: 3.5rem;
+}
+
+.tablee table td a:nth-child(1) i {
+    border-right: 1px solid #ddd;
+    padding-right: 3px;
+}
+
+.tablee table td a i {
+    color: #6f6b7d;
+}
+
+
+.tabledata th,
+.tabledata td {
+    white-space: nowrap;
+}
+
+.cardHeadingTitle{
+    padding-top: 1rem;
+}
+
+.account_tabs {
+    justify-content: space-around;
+}
+
+.account_tabs li .active {
+    background-color: #7367f0 !important;
+    color: #fff !important;
+    border-radius: 5px;
+    box-shadow: unset !important;
+}
+
+.account_tabs li {
+    margin: 16px;
+    margin-top: 0px;
+}
+
+.rdCustom {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.rdCustom li .active{
+    background-color: #7367f0 !important;
+    color: #fff !important;
+    border-radius: 5px;
+    box-shadow: unset !important;
+}
+
+/* .rdCustom li{
+    margin: 16px;
+    margin-top: 0px;
+} */
+
+/* .addressDetailSectionHide{
+    display: none;
+} */
+
+.member_detail_text {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: space-around;
+}
+
+h6{
+    color: #000;
+}
+
+.form-label {
+    text-transform: lowercase;
+  }
+
+
+.form-label:first-letter {
+  text-transform: uppercase;
+}
+
+.formInputs {
+    padding: .295rem .620rem;
+    font-size: .8620rem !important;
+}
+
+.formInputsSelect {
+    padding: .295rem 2.45rem .295rem 0.620rem;
+    font-size: .8620rem !important;
+}
+
+.inputesPadding {
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+}
+
+.tableContent {
+    padding: 1rem !important;
+}
+
+.bg-menu-theme .menu-inner .menu-item.open>.menu-link.menu-toggle {
+    background: linear-gradient(72.47deg, #7367f0 22.16%, rgba(115, 103, 240, 0.7) 76.47%);
+    color: #fff;
+}
+
+.menu-toggle:hover {
+    background: linear-gradient(72.47deg, #7367f0 22.16%, rgba(115, 103, 240, 0.7) 76.47%) !important;
+    color: #fff !important;
+}
+
+.bg-menu-theme .menu-sub>.menu-item>.menu-link:before {
+    display: none;
+}
+
+.menu-vertical .menu-sub .menu-link {
+    padding-left: 30px;
+}
+
+.card {
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.cardd {
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    border-radius: 5px;
+}
+
+.revenueReport {
+    margin-top: 0 !important;
+}
+
+.photo_upload img {
+    width: 100% !important;
+    height: 13vh !important;
+}
+
+.cardBodyCustom{
+    padding-block: .5rem;
+    padding-inline: 1.5rem;
+}
+
+.buttons{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.accoundDetailReadonly{
+    width: 102% !important;
+}
+
+.accountReadonlyMarginRight{
+    margin-right: 4px !important;
+}
+
+.fdHeading{
+    display: flex !important;
+    align-items: center !important;
+}
+
+.fdTabContent{
+    box-shadow: none !important;
+}
+
+.fdCustomUL{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.verticleAlignCenter {
+    vertical-align: middle !important;
+}
+
+.fdHeadingName{
+    margin-bottom: 0rem;
+}
+
+.fdCustomButtons{
+    padding: 0rem !important;
+}
+
+.misFormButtons{
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+.misClearBtn{
+    margin-inline: 3px;
+}
+
+.cardsY {
+    padding-top: 1rem;
+    padding-bottom: .5rem;
+}
+
+@media screen and (max-width: 992px) {
+    .login_form {
+        width: 400px !important;
+    }
+
+    .accoundDetailReadonly{
+        width: 103% !important;
+    }
+
+    .accountReadonlyMarginRight{
+        margin-right: 5px !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .accoundDetailReadonly{
+        width: 104% !important;
+    }
+
+    .accountReadonlyMarginRight{
+        margin-right: 6px !important;
+    }
+}
+
+
+@media screen and (max-width: 650px) {
+
+    .container,
+    .authentication-inner .login_main {
+        width: 100% !important;
+    }
+    .login_form {
+        width: 400px !important;
+        padding: 50px 0 75px 0 !important;
+    }
+
+    .accoundDetailReadonly{
+        width: 106% !important;
+    }
+
+    .accountReadonlyMarginRight{
+        margin-right: 7px !important;
+    }
+
+}
+
+@media screen and (max-width: 465px) {
+
+    .inputesPadding {
+        width: 100% !important;
+    }
+
+    .accoundDetailReadonly{
+        width: 108% !important;
+    }
+
+    .accountList {
+        transform: translateY(90%);
+    }
+
+}
+
+@media screen and (max-width: 425px) {
+
+    .inputesPadding {
+        width: 100% !important;
+    }
+
+}
+
+@media screen and (max-width: 350px){
+    .login_form{
+        width: 250px !important;
+        padding-inline: 1rem;
+        padding: 20px 0 40px 0 !important;
+    }
+}
