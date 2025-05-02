@@ -63,16 +63,13 @@
                                         onchange="amountTransferToOthers('this')">
                                         <option value="Deposit">Deposit</option>
                                         <option value="Withdraw">Withdraw</option>
-                                        <option value="toshare">Transfer to Share</option>
+                                        {{-- <option value="toshare">Transfer to Share</option>
                                         <option value="toFd">Transfer to FD</option>
                                         <option value="tord">Transfer to RD</option>
                                         <option value="toloan">Transfer to loan</option>
                                         <option value="DailySaving">Transfer to DailySaving</option>
-                                        <option value="toCcl">Transfer to CCL</option>
-
-                                        {{--
-                  <option value="dividend">Dividend</option>
-                    --}}
+                                        <option value="toCcl">Transfer to CCL</option> --}}
+                                        {{--<option value="dividend">Dividend</option>--}}
 
                                     </select>
                                 </div>
@@ -154,7 +151,7 @@
                                     <input type="text" class="form-control formInputs" id="rdmonths"
                                         placeholder="Months" readonly name="rdmonths" />
                                 </div>
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 saving_column inputesPadding">
+                                {{-- <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 saving_column inputesPadding">
                                     <label for="agentId" class="form-label">Agent</label>
                                     <select class="form-select formInputsSelect" id="agentId" name="agentId">
 
@@ -167,7 +164,7 @@
                                         @endif
 
                                     </select>
-                                </div>
+                                </div> --}}
                                 <div class="col-lg-4 col-md-3 col-sm-4 col-12 py-2 saving_column inputesPadding">
                                     <label for="narration" class="form-label">Narration</label>
                                     <input type="text" class="form-control formInputs" id="narration"
@@ -462,23 +459,20 @@
 
                                 <div class="col-md-4">
                                     <label class="form-label">Date</label>
-                                    <input id="interest_date" type="text" name="interest_date"
-                                        class="form-control" placeholder="DD-MM-YYYY"
-                                        value="{{ date('d-m-Y') }}"  readonly/>
+                                    <input id="interest_date" type="text" name="interest_date" class="form-control"
+                                        placeholder="DD-MM-YYYY" value="{{ date('d-m-Y') }}" readonly />
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Account No</label>
                                     <input id="ineterest_account" type="text" name="ineterest_account"
-                                        class="form-control " placeholder="Account No"
-                                       readonly/>
+                                        class="form-control " placeholder="Account No" readonly />
                                 </div>
 
                                 <div class="col-md-4">
                                     <label class="form-label">Interest Amount</label>
                                     <input id="interest_paid_amount" type="text" name="interest_paid_amount"
-                                        class="form-control " placeholder="Interest Amount"
-                                       />
+                                        class="form-control " placeholder="Interest Amount" />
                                 </div>
                             </div>
                     </div>
@@ -518,27 +512,27 @@
                                     <label class="">Transfer Date</label>
                                     <input id="ccltrfdDate" type="text" name="ccltrfdDate"
                                         class="form-control form-control-sm mydatepic valid" placeholder="DD-MM-YYYY"
-                                        value="{{ date('d-m-Y') }}" onblur="checkdateinterest(this)"/>
+                                        value="{{ date('d-m-Y') }}" onblur="checkdateinterest(this)" />
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="">CCL Account</label>
                                     <input id="ccl_account" type="text" name="ccl_account"
-                                        class="form-control form-control-sm" placeholder="Account No"
-                                       readonly/>
+                                        class="form-control form-control-sm" placeholder="Account No" readonly />
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="">Trfd Amount</label>
                                     <input id="ccl_trfd_amount" type="text" name="ccl_trfd_amount"
-                                        class="form-control form-control-sm" placeholder="Amount" onblur="checkexceedcclamounts('this')"/>
+                                        class="form-control form-control-sm" placeholder="Amount"
+                                        onblur="checkexceedcclamounts('this')" />
                                 </div>
 
                                 <div class="col-md-3">
                                     <label class="">Interest Amount</label>
                                     <input id="ccl_interest_amount" type="text" name="ccl_interest_amount"
-                                        class="form-control form-control-sm" placeholder="Interest Amount" onblur="checkexceedcclamounts('this')"
-                                       />
+                                        class="form-control form-control-sm" placeholder="Interest Amount"
+                                        onblur="checkexceedcclamounts('this')" />
                                 </div>
                             </div>
                     </div>
@@ -555,38 +549,38 @@
     </div>
 @endsection
 @push('script')
-<script>
-    function calculateTotalPayment() {
-        let principle = parseFloat(document.getElementById('trfprinciple').value) || 0;
-        let interest = parseFloat(document.getElementById('trfintrest').value) || 0;
-        let penalty = parseFloat(document.getElementById('trfpanelty').value) || 0;
-        let memberBalance = parseFloat(document.getElementById('memberBalanceinput').value) || 0;
+    <script>
+        function calculateTotalPayment() {
+            let principle = parseFloat(document.getElementById('trfprinciple').value) || 0;
+            let interest = parseFloat(document.getElementById('trfintrest').value) || 0;
+            let penalty = parseFloat(document.getElementById('trfpanelty').value) || 0;
+            let memberBalance = parseFloat(document.getElementById('memberBalanceinput').value) || 0;
 
-        let totalPayment = principle + interest + penalty;
-        if (totalPayment > memberBalance) {
-            notify('Total payment cannot exceed member balance.', 'warning');
+            let totalPayment = principle + interest + penalty;
+            if (totalPayment > memberBalance) {
+                notify('Total payment cannot exceed member balance.', 'warning');
+            }
+            document.getElementById('trftotalpayment').value = totalPayment.toFixed(2);
         }
-        document.getElementById('trftotalpayment').value = totalPayment.toFixed(2);
-    }
 
-    function allowOnlyNumbers(event) {
-        const value = event.target.value;
-        event.target.value = value.replace(/[^0-9.]/g, '');
-    }
-    document.getElementById('trfprinciple').addEventListener('input', function(event) {
-        allowOnlyNumbers(event);
+        function allowOnlyNumbers(event) {
+            const value = event.target.value;
+            event.target.value = value.replace(/[^0-9.]/g, '');
+        }
+        document.getElementById('trfprinciple').addEventListener('input', function(event) {
+            allowOnlyNumbers(event);
+            calculateTotalPayment();
+        });
+        document.getElementById('trfintrest').addEventListener('input', function(event) {
+            allowOnlyNumbers(event);
+            calculateTotalPayment();
+        });
+        document.getElementById('trfpanelty').addEventListener('input', function(event) {
+            allowOnlyNumbers(event);
+            calculateTotalPayment();
+        });
+        document.getElementById('memberBalanceinput').addEventListener('input', calculateTotalPayment);
         calculateTotalPayment();
-    });
-    document.getElementById('trfintrest').addEventListener('input', function(event) {
-        allowOnlyNumbers(event);
-        calculateTotalPayment();
-    });
-    document.getElementById('trfpanelty').addEventListener('input', function(event) {
-        allowOnlyNumbers(event);
-        calculateTotalPayment();
-    });
-    document.getElementById('memberBalanceinput').addEventListener('input', calculateTotalPayment);
-    calculateTotalPayment();
 
 
         $(document).on('change', '#memberType', function(event) {
@@ -944,7 +938,7 @@
                             </td>`;  --}}
 
 
-                             saving_row += `
+                            saving_row += `
                             <td style="width:85px;">
                                <button class="btn interestbtn"
                                     data-id="${data.id}"
@@ -1256,8 +1250,13 @@
             $.ajax({
                 url: "{{ route('getcheckinterestdatewiseccl') }}",
                 type: 'POST',
-                data: {id: id,receipt_date: receipt_date},
-                headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                data: {
+                    id: id,
+                    receipt_date: receipt_date
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 dataType: "json",
                 success: function(res) {
                     if (res.status === 'success') {
@@ -1270,17 +1269,17 @@
 
                         let balances = 0;
 
-                        if (cclDetails || totalWithdraw || totaldeposit  || interestRate || days) {
+                        if (cclDetails || totalWithdraw || totaldeposit || interestRate || days) {
                             balances = totalWithdraw - totaldeposit;
                             interest_amount = Math.round((((balances * interestRate) / 100) / 365) * days);
                             console.log(interest_amount);
 
-                            $('#cclbalnces').text('Balance :- '+balances);
+                            $('#cclbalnces').text('Balance :- ' + balances);
                             $('#ccl_interest_amount').val(interest_amount);
                             $('#ccltrfdamount').val(balances);
                             $('#cclModal').modal('show');
 
-                        }else {
+                        } else {
 
                             $('#ccltrfdamount').val('');
                             $('#ccl_interest_amount').val('');
@@ -1301,38 +1300,38 @@
             });
         }
 
-        function checkexceedcclamounts(){
+        function checkexceedcclamounts() {
 
             let entredAmount = parseFloat($('#ccl_trfd_amount').val()) || 0;
             let enteredinterest = parseFloat($('#ccl_interest_amount').val()) || 0;
             let cclbalance = parseFloat($('#ccltrfdamount').val()) || 0;
             let savingsamounts = parseFloat($('#fdedittyme').val()) || 0;
             let cclbalncess = parseFloat($('#cclbalnces').val()) || 0;
-            console.log(entredAmount,enteredinterest,cclbalncess,savingsamounts);
+            console.log(entredAmount, enteredinterest, cclbalncess, savingsamounts);
 
-            if(isNaN(entredAmount) || isNaN(enteredinterest) || isNaN(cclbalance)){
-                notify('Entered Numeric Value','warning');
-                return ;
+            if (isNaN(entredAmount) || isNaN(enteredinterest) || isNaN(cclbalance)) {
+                notify('Entered Numeric Value', 'warning');
+                return;
             }
 
-            if(entredAmount > cclbalance){
+            if (entredAmount > cclbalance) {
                 $('#ccl_trfd_amount').val('');
-                notify(`Entered Amount ${entredAmount} Exceed Then CCL Balance Amount ${cclbalance}`,'warning');
+                notify(`Entered Amount ${entredAmount} Exceed Then CCL Balance Amount ${cclbalance}`, 'warning');
             }
 
-            if(enteredinterest > cclbalance){
+            if (enteredinterest > cclbalance) {
                 $('#ccl_interest_amount').val('');
-                notify(`Entered Amount ${enteredinterest} Exceed Then CCL Balance Amount ${cclbalance}`,'warning');
+                notify(`Entered Amount ${enteredinterest} Exceed Then CCL Balance Amount ${cclbalance}`, 'warning');
             }
 
-            if(enteredinterest > savingsamounts){
+            if (enteredinterest > savingsamounts) {
                 $('#ccl_interest_amount').val('');
-                notify(`Entered Amount ${enteredinterest} Exceed Then Saving Balance Amount ${savingsamounts}`,'warning');
+                notify(`Entered Amount ${enteredinterest} Exceed Then Saving Balance Amount ${savingsamounts}`, 'warning');
             }
 
-            if(entredAmount > savingsamounts){
+            if (entredAmount > savingsamounts) {
                 $('#ccl_trfd_amount').val('');
-                notify(`Entered Amount ${entredAmount} Exceed Then Saving Balance Amount ${savingsamounts}`,'warning');
+                notify(`Entered Amount ${entredAmount} Exceed Then Saving Balance Amount ${savingsamounts}`, 'warning');
             }
 
 
@@ -1546,20 +1545,27 @@
                         }
                     });
                     break;
-                case 'toCcl' :
+                case 'toCcl':
 
                     let membern = $('#membership').val();
                     let memberTypess = $('#memberType').val();
                     let transactionDatess = $('#transactionDate').val();
 
                     $.ajax({
-                        url : "{{ route('getcclaccountdetails') }}",
-                        type : 'post',
-                        data : {membern : membern , memberTypess : memberTypess , transactionDatess: transactionDatess, accountNo : accountNo },
-                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                        dataType : 'json',
-                        success : function(res){
-                            if(res.status === 'success'){
+                        url: "{{ route('getcclaccountdetails') }}",
+                        type: 'post',
+                        data: {
+                            membern: membern,
+                            memberTypess: memberTypess,
+                            transactionDatess: transactionDatess,
+                            accountNo: accountNo
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        dataType: 'json',
+                        success: function(res) {
+                            if (res.status === 'success') {
 
                                 let cclDetails = res.cclDetails;
                                 let saving_account = res.savings;
@@ -1571,9 +1577,11 @@
 
                                 let balances = 0;
 
-                                if (cclDetails && saving_account || totalWithdraw || totaldeposit  || interestRate || days) {
+                                if (cclDetails && saving_account || totalWithdraw || totaldeposit ||
+                                    interestRate || days) {
                                     balances = totalWithdraw - totaldeposit;
-                                    interest_amount = Math.round((((balances * interestRate) / 100) / 365) * days);
+                                    interest_amount = Math.round((((balances * interestRate) / 100) / 365) *
+                                        days);
 
                                     $('#cclid').val(cclDetails.id);
                                     $('#ccl_account').val(cclDetails.cclNo);
@@ -1581,7 +1589,7 @@
                                     $('#savingaccts').val(saving_account.accountNo);
                                     $('#sbmemberno').val(cclDetails.membership);
                                     $('#sbmembertype').val(cclDetails.memberType);
-                                    $('#cclbalnces').text('Balance :- '+balances);
+                                    $('#cclbalnces').text('Balance :- ' + balances);
                                     $('#ccl_interest_amount').val(interest_amount);
                                     $('#ccltrfdamount').val(balances);
                                     $('#cclModal').modal('show');
@@ -1600,12 +1608,12 @@
 
                                 }
 
-                            }else{
-                                notify(res.messages,'warning');
+                            } else {
+                                notify(res.messages, 'warning');
                             }
                         }
                     });
-                break;
+                    break;
             }
         }
 
@@ -1614,26 +1622,26 @@
             let rd_amount = parseFloat($('#rd_mount').val());
             let month = parseFloat($('#rdmonths').val());
             let rd_received_amount = parseFloat($('#rd_received_amount').val()) || 0;
-            if (isNaN(enteredAmount) || enteredAmount <= 0) {
-                notify('Please enter a valid deposit amount greater than zero.', 'warning');
-                return;
-            }
-            if (isNaN(rd_amount) || isNaN(month)) {
-                notify('Invalid RD amount or month value.', 'warning');
-                return;
-            }
+            // if (isNaN(enteredAmount) || enteredAmount <= 0) {
+            //     notify('Please enter a valid deposit amount greater than zero.', 'warning');
+            //     return;
+            // }
+            // if (isNaN(rd_amount) || isNaN(month)) {
+            //     notify('Invalid RD amount or month value.', 'warning');
+            //     return;
+            // }
 
-            let principal = (rd_amount * month) - rd_received_amount;
-            if (enteredAmount % rd_amount !== 0) {
-                $('#transactionAmount').val('');
-                notify(`The entered amount (${enteredAmount}) must be a multiple of ${rd_amount}`, 'warning');
-                return;
-            }
-            if (enteredAmount > principal) {
-                $('#transactionAmount').val('');
-                notify('Entered amount exceeds the allowed principal.', 'warning');
-                return;
-            }
+            // let principal = (rd_amount * month) - rd_received_amount;
+            // if (enteredAmount % rd_amount !== 0) {
+            //     $('#transactionAmount').val('');
+            //     notify(`The entered amount (${enteredAmount}) must be a multiple of ${rd_amount}`, 'warning');
+            //     return;
+            // }
+            // if (enteredAmount > principal) {
+            //     $('#transactionAmount').val('');
+            //     notify('Entered amount exceeds the allowed principal.', 'warning');
+            //     return;
+            // }
             notify('Amount is valid', 'success');
         }
 
@@ -1792,7 +1800,7 @@
                         selectdId: selectdId,
                         transactionType: transactionType,
                         memberType: memberType,
-                        membership: membership
+                        // membership: membership
                     },
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -1803,20 +1811,25 @@
                             let saving_account = res.saving_account;
                             let opening_amount = res.opening_amount;
                             let saving_entries = res.saving_entries;
-                            let fd_account_details = res.fd;
-                            let rd_account = res.rd_account;
+                            $('#membership').val(saving_account.membership);
 
-                            if (saving_account.membertype === 'Member') {
-                                $('#memberType').val(saving_account.membertype).trigger('change');
-                                ShowDataTable(saving_account, opening_amount, saving_entries,fd_account_details, rd_account);
+                            // let fd_account_details = res.fd;
+                            // let rd_account = res.rd_account;
+
+                            if (saving_account.type === 'Member') {
+                                $('#memberType').val(saving_account.type).trigger(
+                                    'change');
+                                ShowDataTable(saving_account, opening_amount, saving_entries,);
                                 getAmount();
-                            } else if (saving_account.membertype === 'Staff') {
-                                $('#memberType').val(saving_account.membertype).trigger('change');
-                                ShowDataTable(saving_account, opening_amount, saving_entries,fd_account_details, rd_account);
+                            } else if (saving_account.type === 'Staff') {
+                                $('#memberType').val(saving_account.type).trigger(
+                                    'change');
+                                ShowDataTable(saving_account, opening_amount, saving_entries);
                                 getAmount();
                             } else {
-                                $('#memberType').val(saving_account.membertype).trigger('change');
-                                ShowDataTable(saving_account, opening_amount, saving_entries,fd_account_details, rd_account);
+                                $('#memberType').val(saving_account.type).trigger(
+                                    'change');
+                                ShowDataTable(saving_account, memberType, saving_entries);
                                 getAmount();
                             }
                         } else {
@@ -1833,8 +1846,7 @@
                     let typesToCheck = ['toloan', 'tord', 'toFd', 'toshare', 'dividend'];
                     let formData = $(this).serialize();
 
-                    let url = $('#savingId').val() ? "{{ route('savingentryupdate') }}" :
-                        "{{ route('savingentryinsert') }}";
+                    let url = $('#savingId').val() ? "{{ route('savingentryupdate') }}" : "{{ route('savingentryinsert') }}";
 
                     if (transactionType === 'Deposit' || transactionType === 'Withdraw' || typesToCheck
                         .includes(transactionType)) {
@@ -1852,11 +1864,11 @@
                                     let account = res.saving_account;
 
                                     setTimeout(() => {
-                                        $('#memberType').append(
-                                            `<option value="${account.membertype}">${account.membertype}</option>`
-                                            );
-                                        $('#memberType').val(account.membertype)
-                                        .change();
+                                        // $('#memberType').append(
+                                        //     `<option value="${account.membertype}">${account.membertype}</option>`
+                                        // );
+                                        // $('#memberType').val(account.membertype)
+                                        //     .change();
                                         updateTable(res);
                                     }, 100);
 
@@ -1877,6 +1889,7 @@
 
                 let opening_amount = res.opening_amount;
                 let saving_entries = res.saving_entries;
+
                 let tableBody = $('#tableBody');
                 tableBody.empty();
 
@@ -1895,8 +1908,8 @@
                 $('#memberName').empty();
 
                 // Show Customer Name
-                $('#memberName').append(saving_account.customer_name);
-                $('#membership').val(saving_account.membershipno);
+                $('#memberName').append(saving_account.name);
+                $('#membership').val(saving_account.accountNo);
 
                 if (saving_entries) {
                     let balance_amount = parseFloat(opening_amount);
@@ -1913,6 +1926,7 @@
                         let deposit_amount = parseFloat(data.depositAmount) ?? 0;
                         let withdraw_amount = parseFloat(data.withdrawAmount) ?? 0;
                         balance_amount += deposit_amount - withdraw_amount;
+
 
                         // Append Data in Table
                         let saving_row = `
@@ -1996,7 +2010,7 @@
                                 </button>
                             </td>
                         `;
-                     } else if (data.chequeNo === 'SavingTrfd') {
+                        } else if (data.chequeNo === 'SavingTrfd') {
                             saving_row += `<td style="width:85px;">
                                  <button class="btn savinngtrfdcclbtn"
                                     data-id="${data.id}">
@@ -2062,7 +2076,9 @@
                 $.ajax({
                     url: "{{ route('editpaidinterest') }}",
                     type: 'post',
-                    data: { id: id },
+                    data: {
+                        id: id
+                    },
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
@@ -2070,7 +2086,7 @@
                     success: function(res) {
                         if (res.status === 'success') {
                             let details = res.details;
-                            if(details){
+                            if (details) {
 
                                 let entry_date = new Date(details.transactionDate);
                                 let day = entry_date.getDate();
@@ -2082,13 +2098,13 @@
                                 let transcationDate = `${day}-${month}-${year}`;
 
 
-                                {{--  $('#interestForm  --}}
+
                                 $('#interest_date').val(transcationDate);
                                 $('#interestid').val(details.id);
                                 $('#ineterest_account').val(details.accountId);
                                 $('#interest_paid_amount').val(details.depositAmount);
                                 $('#interestModal').modal('show');
-                            }else{
+                            } else {
                                 $('#interestid').val('');
                                 $('#ineterest_account').val('');
                                 $('#interest_paid_amount').val('');
@@ -2096,14 +2112,14 @@
                             }
 
                             // $('#interestModal').modal('show');
-                        }else{
-                            notify(res.messages,'warning');
+                        } else {
+                            notify(res.messages, 'warning');
                         }
                     }
                 });
             });
 
-            $(document).on('submit', '#interestForm', function (event) {
+            $(document).on('submit', '#interestForm', function(event) {
                 event.preventDefault();
 
                 let formData = $(this).serialize();
@@ -2112,9 +2128,11 @@
                     url: "{{ route('paidinterestchange') }}",
                     type: 'post',
                     data: formData,
-                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     dataType: 'json',
-                    success: function (res) {
+                    success: function(res) {
                         if (res.status === 'success') {
                             notify(res.messages, 'success');
                             $('#interestForm')[0].reset();
@@ -2124,14 +2142,14 @@
                             notify(res.messages, 'warning');
                         }
                     },
-                    error: function (err) {
+                    error: function(err) {
                         console.error(err);
                         notify('An error occurred while processing your request', 'danger');
                     }
                 });
             });
 
-            $(document).on('click','.closebtncclform',function(event){
+            $(document).on('click', '.closebtncclform', function(event) {
                 event.preventDefault();
                 $('#cclttrfdForm')[0].reset();
                 $('#cclModal').modal('hide');
@@ -2201,13 +2219,13 @@
                                     if ($('#memberType option[value="' + savings
                                             .memberType + '"]').length === 0) {
                                         $('#memberType').val(savings.memberType)
-                                        .change();
+                                            .change();
                                     }
 
                                     // Make dropdown simulate readonly
                                     $('#memberType').on('focus mousedown', function(e) {
                                         e
-                                    .preventDefault(); // Prevent dropdown interaction
+                                            .preventDefault(); // Prevent dropdown interaction
                                     });
 
                                     $('#accountNo').prop('readonly', true);
@@ -2222,7 +2240,7 @@
                                             .memberType + '"]').length === 0) {
                                         $('#memberType').append(
                                             `<option value="${savings.memberType}">${savings.memberType}</option>`
-                                            );
+                                        );
                                     }
 
                                     $('#memberType').val(savings.memberType).change();
@@ -2263,13 +2281,13 @@
                                     if ($('#memberType option[value="' + savings
                                             .memberType + '"]').length === 0) {
                                         $('#memberType').val(savings.memberType)
-                                        .change();
+                                            .change();
                                     }
 
                                     // Make dropdown simulate readonly
                                     $('#memberType').on('focus mousedown', function(e) {
                                         e
-                                    .preventDefault(); // Prevent dropdown interaction
+                                            .preventDefault(); // Prevent dropdown interaction
                                     });
 
                                     $('#accountNo').prop('readonly', true);
@@ -2293,7 +2311,7 @@
                                     // Append the account number as an option
                                     $('#dailysavingaccountno').append(
                                         `<option value="${dailyaccount.account_no}">${dailyaccount.account_no}</option>`
-                                        );
+                                    );
 
                                     // Set the dynamically added option as the selected value
                                     $('#dailysavingaccountno').val(dailyaccount
@@ -2318,13 +2336,13 @@
                                     if ($('#memberType option[value="' + savings
                                             .memberType + '"]').length === 0) {
                                         $('#memberType').val(savings.memberType)
-                                        .change();
+                                            .change();
                                     }
 
                                     // Make dropdown simulate readonly
                                     $('#memberType').on('focus mousedown', function(e) {
                                         e
-                                    .preventDefault(); // Prevent dropdown interaction
+                                            .preventDefault(); // Prevent dropdown interaction
                                     });
 
                                     $('#accountNo').prop('readonly', true);
@@ -2361,7 +2379,7 @@
                                     // Append the account number as an option
                                     $('#fdid').append(
                                         `<option value="${fds.idss}">${fds.accountNo}-${fds.schname}</option>`
-                                        );
+                                    );
                                     $('#fdid').val(fds.idss).change();
                                     $('#autorenew').val(fds.autorenew);
                                 }, 500);
@@ -2415,13 +2433,13 @@
                                     if ($('#memberType option[value="' + savings
                                             .memberType + '"]').length === 0) {
                                         $('#memberType').val(savings.memberType)
-                                        .change();
+                                            .change();
                                     }
 
                                     // Make dropdown simulate readonly
                                     $('#memberType').on('focus mousedown', function(e) {
                                         e
-                                    .preventDefault(); // Prevent dropdown interaction
+                                            .preventDefault(); // Prevent dropdown interaction
                                     });
 
                                     $('#accountNo').prop('readonly', true);
@@ -2608,19 +2626,23 @@
             });
 
             //___________CCL Entry
-            $(document).on('submit','#cclttrfdForm',function(event){
+            $(document).on('submit', '#cclttrfdForm', function(event) {
                 event.preventDefault();
 
                 let formData = $(this).serialize();
-                let url = $('#ccltrfdsavingupdateid').val() ? "{{ route('savingtrfdtocclrecoveryupdate') }}" : "{{ route('savingtrfdtocclrecovery') }}";
+                let url = $('#ccltrfdsavingupdateid').val() ?
+                    "{{ route('savingtrfdtocclrecoveryupdate') }}" :
+                    "{{ route('savingtrfdtocclrecovery') }}";
 
                 $.ajax({
-                    url : url,
-                    type : 'post',
-                    data : formData,
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                    dataType : 'json',
-                    success : function(res){
+                    url: url,
+                    type: 'post',
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: 'json',
+                    success: function(res) {
                         if (res.status === 'success') {
                             notify(res.messages, 'success');
                             $('#fdtrfdForm')[0].reset();
@@ -2636,7 +2658,7 @@
             });
 
 
-            $(document).on('click','.savinngtrfdcclbtn',function(event){
+            $(document).on('click', '.savinngtrfdcclbtn', function(event) {
                 event.preventDefault();
                 let id = $(this).data('id');
                 let transactionDate = $('#transactionDate').val();
@@ -2645,13 +2667,18 @@
                 $('#transactionAmount').val('');
 
                 $.ajax({
-                    url : "{{ route('editsavingtrdfccl') }}",
-                    type : 'post',
-                    data : {id : id, transactionDate:transactionDate},
-                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
-                    dataType : 'json',
-                    success : function(res){
-                        if(res.status === 'success'){
+                    url: "{{ route('editsavingtrdfccl') }}",
+                    type: 'post',
+                    data: {
+                        id: id,
+                        transactionDate: transactionDate
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    dataType: 'json',
+                    success: function(res) {
+                        if (res.status === 'success') {
                             let payments = res.payments;
                             let cclDetails = res.cclDetails;
                             let saving_account = res.savings;
@@ -2659,17 +2686,19 @@
                             let balances = 0;
 
 
-                            if(payments || cclDetails || saving_account || allData){
+                            if (payments || cclDetails || saving_account || allData) {
 
-                                if(Array.isArray(allData) && allData.length > 0){
+                                if (Array.isArray(allData) && allData.length > 0) {
                                     allData.forEach((data) => {
-                                        let withdraw = parseFloat(data.transfer_amount) || 0;
-                                        let recovery = parseFloat(data.recovey_amount) || 0;
+                                        let withdraw = parseFloat(data
+                                            .transfer_amount) || 0;
+                                        let recovery = parseFloat(data
+                                            .recovey_amount) || 0;
                                         balances += withdraw - recovery;
                                     });
                                 }
 
-                                balances +=payments.recovey_amount;
+                                balances += payments.recovey_amount;
 
                                 $('#cclid').val(cclDetails.id);
                                 $('#ccl_account').val(cclDetails.cclNo);
@@ -2678,11 +2707,11 @@
                                 $('#sbmemberno').val(cclDetails.membership);
                                 $('#sbmembertype').val(cclDetails.memberType);
                                 $('#ccltrfdamount').val(balances);
-                                $('#cclbalnces').text('Balance :- '+balances);
+                                $('#cclbalnces').text('Balance :- ' + balances);
                                 $('#ccl_interest_amount').val(payments.interest_amount);
                                 $('#ccl_trfd_amount').val(payments.recovey_amount);
                                 $('#cclModal').modal('show');
-                            }else{
+                            } else {
                                 $('#cclid').val('');
                                 $('#ccl_account').val('');
                                 $('#ccltrfdsavingupdateid').val('');
@@ -2695,14 +2724,13 @@
                                 $('#cclModal').modal('hide');
                             }
 
-                        }else{
-                            notify(res.messages,'warning');
+                        } else {
+                            notify(res.messages, 'warning');
                         }
                     }
                 });
             });
         });
-
     </script>
     <script>
         function deltqry(id) {

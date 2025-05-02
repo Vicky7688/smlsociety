@@ -44,12 +44,12 @@ class ShareListController extends Controller
             ->where('is_delete', 'No')
              ->orderByRaw("CAST(accountNo AS UNSIGNED) ASC")
             ->get(['accountNo','fatherName','name','id','status']);
-
         $resultsArray = [];
 
         foreach ($query as $data) {
 
                 $Balence = $this->getbalance($data->accountNo,$end_date);
+                // dd($Balence);
 
                 if ($Balence != 0) {
 
@@ -73,7 +73,7 @@ class ShareListController extends Controller
 
                 }
         }
-
+        // dd($resultsArray);
 
         return response()->json(['status' => true, 'data' => $resultsArray]);
     }
@@ -97,7 +97,7 @@ class ShareListController extends Controller
 
  public function getbalance($ac, $lastDate)
     {
-        $openingBal = DB::table('member_opening_balance')->where('membership_no',$ac)->where('accType','Share')->first();
+        $openingBal = DB::table('member_accounts')->where('accountNo',$ac)->first();
         $shareBal = $openingBal->opening_amount ?? 0 ;
         $credit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Deposit')->whereDate('transactionDate', '<=', $lastDate)->sum("depositAmount");
         $debit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Withdraw')->whereDate('transactionDate', '<=', $lastDate)->sum("withdrawAmount");

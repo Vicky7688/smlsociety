@@ -244,8 +244,7 @@
             // Add header for printing
             var header = `
                 <div style="text-align: center;">
-                    <h4>{{ $branch->name }}</h4>
-                    <h6>{{ $branch->address }}</h6>
+
                     <h6> Saving List From ` + startDate + ` To ` + endDate + `</h6>
 
                 </div>

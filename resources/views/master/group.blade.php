@@ -44,6 +44,7 @@ $table = "yes";
                                         <th>Group Code</th>
                                         <th>Group Type</th>
                                         <th>Show In Journal Voucher</th>
+                                        <th>Created By</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -57,6 +58,7 @@ $table = "yes";
                                             <td>{{ ucwords($row->groupCode) }}</td>
                                             <td>{{ $row->type }}</td>
                                             <td>{{ $row->showJournalVoucher }}</td>
+                                            <td>{{ $row->user_name }}</td>
                                             <td>{{ $row->status }}</td>
                                             <td>
                                                 @php

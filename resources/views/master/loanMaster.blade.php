@@ -42,12 +42,12 @@ $table = "yes";
                                         <th class="w-17">S No</th>
                                         <th>Member Type</th>
                                         <th>Type</th>
-                                        <th>Name</th>
+                                        {{-- <th>Name</th> --}}
                                         <th>Processing Fee</th>
                                         <th>Loan App. Charges</th>
                                         <th>Interest</th>
                                         <th>PenalInt</th>
-                                        <th>EMI Date</th>
+                                        {{-- <th>EMI Date</th> --}}
                                         <th>InsType</th>
                                         <th>Status</th>
                                         <th>Action</th>
@@ -95,7 +95,7 @@ $table = "yes";
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
+                        {{-- <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="memberType" class="form-label">Loan Type</label>
                             <select name="loantypess" class="select2 form-select formInputsSelectReport" id="loantypess">
                                 <option value="MTLoan" default selected>MT Loan</option>
@@ -103,7 +103,7 @@ $table = "yes";
                                 <option value="FD">FD Against Loan</option>
                                 <option value="DailyDeposit">Daily Deposit Loan</option>
                             </select>
-                        </div>
+                        </div> --}}
 
 
                         <!--<div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">-->
@@ -126,10 +126,10 @@ $table = "yes";
                             <label for="penalInterest" class="form-label">Penalty Interest</label>
                             <input type="text" name="penaltyInterest" class="form-control formInputsReport" placeholder="Enter Penal Interest" required />
                         </div>
-                        <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
+                        {{-- <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="emiDate" class="form-label">EMI Date</label>
                             <input type="text" name="emiDate" class="form-control formInputsReport" placeholder="Enter Value" value="0" min="0" max="30" required />
-                        </div>
+                        </div> --}}
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="insType" class="form-label">Installment Type</label>
                             <select name="insType" class="select2 form-select formInputsSelectReport" id="insType">
@@ -138,20 +138,20 @@ $table = "yes";
                                 <option value="Half Yearly">Half Yearly</option>
                             </select>
                         </div>
-                        <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
+                        {{-- <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="advancementDate" class="form-label">Advancement Date</label>
                             <select name="advancementDate" class="select2 form-select formInputsSelectReport" id="advancementDate">
                                 <option value="Yes" default selected>Yes</option>
                                 <option value="No">No</option>
                             </select>
-                        </div>
-                        <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
+                        </div> --}}
+                        {{-- <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="recoveryDate" class="form-label">Recovery Date</label>
                             <select name="recoveryDate" class="select2 form-select formInputsSelectReport" id="recoveryDate">
                                 <option value="Yes" default selected>Yes</option>
                                 <option value="No">No</option>
                             </select>
-                        </div>
+                        </div> --}}
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="years" class="form-label">Year</label>
                             <input type="text" value="1" name="years" class="form-control formInputsReport" required />
@@ -227,9 +227,9 @@ $table = "yes";
             {
                 "data": "loanType"
             },
-            {
-                "data": "loantypess"
-            },
+            // {
+            //     "data": "loantypess"
+            // },
             {
                 "data": "processingFee"
             },
@@ -242,9 +242,9 @@ $table = "yes";
             {
                 "data": "penaltyInterest"
             },
-            {
-                "data": "emiDate"
-            },
+            // {
+            //     "data": "emiDate"
+            // },
             {
                 "data": "insType"
             },
@@ -267,8 +267,8 @@ $table = "yes";
                     var menu =
                         `<div style="display: flex;justify-content: space-evenly; align-items: center;"><a href="javascript:void(0);" onclick="editLoanMasterSetup('` + full.id + `','` +
                         full.memberType +
-                        `','` + full.loanType + `','` + full.loantypess + `','` + full.processingFee + `','` + full.loan_app_charges + `','` + full.interest + `','` + full.penaltyInterest + `','` + full.emiDate + `','` + full.years + `','` + full
-                        .months + `','` + full.days + `','` + full.advancementDate + `','` + full.recoveryDate + `','` + full.status + `' ,'` + full.insType + `' )"><i class="fa-solid fa-pen-to-square border-0 iconsColorCustom"></i></a>`;
+                        `','` + full.loanType + `','` + full.processingFee + `','` + full.loan_app_charges + `','` + full.interest + `','` + full.penaltyInterest + `','` + full.years + `','` + full
+                        .months + `','` + full.days + `','` + full.status + `' ,'` + full.insType + `' )"><i class="fa-solid fa-pen-to-square border-0 iconsColorCustom"></i></a>`;
                     menu += `<a onclick="deleteItem('` + full.id + `', 'deleteLoan')" href="javascript:void(0);" ><i class="fa-solid fa-trash iconsColorCustom"></i></a > </div>`;
                     return menu;
                 }
@@ -306,12 +306,12 @@ $table = "yes";
                     required: true,
                     number: true,
                 },
-                emiDate: {
-                    required: true,
-                    number: true,
-                    min: 0,
-                    max: 25
-                },
+                // emiDate: {
+                //     required: true,
+                //     number: true,
+                //     min: 0,
+                //     max: 25
+                // },
                 insType: {
                     required: true,
                 },
@@ -328,12 +328,12 @@ $table = "yes";
                     number: true,
                     // max: 29
                 },
-                advancementDate: {
-                    required: true,
-                },
-                recoveryDate: {
-                    required: true,
-                },
+                // advancementDate: {
+                //     required: true,
+                // },
+                // recoveryDate: {
+                //     required: true,
+                // },
                 status: {
                     required: true,
                 }
@@ -357,9 +357,9 @@ $table = "yes";
                 penaltyInterest: {
                     required: "Please enter value",
                 },
-                emiDate: {
-                    required: "Please enter value",
-                },
+                // emiDate: {
+                //     required: "Please enter value",
+                // },
                 insType: {
                     required: "Please enter value",
                 },
@@ -369,12 +369,12 @@ $table = "yes";
                 days: {
                     required: "Please enter value",
                 },
-                advancementDate: {
-                    required: "Please enter value",
-                },
-                recoveryDate: {
-                    required: "Please enter value",
-                },
+                // advancementDate: {
+                //     required: "Please enter value",
+                // },
+                // recoveryDate: {
+                //     required: "Please enter value",
+                // },
                 status: {
                     required: "Please enter value"
                 }
@@ -419,15 +419,15 @@ $table = "yes";
         })
     });
 
-    function editLoanMasterSetup(id, memberType, loanType, loantypess ,processingFee,loan_app_charges, interest, penaltyInterest, emiDate, years, months, days, advancementDate, recoveryDate, status, insType) {
+    function editLoanMasterSetup(id, memberType, loanType ,processingFee,loan_app_charges, interest, penaltyInterest, years, months, days, status, insType) {
         $('#basicModal').find('.msg').text("Edit Loan");
         $('#basicModal').find('input[name="id"]').val(id);
         $('#basicModal').find('select[name="memberType"]').val(memberType).trigger('change');
         $('#basicModal').find('select[name="loanType"]').val(loanType).trigger('change');
 
-        setTimeout(() => {
-            $('#basicModal').find('select[name="loantypess"]').val(loantypess).trigger('change');
-        }, 100);
+        // setTimeout(() => {
+        //     $('#basicModal').find('select[name="loantypess"]').val(loantypess).trigger('change');
+        // }, 100);
 
 
 
@@ -435,13 +435,13 @@ $table = "yes";
         $('#basicModal').find('input[name="processingFee"]').val(processingFee);
         $('#basicModal').find('input[name="interest"]').val(interest);
         $('#basicModal').find('input[name="penaltyInterest"]').val(penaltyInterest);
-        $('#basicModal').find('input[name="emiDate"]').val(emiDate);
+        // $('#basicModal').find('input[name="emiDate"]').val(emiDate);
         $('#basicModal').find('select[name="insType"]').val(insType).trigger('change');
         $('#basicModal').find('input[name="years"]').val(years);
         $('#basicModal').find('input[name="months"]').val(months);
         $('#basicModal').find('input[name="days"]').val(days);
-        $('#basicModal').find('select[name="advancementDate"]').val(advancementDate).trigger('change');
-        $('#basicModal').find('select[name="recoveryDate"]').val(recoveryDate).trigger('change');
+        // $('#basicModal').find('select[name="advancementDate"]').val(advancementDate).trigger('change');
+        // $('#basicModal').find('select[name="recoveryDate"]').val(recoveryDate).trigger('change');
         $('#basicModal').find('select[name="status"]').val(status).trigger('change');
         $('#basicModal').modal('show');
     }

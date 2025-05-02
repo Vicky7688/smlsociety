@@ -355,10 +355,10 @@ class SavingController extends Controller
         $account_no = $post->account_no;
         $memberType = $post->memberType;
         if (! empty($account_no)) {
-            $account_nos = DB::table('opening_accounts')
+            $account_nos = DB::table('member_accounts')
                 ->where('accountNo', 'LIKE', $account_no.'%')
                 ->where('membertype', '=', $memberType)
-                ->where('accountname', '=', 'Saving')
+                // ->where('accountname', '=', 'Saving')
                 ->where('status', '=', 'Active')
                 ->get();
             if ($account_nos) {
@@ -373,33 +373,42 @@ class SavingController extends Controller
     public function GetSavingDetails(Request $post)
     {
 
-
         $transactionType = $post->transactionType;
         //_________Checked Account in Opening Account Table
         $account_no = $post->selectdId;
         $memberType = $post->memberType;
-        $saving_account = DB::table('opening_accounts')
+        $saving_account = DB::table('member_accounts')
             ->select(
-                'opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name as customer_name','member_accounts.memberType as type'
+                'member_accounts.accountNo as membership', 'member_accounts.name as customer_name','member_accounts.memberType as type','member_accounts.saving'
                 )
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
-            ->where('opening_accounts.accountNo','=',$account_no)
-            ->where('opening_accounts.membertype','=',$memberType)
-            ->where('member_accounts.memberType','=',$memberType)
-            ->where('opening_accounts.accountname', '=', 'Saving')
-            ->where('opening_accounts.status', '=', 'Active')
-            ->first();
+            // ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
+            ->where('member_accounts.accountNo','=',$account_no)
+            // ->where('opening_accounts.membertype','=',$memberType)
 
+            ->where('member_accounts.memberType','=',$memberType)
+
+            // ->where('opening_accounts.accountname', '=', 'Saving')
+            // ->where('opening_accounts.status', '=', 'Active')
+            ->first();
+                // dd($saving_account);
 
         //_________Get Old Balances From Member Opening Balance Table
-        $opning_balance = DB::table('member_opening_balance')
-            ->where('membership_no', '=', $saving_account->membershipno)
-            ->where('memberType', '=', $saving_account->membertype)
-            ->where('account_no', $saving_account->accountNo)
-            ->where('accType', 'Saving')
-            ->first();
+        // $opning_balance = DB::table('member_opening_balance')
+        //     ->where('membership_no', '=', $saving_account->membershipno)
+        //     ->where('memberType', '=', $saving_account->membertype)
+        //     ->where('account_no', $saving_account->accountNo)
+        //     ->where('accType', 'Saving')
+        //     ->first();
+        $op = 0;
+        if($saving_account->saving === null){
+            $op = 0;
+        }else{
+            $op = $saving_account->saving;
+        }
 
+        $opning_balance = $op;
 
+        // dd($saving_account);
         //_______Get Login Financial Year
         $session_master = SessionMaster::find(Session::get('sessionId'));
 
@@ -407,8 +416,8 @@ class SavingController extends Controller
 
             //__________Get Pervious Year Closing Balance From Member Saving Table
             $previous_balance = DB::table('member_savings')
-                ->where('accountId', $saving_account->accountNo)
-                ->where('memberType', '=', $saving_account->membertype)
+                ->where('accountId', $saving_account->membership)
+                ->where('memberType', '=', $saving_account->type)
                 ->whereDate('transactionDate', '<', $session_master->startDate)
                 ->get();
 
@@ -417,15 +426,15 @@ class SavingController extends Controller
             $saving_entries = DB::table('member_savings')
                 ->select('member_savings.*', 'users.id as userid', 'users.name as username')
                 ->leftJoin('users', 'users.id', 'member_savings.updatedBy')
-                ->where('member_savings.accountId', $saving_account->accountNo)
-                ->where('member_savings.memberType', $saving_account->membertype)
-                ->where('member_savings.accountNo', $saving_account->membershipno)
+                ->where('member_savings.accountId', $saving_account->membership)
+                ->where('member_savings.memberType', $saving_account->type)
+                // ->where('member_savings.accountNo', $saving_account->membership)
                 ->whereDate('member_savings.transactionDate', '>=', $session_master->startDate)
                 ->whereDate('member_savings.transactionDate', '<=', $session_master->endDate)
                 ->orderBy('transactionDate', 'ASC')
                 ->get();
 
-
+            // dd($saving_entries);
             //______Get Opening Amount
             if ($opning_balance) {
                 $previous_balance = collect($previous_balance);
@@ -436,70 +445,70 @@ class SavingController extends Controller
             }
 
             //_______________Get Fd Account
-            $fdAccounts = DB::table('opening_accounts')
-                ->select(
-                    'opening_accounts.*',
-                    'member_accounts.accountNo as membership',
-                    'member_accounts.name as customer_name',
-                    'scheme_masters.id as sch_id',
-                    'scheme_masters.name',
-                    'scheme_masters.scheme_code',
-                    'scheme_masters.lockin_days',
-                    'scheme_masters.days',
-                    'scheme_masters.months',
-                    'scheme_masters.years',
-                    'scheme_masters.interest'
-                )
-                ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
-                ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'opening_accounts.schemetype')
-                ->where('opening_accounts.membershipno', $saving_account->membership)
-                ->where('opening_accounts.membertype', $saving_account->membertype)
-                ->where('opening_accounts.accountname', '=', 'FD')
-                ->where('opening_accounts.status', '=', 'Active')
-                ->get();
+            // $fdAccounts = DB::table('opening_accounts')
+            //     ->select(
+            //         'opening_accounts.*',
+            //         'member_accounts.accountNo as membership',
+            //         'member_accounts.name as customer_name',
+            //         'scheme_masters.id as sch_id',
+            //         'scheme_masters.name',
+            //         'scheme_masters.scheme_code',
+            //         'scheme_masters.lockin_days',
+            //         'scheme_masters.days',
+            //         'scheme_masters.months',
+            //         'scheme_masters.years',
+            //         'scheme_masters.interest'
+            //     )
+            //     ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
+            //     ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'opening_accounts.schemetype')
+            //     ->where('opening_accounts.membershipno', $saving_account->membership)
+            //     ->where('opening_accounts.membertype', $saving_account->type)
+            //     ->where('opening_accounts.accountname', '=', 'FD')
+            //     ->where('opening_accounts.status', '=', 'Active')
+            //     ->get();
 
-            $filteredAccounts = [];
+            // $filteredAccounts = [];
 
-            foreach ($fdAccounts as $fd) {
-                $existingAccount = DB::table('member_fds_scheme')
-                    ->where('membershipno', $fd->membershipno)
-                    ->where('accountNo', $fd->accountNo)
-                    ->exists();
+            // foreach ($fdAccounts as $fd) {
+            //     $existingAccount = DB::table('member_fds_scheme')
+            //         ->where('membershipno', $fd->membershipno)
+            //         ->where('accountNo', $fd->accountNo)
+            //         ->exists();
 
-                if (! $existingAccount) {
-                    $filteredAccounts[] = $fd;
-                }
-            }
+            //     if (! $existingAccount) {
+            //         $filteredAccounts[] = $fd;
+            //     }
+            // }
 
-            //_______________Get Rd Account
-            $rd_account = DB::table('re_curring_rds')
-                ->select(
-                    're_curring_rds.*',
-                    'member_accounts.accountNo as membership',
-                    'member_accounts.name as customer_name',
-                    'scheme_masters.id as sch_id',
-                    'scheme_masters.name',
-                    'scheme_masters.scheme_code',
-                    'scheme_masters.lockin_days',
-                    'scheme_masters.days',
-                    'scheme_masters.months',
-                    'scheme_masters.years',
-                    'scheme_masters.interest'
-                )
-                ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                ->where('re_curring_rds.accountNo', $saving_account->membership)
-                ->where('re_curring_rds.status', '=', 'Active')
-                ->get();
+            // //_______________Get Rd Account
+            // $rd_account = DB::table('re_curring_rds')
+            //     ->select(
+            //         're_curring_rds.*',
+            //         'member_accounts.accountNo as membership',
+            //         'member_accounts.name as customer_name',
+            //         'scheme_masters.id as sch_id',
+            //         'scheme_masters.name',
+            //         'scheme_masters.scheme_code',
+            //         'scheme_masters.lockin_days',
+            //         'scheme_masters.days',
+            //         'scheme_masters.months',
+            //         'scheme_masters.years',
+            //         'scheme_masters.interest'
+            //     )
+            //     ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+            //     ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 're_curring_rds.secheme_id')
+            //     ->where('re_curring_rds.accountNo', $saving_account->membership)
+            //     ->where('re_curring_rds.status', '=', 'Active')
+            //     ->get();
 
-            if ($previous_balance || $saving_entries || $opening_amount || $filteredAccounts || $rd_account) {
+            if ($previous_balance || $saving_entries || $opening_amount) {
                 return response()->json([
                     'status' => 'success',
                     'saving_account' => $saving_account,
                     'opening_amount' => $opening_amount,
                     'saving_entries' => $saving_entries,
-                    'rd_account' => $rd_account,
-                    'fd' => $filteredAccounts,
+                    // 'rd_account' => $rd_account,
+                    // 'fd' => $filteredAccounts,
 
                 ]);
             } else {
@@ -510,24 +519,30 @@ class SavingController extends Controller
         }
     }
 
-    public function checkpaymentbalance($account_no, $date, $amounts)
+    public function checkpaymentbalance($account_no, $date, $amounts,$memberType)
     {
-        $saving_account = DB::table('opening_accounts')
-            ->select('opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name as customer_name')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
-            ->where('opening_accounts.accountNo', $account_no)
-            ->where('opening_accounts.accountname', '=', 'Saving')
-            ->where('opening_accounts.status', '=', 'Active')
+        // $saving_account = DB::table('opening_accounts')
+        //     ->select('opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name as customer_name')
+        //     ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
+        //     ->where('opening_accounts.accountNo', $account_no)
+        //     ->where('opening_accounts.accountname', '=', 'Saving')
+        //     ->where('opening_accounts.status', '=', 'Active')
+        //     ->first();
+
+        $saving_account = DB::table('member_accounts')
+            ->where('accountNo', $account_no)
+            ->where('memberType', $memberType)
             ->first();
 
 
         //_________Get Old Balances From Member Opening Balance Table
-        $opning_balance = DB::table('member_opening_balance')
-            ->where('membership_no', '=', $saving_account->membershipno)
-            ->where('account_no', $saving_account->accountNo)
-            ->where('accType', 'Saving')
-            ->first();
+        // $opning_balance = DB::table('member_opening_balance')
+        //     ->where('membership_no', '=', $saving_account->membershipno)
+        //     ->where('account_no', $saving_account->accountNo)
+        //     ->where('accType', 'Saving')
+        //     ->first();
 
+        $opning_balance = $saving_account->saving;
 
         //_______Get Login Financial Year
         $session_master = SessionMaster::find(Session::get('sessionId'));
@@ -546,7 +561,7 @@ class SavingController extends Controller
                 ->select('member_savings.*', 'users.id as userid', 'users.name as username')
                 ->leftJoin('users', 'users.id', 'member_savings.updatedBy')
                 ->where('member_savings.accountId', $saving_account->accountNo)
-                ->where('member_savings.accountNo', $saving_account->membershipno)
+                ->where('member_savings.accountNo', $saving_account->accountNo)
                 // ->whereDate('member_savings.transactionDate', '>=', $session_master->startDate)
                 ->whereDate('member_savings.transactionDate', '<=', $session_master->endDate)
                 ->orderBy('transactionDate', 'ASC')
@@ -578,6 +593,7 @@ class SavingController extends Controller
     //_______Entry In Saving Account
     public function SavingEntryInsert(Request $post)
     {
+        // dd($post->all());
         $transactionType = $post->transactionType;
 
         if ($transactionType === 'Deposit' || $transactionType === 'Withdraw') {
@@ -655,43 +671,44 @@ class SavingController extends Controller
         $account_no = $post->accountNo;
         $member_ship = $post->membership;
 
-        //__________Get Account Scheme and Scheme Group Code and Ledger Code
-        $account_opening = DB::table('opening_accounts')
-            ->select(
-                'opening_accounts.*',
-                'schmeaster.id as sch_id',
-                'schmeaster.scheme_code',
-                'ledger_masters.reference_id',
-                'ledger_masters.ledgerCode',
-                'ledger_masters.groupCode',
-                'refSchemeMaster.scheme_code as ref_scheme_code'
-            )
-            ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-            ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-            ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-            ->where('opening_accounts.accountNo', $account_no)
-            ->where('opening_accounts.memberType',$post->memberType)
-            ->where('opening_accounts.accountname', 'Saving')
-            ->where('opening_accounts.membershipno', $member_ship)
-            // ->where
-            ->first();
+        // //__________Get Account Scheme and Scheme Group Code and Ledger Code
+        // $account_opening = DB::table('opening_accounts')
+        //     ->select(
+        //         'opening_accounts.*',
+        //         'schmeaster.id as sch_id',
+        //         'schmeaster.scheme_code',
+        //         'ledger_masters.reference_id',
+        //         'ledger_masters.ledgerCode',
+        //         'ledger_masters.groupCode',
+        //         'refSchemeMaster.scheme_code as ref_scheme_code'
+        //     )
+        //     ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+        //     ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+        //     ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+        //     ->where('opening_accounts.accountNo', $account_no)
+        //     ->where('opening_accounts.memberType',$post->memberType)
+        //     ->where('opening_accounts.accountname', 'Saving')
+        //     ->where('opening_accounts.membershipno', $member_ship)
+        //     // ->where
+        //     ->first();
 
-        if ($account_opening) {
-            if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                $saving_group = $account_opening->groupCode;
-                $saving_ledger = $account_opening->ledgerCode;
-            } else {
-                return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-            }
-        } else {
-            return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
-        }
+        // if ($account_opening) {
+        //     if ($account_opening->groupCode && $account_opening->ledgerCode) {
+        //         $saving_group = $account_opening->groupCode;
+        //         $saving_ledger = $account_opening->ledgerCode;
+        //     } else {
+        //         return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+        //     }
+        // } else {
+        //     return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+        // }
 
         // //_______Date Format Convert
         $transactionDate = $date;
 
         //________Get Account Open Date
-        $member = DB::table('opening_accounts')->where(['memberType' => $post->memberType, 'accountNo' => $post->accountNo, 'membershipno' => $member_ship])->first();
+        $member = DB::table('member_accounts')->where(['memberType' => $post->memberType, 'accountNo' => $post->accountNo,])->first();
+        // dd($member);
 
         //_________Check if member account exist or not
         if (empty($member)) {
@@ -699,7 +716,7 @@ class SavingController extends Controller
         }
 
         //__________Check account opening date not less then
-        if ($transactionDate < $member->transactionDate) {
+        if ($transactionDate < $member->openingDate) {
             return response()->json(['status' => 'fail', 'errors' => $validator->errors(), 'messages' => 'Transaction date can not be less than account opening date']);
         }
 
@@ -716,13 +733,13 @@ class SavingController extends Controller
                 try {
                     //___________Entry in Member Saving Table
                     $saving_deposit = new MemberSaving;
-                    $saving_deposit->secheme_id = $account_opening->sch_id;
+                    // $saving_deposit->secheme_id = $account_opening->sch_id;
                     $saving_deposit->serialNo = $serialNo;
                     $saving_deposit->accountId = $account_no;
-                    $saving_deposit->accountNo = $post->membership;
+                    $saving_deposit->accountNo = $member->accountNo;
                     $saving_deposit->memberType = $post->memberType;
-                    $saving_deposit->groupCode = $saving_group;
-                    $saving_deposit->ledgerCode = $saving_ledger;
+                    $saving_deposit->groupCode = 'SAVM001';
+                    $saving_deposit->ledgerCode = 'MEM01';
                     $saving_deposit->savingNo = '';
                     $saving_deposit->transactionDate = $transactionDate;
                     $saving_deposit->transactionType = 'Deposit';
@@ -744,7 +761,7 @@ class SavingController extends Controller
                     $gerenal_ledger = new GeneralLedger;
                     $gerenal_ledger->serialNo = $serialNo;
                     $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
+                    $gerenal_ledger->accountNo = $member->accountNo;
                     $gerenal_ledger->memberType = $post->memberType;
                     $gerenal_ledger->formName = 'Saving';
                     $gerenal_ledger->referenceNo = $saving_id;
@@ -753,8 +770,8 @@ class SavingController extends Controller
                     $gerenal_ledger->transactionType = 'Cr';
                     $gerenal_ledger->transactionAmount = $post->transactionAmount;
                     $gerenal_ledger->narration = $post->narration;
-                    $gerenal_ledger->groupCode = $account_opening->groupCode;
-                    $gerenal_ledger->ledgerCode = $account_opening->ledgerCode;
+                    $gerenal_ledger->groupCode = 'SAVM001';
+                    $gerenal_ledger->ledgerCode = 'MEM01';
                     $gerenal_ledger->branchId = session('branchId') ?: 1;
                     $gerenal_ledger->sessionId = session('sessionId') ?: 1;
                     $gerenal_ledger->agentId = 1;
@@ -764,7 +781,7 @@ class SavingController extends Controller
                     $gerenal_ledger = new GeneralLedger;
                     $gerenal_ledger->serialNo = $serialNo;
                     $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
+                    $gerenal_ledger->accountNo = $member->accountNo;
                     $gerenal_ledger->memberType = $post->memberType;
                     $gerenal_ledger->formName = 'Saving';
                     $gerenal_ledger->referenceNo = $saving_id;
@@ -796,6 +813,7 @@ class SavingController extends Controller
                         'status' => 'Fail',
                         'messages' => 'Some Technical Issue',
                         'error' => $e->getMessage(),
+                        'line' => $e->getLine()
                     ]);
                 }
                 break;
@@ -803,7 +821,7 @@ class SavingController extends Controller
                 DB::beginTransaction();
                 try {
 
-                    $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts);
+                    $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts,$post->memberType);
 
                     if ($checkpaymentbalance) {
                         return response()->json(['status' => 'fail', 'messages' => 'Check Your Balance Accoding Date']);
@@ -811,13 +829,13 @@ class SavingController extends Controller
 
                     //___________Entry in Member Saving Table
                     $saving_withdraw = new MemberSaving;
-                    $saving_withdraw->secheme_id = $account_opening->sch_id;
+                    // $saving_withdraw->secheme_id = $account_opening->sch_id;
                     $saving_withdraw->serialNo = $serialNo;
                     $saving_withdraw->accountId = $account_no;
-                    $saving_withdraw->accountNo = $post->membership;
+                    $saving_withdraw->accountNo = $member->accountNo;
                     $saving_withdraw->memberType = $post->memberType;
-                    $saving_withdraw->groupCode = $account_opening->groupCode;
-                    $saving_withdraw->ledgerCode = $account_opening->ledgerCode;
+                    $saving_withdraw->groupCode = 'SAVM001';
+                    $saving_withdraw->ledgerCode = 'MEM01';
                     $saving_withdraw->savingNo = '';
                     $saving_withdraw->transactionDate = $transactionDate;
                     $saving_withdraw->transactionType = 'Withdraw';
@@ -839,7 +857,7 @@ class SavingController extends Controller
                     $gerenal_ledger = new GeneralLedger;
                     $gerenal_ledger->serialNo = $serialNo;
                     $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
+                    $gerenal_ledger->accountNo = $member->accountNo;
                     $gerenal_ledger->memberType = $post->memberType;
                     $gerenal_ledger->formName = 'Saving';
                     $gerenal_ledger->referenceNo = $saving_id;
@@ -848,8 +866,8 @@ class SavingController extends Controller
                     $gerenal_ledger->transactionType = 'Dr';
                     $gerenal_ledger->transactionAmount = $amounts;
                     $gerenal_ledger->narration = $post->narration;
-                    $gerenal_ledger->groupCode = $account_opening->groupCode;
-                    $gerenal_ledger->ledgerCode = $account_opening->ledgerCode;
+                    $gerenal_ledger->groupCode = 'SAVM001';
+                    $gerenal_ledger->ledgerCode = 'MEM01';
                     $gerenal_ledger->branchId = session('branchId') ?: 1;
                     $gerenal_ledger->sessionId = session('sessionId') ?: 1;
                     $gerenal_ledger->agentId = 1;
@@ -859,7 +877,7 @@ class SavingController extends Controller
                     $gerenal_ledger = new GeneralLedger;
                     $gerenal_ledger->serialNo = $serialNo;
                     $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
+                    $gerenal_ledger->accountNo = $member->accountNo;
                     $gerenal_ledger->memberType = $post->memberType;
                     $gerenal_ledger->formName = 'Saving';
                     $gerenal_ledger->referenceNo = $saving_id;
@@ -886,451 +904,10 @@ class SavingController extends Controller
                 } catch (\Exception $e) {
                     DB::rollBack();
 
-                    return response()->json(['status' => 'Fail', 'messages' => 'Some Technical Issue', 'error' => $e->getMessage()]);
+                    return response()->json(['status' => 'Fail', 'messages' => 'Some Technical Issue', 'error' => $e->getMessage(),'line' => $e->getLine()]);
                 }
                 break;
 
-            case 'toshare':
-                DB::beginTransaction();
-                try {
-
-                    $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts);
-
-                    if ($checkpaymentbalance) {
-                        return response()->json(['status' => 'fail', 'messages' => 'Check Your Balance Accoding Date']);
-                    }
-
-                    //___________Entry in Member Saving Table
-                    $saving_withdraw = new MemberSaving;
-                    $saving_withdraw->secheme_id = $account_opening->sch_id;
-                    $saving_withdraw->serialNo = $serialNo;
-                    $saving_withdraw->accountId = $account_no;
-                    $saving_withdraw->accountNo = $post->membership;
-                    $saving_withdraw->memberType = $post->memberType;
-                    $saving_withdraw->groupCode = $account_opening->groupCode;
-                    $saving_withdraw->ledgerCode = $account_opening->ledgerCode;
-                    $saving_withdraw->savingNo = '';
-                    $saving_withdraw->transactionDate = $transactionDate;
-                    $saving_withdraw->transactionType = 'toshare';
-                    $saving_withdraw->depositAmount = 0;
-                    $saving_withdraw->withdrawAmount = $amounts;
-                    $saving_withdraw->paymentType = '';
-                    $saving_withdraw->bank = '';
-                    $saving_withdraw->chequeNo = 'trfdShare';
-                    $saving_withdraw->narration = 'Saving A/c- '.$post->membership.' Trfd Share' ? 'Saving A/c-'.$post->membership.'Trfd Share' : $post->narration;
-                    $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
-                    $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $saving_withdraw->agentId = $post->agentId;
-                    $saving_withdraw->updatedBy = $post->user()->id;
-                    $saving_withdraw->is_delete = 'No';
-                    $saving_withdraw->save();
-
-                    //________Get Saving Account Id
-                    $saving_id = $saving_withdraw->id;
-
-                    //___________Entry in Member Share Table
-                    $saving_trfd_share = new MemberShare;
-                    $saving_trfd_share->serialNo = $serialNo;
-                    $saving_trfd_share->accountId = $account_no;
-                    $saving_trfd_share->accountNo = $post->membership;
-                    $saving_trfd_share->memberType = $post->memberType;
-                    $saving_trfd_share->groupCode = 'SHAM001';
-                    $saving_trfd_share->ledgerCode = 'SHAM001';
-                    $saving_trfd_share->shareNo = '';
-                    $saving_trfd_share->transactionDate = $transactionDate;
-                    $saving_trfd_share->transactionType = 'Deposit';
-                    $saving_trfd_share->depositAmount = $amounts;
-                    $saving_trfd_share->withdrawAmount = 0;
-                    $saving_trfd_share->dividendAmount = 0;
-                    $saving_trfd_share->chequeNo = 'trfdShare';
-                    $saving_trfd_share->narration = 'Saving A/c- '.$post->membership.' Trfd Share' ? 'Saving A/c-'.$post->membership.'Trfd Share' : $post->narration;
-                    $saving_trfd_share->branchId = session('branchId') ? session('branchId') : 1;
-                    $saving_trfd_share->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $saving_trfd_share->agentId = $post->agentId;
-                    $saving_trfd_share->updatedBy = $post->user()->id;
-                    $saving_trfd_share->txnType = 'transfer';
-                    $saving_trfd_share->is_delete = 'No';
-                    $saving_trfd_share->save();
-
-                    //________________________________________General Ledger Entry_________________________
-
-                    //________Saving Entry
-                    $gerenal_ledger = new GeneralLedger;
-                    $gerenal_ledger->serialNo = $serialNo;
-                    $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
-                    $gerenal_ledger->memberType = $post->memberType;
-                    $gerenal_ledger->groupCode = $account_opening->groupCode;
-                    $gerenal_ledger->ledgerCode = $account_opening->ledgerCode;
-                    $gerenal_ledger->formName = 'trfdShare';
-                    $gerenal_ledger->referenceNo = $saving_id;
-                    $gerenal_ledger->entryMode = 'Manual';
-                    $gerenal_ledger->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
-                    $gerenal_ledger->transactionType = 'Dr';
-                    $gerenal_ledger->transactionAmount = $amounts;
-                    $gerenal_ledger->narration = 'Saving A/c- '.$post->membership.' Trfd Share' ? 'Saving A/c-'.$post->membership.'Trfd Share' : $post->narration;
-                    $gerenal_ledger->branchId = session('branchId') ?: 1;
-                    $gerenal_ledger->sessionId = session('sessionId') ?: 1;
-                    $gerenal_ledger->agentId = $post->agentId;
-                    $gerenal_ledger->updatedBy = $post->user()->id;
-                    $saving_trfd_share->is_delete = 'No';
-                    $gerenal_ledger->save();
-
-                    //________Share Entry
-                    $gerenal_ledger = new GeneralLedger;
-                    $gerenal_ledger->serialNo = $serialNo;
-                    $gerenal_ledger->accountId = $account_no;
-                    $gerenal_ledger->accountNo = $post->membership;
-                    $gerenal_ledger->memberType = $post->memberType;
-                    $gerenal_ledger->groupCode = 'SHAM001';
-                    $gerenal_ledger->ledgerCode = 'SHAM001';
-                    $gerenal_ledger->formName = 'trfdShare';
-                    $gerenal_ledger->referenceNo = $saving_id;
-                    $gerenal_ledger->entryMode = 'Manual';
-                    $gerenal_ledger->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
-                    $gerenal_ledger->transactionType = 'Cr';
-                    $gerenal_ledger->transactionAmount = $amounts;
-                    $gerenal_ledger->narration = 'Saving A/c- '.$post->membership.' Trfd Share' ? 'Saving A/c-'.$post->membership.'Trfd Share' : $post->narration;
-                    $gerenal_ledger->branchId = session('branchId') ?: 1;
-                    $gerenal_ledger->sessionId = session('sessionId') ?: 1;
-                    $gerenal_ledger->agentId = $post->agentId;
-                    $gerenal_ledger->updatedBy = $post->user()->id;
-                    $saving_trfd_share->is_delete = 'No';
-                    $gerenal_ledger->save();
-
-                    DB::commit();
-
-                    //_________Checked Account in Opening Account Table
-                    $account_no = $post->accountNo;
-                    $type = $post->memberType;
-
-                    return $this->showDataTable($account_no,$type);
-                } catch (\Exception $e) {
-                    DB::rollBack();
-
-                    return response()->json(['status' => 'Fail', 'messages' => 'Some Technical Issue', 'error' => $e->getMessage()]);
-                }
-                break;
-
-            case 'dividend':
-                DB::beginTransaction();
-                try {
-                    $serialNo = 'saving'.time();
-
-                    $member = MemberAccount::where(['memberType' => $post->memberType, 'accountNo' => $post->membership])->first();
-
-                    $sesession_year = SessionMaster::where('startDate', '<=', $transactionDate)
-                        ->where('endDate', '>=', $transactionDate)
-                        ->first();
-                    if ($sesession_year) {
-                        $openingBal = DB::table('opening_account_details')->where('AccountNumber', $post->membership)->where('TransferReason', '!=', 'Deleted')->first();
-                        $shareBal = $openingBal->Sharee ?? 0;
-                        $credit = MemberShare::where('accountNo', $post->membership)->where('is_delete', 'No')->where('transactionType', 'Deposit')->whereDate('transactionDate', '<=', $sesession_year->endDate)->sum('depositAmount');
-                        $debit = MemberShare::where('accountNo', $post->membership)->where('is_delete', 'No')->where('transactionType', 'Withdraw')->whereDate('transactionDate', '<=', $sesession_year->endDate)->sum('withdrawAmount');
-                        $totalamount = $shareBal + $credit - $debit;
-                    } else {
-                        $totalamount = 0;
-                    }
-
-                    $upkro = new divident;
-                    $upkro->serialNo = $serialNo;
-                    $upkro->accountno = $post->membership;
-                    $upkro->amount = $totalamount;
-                    $upkro->session_year = $sesession_year->id;
-                    $upkro->paid_date = $transactionDate;
-                    $upkro->div_amount = $post->transactionAmount;
-                    $upkro->save();
-
-                    $saving = new MemberSaving;
-                    $saving->serialNo = $serialNo;
-                    $saving->accountId = $member->id;
-                    $saving->accountNo = $post->membership;
-                    $saving->accountId = $post->accountNoo;
-                    $saving->transactionDate = $transactionDate;
-                    $saving->transactionType = 'Deposit';
-                    $saving->memberType = $post->memberType;
-                    $saving->depositAmount = $post->transactionAmount;
-                    $saving->withdrawAmount = 0;
-                    $saving->paymentType = 'Transfer';
-                    $saving->narration = $post->narration;
-                    $saving->groupCode = 'SAVM001';
-                    $saving->ledgerCode = 'SAVM001';
-                    $saving->branchId = session('branchId') ? session('branchId') : 1;
-                    $saving->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $saving->agentId = 1;
-                    $saving->updatedBy = $post->user()->id;
-                    $saving->save();
-
-                    $savingId = $saving->id;
-
-                    $ledger = new GeneralLedger;
-                    $ledger->serialNo = $serialNo;
-                    $ledger->accountId = $member->id;
-                    $ledger->accountNo = $post->membership;
-                    $ledger->memberType = $post->memberType;
-                    $ledger->formName = 'Saving';
-                    $ledger->referenceNo = $savingId;
-                    $ledger->entryMode = 'Manual';
-                    $ledger->transactionDate = $transactionDate;
-                    $ledger->transactionType = 'Dr';
-                    $ledger->transactionAmount = $post->transactionAmount;
-                    $ledger->narration = $post->narration;
-                    $ledger->groupCode = 'UDP0001';
-                    $ledger->ledgerCode = 'UDPL00001';
-                    $ledger->branchId = session('branchId') ? session('branchId') : 1;
-                    $ledger->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $ledger->agentId = 1;
-                    $ledger->updatedBy = $post->user()->id;
-                    $ledger->save();
-
-                    $ledger = new GeneralLedger;
-                    $ledger->serialNo = $serialNo;
-                    $ledger->accountId = $member->id;
-                    $ledger->accountNo = $post->membership;
-                    $ledger->memberType = $post->memberType;
-                    $ledger->formName = 'Saving';
-                    $ledger->referenceNo = $savingId;
-                    $ledger->entryMode = 'Manual';
-                    $ledger->transactionDate = $transactionDate;
-                    $ledger->transactionType = 'Cr';
-                    $ledger->transactionAmount = $post->transactionAmount;
-                    $ledger->narration = $post->narration;
-                    $ledger->groupCode = 'SAVM001';
-                    $ledger->ledgerCode = 'SAVM001';
-                    $ledger->branchId = session('branchId') ? session('branchId') : 1;
-                    $ledger->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $ledger->agentId = 1;
-                    $ledger->updatedBy = $post->user()->id;
-                    $ledger->save();
-
-                    DB::commit();
-
-                    return response()->json([
-                        'status' => true,
-                        'messages' => 'Record Inserted successfully',
-                    ]);
-                } catch (\Exception $e) {
-                    DB::rollback();
-
-                    return response()->json([
-                        'status' => false,
-                        'messages' => 'Transaction Failed',
-                        'errors' => $e->getMessage(),
-                    ]);
-                }
-                break;
-
-            case 'tord':
-
-                $account = $post->rd_account_no;
-                $rd_account = DB::table('re_curring_rds')
-                    ->select('re_curring_rds.*', 'scheme_masters.id as sch_id', 'ledger_masters.reference_id')
-                    ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->leftJoin('ledger_masters', 'ledger_masters.reference_id', '=', 'scheme_masters.id')
-                    ->where('accountId', $account)
-                    ->first();
-
-                if ($rd_account) {
-                    //______check Scheme Id
-                    if ($rd_account->secheme_id) {
-                        $saving_scheme_id = $rd_account->secheme_id;
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Saving Scheme Id Not Found'], 400);
-                    }
-
-                    //___________Check Account Group Or Ledger Code
-                    if ($rd_account->groupCode && $rd_account->ledgerCode) {
-                        $account_group_code = $rd_account->groupCode;
-                        $account_ledger_code = $rd_account->ledgerCode;
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Group Code And Ledger Code Not Found'], 400);
-                    }
-                } else {
-                    return response()->json(['status' => 'fail', 'messages' => 'Rd Account Not Found'], 400);
-                }
-
-                $installmentdate = date('Y-m-d', strtotime($post->transactionDate));
-                $result = $this->isDateBetween(date('Y-m-d', strtotime($post->transactionDate)));
-                if (! $result) {
-                    return response()->json(['statuscode' => 'ERR', 'status' => 'fail', 'messages' => 'Please Check your session']);
-                }
-
-                $installments = RdInstallment::where(['rd_id' => $rd_account->id])->orderBy('id', 'desc')->first();
-                $paid_amount = RdInstallment::where(['rd_id' => $rd_account->id])->sum('paid_amount');
-
-                $deposit_amount = $amounts;
-                $monthly_installment_amount = $installments->amount;
-                $no_of_installments = $installments->intallment_no;
-                $total_amount = $monthly_installment_amount * $no_of_installments;
-                $balance_amount = $total_amount - $paid_amount;
-
-                if (($deposit_amount % $monthly_installment_amount) != 0) {
-                    return response()->json(['status' => 'fail', 'messages' => 'Amount should be multiple of '.$monthly_installment_amount]);
-                }
-
-                $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts);
-
-                if ($checkpaymentbalance) {
-                    return response()->json(['status' => 'fail', 'messages' => 'Check Your Balance Accoding Date']);
-                }
-
-                if ($deposit_amount <= $balance_amount || $balance_amount == 0) {
-                    $monthsToPay = $deposit_amount / $monthly_installment_amount;
-
-                    if ($monthsToPay <= 0) {
-                        return response()->json(['status' => 'fail', 'messages' => 'Not possible to pay off the debt with the given monthly payment.']);
-                    } elseif ($monthsToPay > $no_of_installments) {
-                        return response()->json(['status' => 'fail', 'messages' => 'Amount is not perfect for '.$no_of_installments.' Month']);
-                    } else {
-                        $paymentSuccess = false;
-                        $penaltyApplied = false;
-                        $rd_ids_details = ReCurringRd::where(['accountId' => $account])->first();
-
-                        do {
-                            $generalLedgers = 'savingrd'.time();
-                        } while (GeneralLedger::where('serialNo', '=', $generalLedgers)->first() instanceof GeneralLedger);
-
-                        DB::beginTransaction();
-                        try {
-
-                            //___________Entry in Member Saving Table
-                            $saving_trfd_rd = new MemberSaving;
-                            $saving_trfd_rd->secheme_id = $saving_scheme_id;
-                            $saving_trfd_rd->serialNo = $generalLedgers;
-                            $saving_trfd_rd->accountId = $account_opening->accountNo;
-                            $saving_trfd_rd->accountNo = $post->membership;
-                            $saving_trfd_rd->memberType = $post->memberType;
-                            $saving_trfd_rd->groupCode = $saving_group;
-                            $saving_trfd_rd->ledgerCode = $saving_ledger;
-                            $saving_trfd_rd->savingNo = '';
-                            $saving_trfd_rd->transactionDate = $transactionDate;
-                            $saving_trfd_rd->transactionType = 'tord';
-                            $saving_trfd_rd->depositAmount = 0;
-                            $saving_trfd_rd->withdrawAmount = $amounts;
-                            $saving_trfd_rd->paymentType = '';
-                            $saving_trfd_rd->bank = '';
-                            $saving_trfd_rd->chequeNo = 'trfdtoRd';
-                            $saving_trfd_rd->narration = 'Trfd RD A/c -'.$post->rd_account_no ? 'Trfd RD A/c -'.$post->rd_account_no : $post->narration;
-                            $saving_trfd_rd->branchId = session('branchId') ? session('branchId') : 1;
-                            $saving_trfd_rd->sessionId = session('sessionId') ? session('sessionId') : 1;
-                            $saving_trfd_rd->agentId = $post->agentId;
-                            $saving_trfd_rd->updatedBy = $post->user()->id;
-                            $saving_trfd_rd->is_delete = 'No';
-                            $saving_trfd_rd->save();
-
-                            $saving_id = $saving_trfd_rd->id;
-
-                            //_______________RD Receipt
-                            $lastInsertedId = DB::table('rd_receiptdetails')->insertGetId([
-                                'rc_account_no' => $rd_ids_details->id,
-                                'rd_account_no' => $rd_ids_details->accountId,
-                                'amount' => $amounts,
-                                'serialNo' => $generalLedgers,
-                                'payment_date' => $installmentdate,
-                                'installment_date' => $installmentdate,
-                                'groupCode' => $account_group_code,
-                                'ledgerCode' => $account_ledger_code,
-                                'memberType' => $rd_ids_details->memberType,
-                                'panelty' => 0,
-                                'mis_id' => '',
-                                'narration' => 'Trfd Saving A/c -'.$account_opening->accountNo ? 'Trfd Saving A/c -'.$account_opening->accountNo : $post->narration,
-                                'entry_mode' => 'manual',
-                                'status' => 'trfdfromsaving',
-                                'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                'agentid' => $post->agentId,
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            //__________Rd Installment
-                            for ($i = 1; $i <= $monthsToPay; $i++) {
-                                $distributedPayment = min($monthly_installment_amount, $deposit_amount);
-                                $deposit_amount -= $distributedPayment;
-                                $query = RdInstallment::where(['rd_id' => $rd_account->id, 'payment_status' => 'pending'])->first();
-
-                                if ($query && $query->payment_status == 'pending') {
-                                    $query->payment_date = $installmentdate;
-                                    if (! $penaltyApplied) {
-                                        $query->panelty = empty($request->deposit_penalty) ? 0 : $post->deposit_penalty;
-                                        $penaltyApplied = true;
-                                    }
-                                    $query->paid_amount = $distributedPayment;
-                                    $query->panelty = 0;
-                                    $query->recpt_id = $saving_id;
-                                    $query->payment_status = 'paid';
-                                    $query->serialNo = $generalLedgers;
-                                    $query->save();
-                                    $paymentSuccess = true;
-                                }
-                            }
-
-                            //__________________________Gerenal Ledger Rd Entry_____________________
-
-                            //___________RD Amount Entry
-                            $genral_ledger = new GeneralLedger;
-                            $genral_ledger->serialNo = $generalLedgers;
-                            $genral_ledger->accountId = $rd_ids_details->accountId;
-                            $genral_ledger->accountNo = $rd_ids_details->rd_account_no;
-                            $genral_ledger->memberType = $rd_ids_details->memberType;
-                            $genral_ledger->groupCode = $account_group_code;
-                            $genral_ledger->ledgerCode = $account_ledger_code;
-                            $genral_ledger->formName = 'SavingTrfdRd';
-                            $genral_ledger->referenceNo = $saving_id;
-                            $genral_ledger->transactionDate = $installmentdate;
-                            $genral_ledger->transactionType = 'Cr';
-                            $genral_ledger->transactionAmount = $amounts;
-                            $genral_ledger->branchId = session('branchId') ? session('branchId') : 1;
-                            $genral_ledger->agentId = $post->agent_id;
-                            $genral_ledger->sessionId = session('sessionId') ? session('sessionId') : 1;
-                            $genral_ledger->updatedBy = $post->user()->id;
-                            $genral_ledger->save();
-
-                            //____________Saving Account
-                            $genral_ledger = new GeneralLedger;
-                            $genral_ledger->serialNo = $generalLedgers;
-                            $genral_ledger->accountId = $account_opening->accountNo;
-                            $genral_ledger->accountNo = $account_opening->membershipno;
-                            $genral_ledger->memberType = $account_opening->membertype;
-                            $genral_ledger->formName = 'SavingTrfdRd';
-                            $genral_ledger->groupCode = $saving_group;
-                            $genral_ledger->ledgerCode = $saving_ledger;
-                            $genral_ledger->referenceNo = $saving_id;
-                            $genral_ledger->transactionDate = $installmentdate;
-                            $genral_ledger->transactionType = 'Dr';
-                            $genral_ledger->transactionAmount = $amounts;
-                            $genral_ledger->branchId = session('branchId') ? session('branchId') : 1;
-                            $genral_ledger->agentId = $post->agent_id;
-                            $genral_ledger->sessionId = session('sessionId') ? session('sessionId') : 1;
-                            $genral_ledger->updatedBy = $post->user()->id;
-                            $genral_ledger->save();
-
-                            $changestatus = RdInstallment::where(['rd_id' => $rd_ids_details->id])->orderBy('intallment_no', 'desc')->first();
-                            if ($changestatus->payment_status == 'paid') {
-                                $moodifystatus = ReCurringRd::where(['id' => $rd_ids_details->id])->update(['status' => 'Active']);
-                            }
-
-                            if ($paymentSuccess) {
-                                DB::commit();
-
-                                $total = RdInstallment::where(['rd_id' => $rd_ids_details->id])->sum('paid_amount');
-                                $totalpanality = RdInstallment::where(['rd_id' => $rd_ids_details->id])->sum('panelty');
-                                $grand_total = $total + $totalpanality;
-
-                                //_________Checked Account in Opening Account Table
-                                $account_no = $post->accountNo;
-                                $type = $post->memberType;
-
-                                return $this->showDataTable($account_no,$type);
-                            }
-                        } catch (\Exception $e) {
-                            DB::rollBack();
-
-                            return response()->json(['status' => 'fail', 'messages' => 'Some Technical issue occurred', 'error' => $e->getMessage()], 200);
-                        }
-                    }
-                } else {
-                    return response()->json(['status' => 'fail', 'messages' => 'Installment payment amount not satisfy.']);
-                }
-                break;
         }
 
     }
@@ -1929,6 +1506,7 @@ class SavingController extends Controller
     //___________Delete Entry
     public function DeleteSavingEntry(Request $post){
         $id = $post->id;
+        // dd($id);
         $member_saving = DB::table('member_savings')->where('id', $id)->first();
         $session_master = SessionMaster::find(Session::get('sessionId'));
 
@@ -2346,7 +1924,12 @@ class SavingController extends Controller
     {
         $savingId = $post->savingId;
         $check_saving_Id = DB::table('member_savings')->where('id', $savingId)->first();
-
+        if ($post->groupCode && $post->bank) {
+            $cash_bank_group = $post->groupCode;
+            $cash_bank_ledger = $post->bank;
+        } else {
+            return response()->json(['status' => 'Fail', 'messages' => 'Cash/Bank Group And Ledger Code Not Found']);
+        }
 
         $date = date('Y-m-d', strtotime($post->transactionDate));
 
@@ -2364,7 +1947,9 @@ class SavingController extends Controller
         if (! $result) {
             return response()->json(['status' => 'fail', 'messages' => 'Please Check your session']);
         }
-
+        $account_nos = $post->accountNo;
+        $member_ship = $post->membership;
+        $transactionDate = $date;
         DB::beginTransaction();
         try {
             $transactionType = $post->transactionType;
@@ -2453,56 +2038,53 @@ class SavingController extends Controller
 
                 DB::table('member_savings')->where('id', $savingId)->delete();
             }
+            if (! empty($post->groupCode) && ! empty($post->bank)) {
+                $cash_bank_group = $post->groupCode;
+                $cash_ledger_group = $post->bank;
+            }
 
             $transactionDate = $date;
 
 
-            $member_ship = $post->membership;
 
             // Fetch account details and opening information
-            $account_opening = DB::table('opening_accounts')
-                ->select(
-                    'opening_accounts.*',
-                    'schmeaster.id as sch_id',
-                    'schmeaster.scheme_code',
-                    'ledger_masters.reference_id',
-                    'ledger_masters.ledgerCode',
-                    'ledger_masters.groupCode',
-                    'refSchemeMaster.scheme_code as ref_scheme_code'
-                )
-                ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-                ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-                ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-                ->where('opening_accounts.memberType', $post->memberType)
-                ->where('opening_accounts.membershipno', $member_ship)
-                ->where('opening_accounts.accountname', 'Saving')
-                ->first();
-            $account_nos = $account_opening->accountNo;
+            // $account_opening = DB::table('opening_accounts')
+            //     ->select(
+            //         'opening_accounts.*',
+            //         'schmeaster.id as sch_id',
+            //         'schmeaster.scheme_code',
+            //         'ledger_masters.reference_id',
+            //         'ledger_masters.ledgerCode',
+            //         'ledger_masters.groupCode',
+            //         'refSchemeMaster.scheme_code as ref_scheme_code'
+            //     )
+            //     ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+            //     ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+            //     ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+            //     ->where('opening_accounts.memberType', $post->memberType)
+            //     // ->where('opening_accounts.membershipno', $member_ship)
+            //     ->where('opening_accounts.accountname', 'Saving')
+            //     ->first();
+            // $account_nos = $account_opening->accountNo;
 
-            if ($account_opening) {
-                if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                    $saving_group = $account_opening->groupCode;
-                    $saving_ledger = $account_opening->ledgerCode;
+            // if ($account_opening) {
+            //     if ($account_opening->groupCode && $account_opening->ledgerCode) {
+            //         $saving_group = $account_opening->groupCode;
+            //         $saving_ledger = $account_opening->ledgerCode;
 
-                } else {
-                    return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-                }
-            } else {
-                return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+            //     } else {
+            //         return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+            //     }
+            // } else {
+            //     return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+            // }
+
+            $member = DB::table('member_accounts')->where(['memberType' => $post->memberType, 'accountNo' => $post->accountNo,])->first();
+
+            if ($transactionDate < $member->openingDate) {
+                return response()->json(['status' => 'fail', 'errors' => $validator->errors(), 'messages' => 'Transaction date can not be less than account opening date']);
             }
 
-            // Ensure transaction date is after the account opening date
-            $member = DB::table('opening_accounts')
-                ->where('memberType',$post->memberType)
-                ->where('accountNo',$account_opening->accountNo)
-                ->where('membershipno',$member_ship)
-                ->first();
-
-
-
-            if ($transactionDate < $member->transactionDate) {
-                return response()->json(['status' => 'Fail', 'message' => 'Transaction date cannot be less than account opening date']);
-            }
 
             // Generate a unique serial number for the new transaction
             do {
@@ -2636,21 +2218,16 @@ class SavingController extends Controller
 
             } elseif ($transactionType == 'Deposit') {
 
-                if ($post->groupCode && $post->bank) {
-                    $cash_bank_group = $post->groupCode;
-                    $cash_bank_ledger = $post->bank;
-                } else {
-                    return response()->json(['status' => 'Fail', 'messages' => 'Cash/Bank Group And Ledger Code Not Found']);
-                }
+
 
                 $saving_entry = new MemberSaving;
-                $saving_entry->secheme_id = $account_opening->sch_id;
+                // $saving_entry->secheme_id = $account_opening->sch_id;
                 $saving_entry->serialNo = $serialNo;
                 $saving_entry->accountId = $account_nos;
                 $saving_entry->accountNo = $post->membership;
                 $saving_entry->memberType = $post->memberType;
-                $saving_entry->groupCode = $account_opening->groupCode;
-                $saving_entry->ledgerCode = $account_opening->ledgerCode;
+                $saving_entry->groupCode = 'SAVM001';
+                $saving_entry->ledgerCode = 'MEM01';
                 $saving_entry->transactionDate = $transactionDate;
                 $saving_entry->transactionType = $transactionType;
                 $saving_entry->depositAmount = $post->transactionAmount;
@@ -2682,13 +2259,14 @@ class SavingController extends Controller
                 $gerenal_ledger->transactionType = 'Cr';
                 $gerenal_ledger->transactionAmount = $post->transactionAmount;
                 $gerenal_ledger->narration = $post->narration;
-                $gerenal_ledger->groupCode = $account_opening->groupCode;
-                $gerenal_ledger->ledgerCode = $account_opening->ledgerCode;
+                $gerenal_ledger->groupCode = 'SAVM001';
+                $gerenal_ledger->ledgerCode = 'MEM01';
                 $gerenal_ledger->branchId = session('branchId') ?: 1;
                 $gerenal_ledger->sessionId = session('sessionId') ?: 1;
                 $gerenal_ledger->agentId = 1;
                 $gerenal_ledger->updatedBy = $post->user()->id;
                 $gerenal_ledger->save();
+
 
                 $gerenal_ledger = new GeneralLedger;
                 $gerenal_ledger->serialNo = $serialNo;
@@ -2731,20 +2309,20 @@ class SavingController extends Controller
                 $amounts = $post->transactionAmount;
                 $account_no = $check_saving_Id->accountNo;
 
-                $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts);
+                $checkpaymentbalance = $this->checkpaymentbalance($account_no, $date, $amounts,$post->memberType);
 
                 if ($checkpaymentbalance) {
                     return response()->json(['status' => 'fail', 'messages' => 'Check Your Balance Accoding Date']);
                 }
 
                 $saving_entry = new MemberSaving;
-                $saving_entry->secheme_id = $account_opening->sch_id;
+                // $saving_entry->secheme_id = $account_opening->sch_id;
                 $saving_entry->serialNo = $serialNo;
                 $saving_entry->accountId = $account_nos;
                 $saving_entry->accountNo = $post->membership;
                 $saving_entry->memberType = $post->memberType;
-                $saving_entry->groupCode = $account_opening->groupCode;
-                $saving_entry->ledgerCode = $account_opening->ledgerCode;
+                $saving_entry->groupCode = 'SAVM001';
+                $saving_entry->ledgerCode = 'MEM01';
                 $saving_entry->transactionDate = $transactionDate;
                 $saving_entry->transactionType = $transactionType;
                 $saving_entry->depositAmount = 0;
@@ -2795,8 +2373,8 @@ class SavingController extends Controller
                 $gerenal_ledger->transactionType = 'Dr';
                 $gerenal_ledger->transactionAmount = $amounts;
                 $gerenal_ledger->narration = $post->narration;
-                $gerenal_ledger->groupCode = $account_opening->groupCode;
-                $gerenal_ledger->ledgerCode = $account_opening->ledgerCode;
+                $gerenal_ledger->groupCode = 'SAVM001';
+                $gerenal_ledger->ledgerCode = 'MEM01';
                 $gerenal_ledger->branchId = session('branchId') ?: 1;
                 $gerenal_ledger->sessionId = session('sessionId') ?: 1;
                 $gerenal_ledger->agentId = 1;
@@ -3045,24 +2623,32 @@ class SavingController extends Controller
 
     public function showDataTable($account_no,$type)
     {
-        $saving_account = DB::table('opening_accounts')
-            ->select('opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name as customer_name')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
-            ->where('opening_accounts.accountNo', $account_no)
-            ->where('opening_accounts.membertype',$type)
-            ->where('member_accounts.memberType',$type)
-            ->where('opening_accounts.accountname', '=', 'Saving')
-            ->where('opening_accounts.status', '=', 'Active')
+        // $saving_account = DB::table('opening_accounts')
+        //     ->select('opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name as customer_name')
+        //     ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
+        //     ->where('opening_accounts.accountNo', $account_no)
+        //     ->where('opening_accounts.membertype',$type)
+        //     ->where('member_accounts.memberType',$type)
+        //     ->where('opening_accounts.accountname', '=', 'Saving')
+        //     ->where('opening_accounts.status', '=', 'Active')
+        //     ->first();
+
+        $saving_account = DB::table('member_accounts')
+            ->where('accountNo', $account_no)
+            ->where('membertype',$type)
             ->first();
 
 
         //_________Get Old Balances From Member Opening Balance Table
-        $opning_balance = DB::table('member_opening_balance')
-            ->where('membership_no', '=', $saving_account->membershipno)
-            ->where('account_no', $saving_account->accountNo)
-            ->where('memberType',$type)
-            ->where('accType', 'Saving')
-            ->first();
+        // $opning_balance = DB::table('member_opening_balance')
+        //     ->where('membership_no', '=', $saving_account->membershipno)
+        //     ->where('account_no', $saving_account->accountNo)
+        //     ->where('memberType',$type)
+        //     ->where('accType', 'Saving')
+        //     ->first();
+
+        $opning_balance = $saving_account->saving;
+
 
 
         //_______Get Login Financial Year
@@ -3083,7 +2669,7 @@ class SavingController extends Controller
                 ->select('member_savings.*', 'users.id as userid', 'users.name as username')
                 ->leftJoin('users', 'users.id', 'member_savings.updatedBy')
                 ->where('member_savings.accountId', $saving_account->accountNo)
-                ->where('member_savings.accountNo', $saving_account->membershipno)
+                ->where('member_savings.accountNo', $saving_account->accountNo)
                 ->where('member_savings.memberType',$type)
                 ->whereDate('member_savings.transactionDate', '>=', $session_master->startDate)
                 ->whereDate('member_savings.transactionDate', '<=', $session_master->endDate)

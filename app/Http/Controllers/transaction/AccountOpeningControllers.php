@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\opening_accounts;
 use App\Models\FdTypeMaster;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class AccountOpeningControllers extends Controller
 {
@@ -19,7 +19,6 @@ class AccountOpeningControllers extends Controller
     }
     public function addaccount(Request $request)
     {
-
         try {
             // Validate the incoming request
             $this->validate($request, [
@@ -34,7 +33,7 @@ class AccountOpeningControllers extends Controller
                 // 'maturityamount' => 'required|numeric',
                 // 'maturitydate' => 'required|date',
                 // 'lockinperiod' => 'required|integer',
-                'agentId' => 'required|integer',
+                // 'agentId' => 'required|integer',
                 'fdType' => 'nullable|integer',
             ]);
 
@@ -45,22 +44,22 @@ class AccountOpeningControllers extends Controller
             // Check for duplicate entries
 
 
-            if($request->accounttype=="FD"){
+            if ($request->accounttype == "FD") {
 
-// dd($request->accountNo,$request->schemetype);
+                // dd($request->accountNo,$request->schemetype);
                 $duplicateCheck = DB::table('opening_accounts')
-                ->where('accountNo', $request->accountNo)
-                ->where('accountname', $request->accounttype)
-                ->where('schemetype', $request->schemetype)
-                ->where('membertype', $request->membertype)
-                ->exists();
+                    ->where('accountNo', $request->accountNo)
+                    ->where('accountname', $request->accounttype)
+                    ->where('schemetype', $request->schemetype)
+                    ->where('membertype', $request->membertype)
+                    ->exists();
                 // dd($duplicateCheck);
-            }else{
+            } else {
                 $duplicateCheck = DB::table('opening_accounts')
-                ->where('accountNo', $request->accountNo)
-                ->where('accountname', $request->accounttype)
-                ->where('membertype', $request->membertype)
-                ->exists();
+                    ->where('accountNo', $request->accountNo)
+                    ->where('accountname', $request->accounttype)
+                    ->where('membertype', $request->membertype)
+                    ->exists();
             }
 
             if ($duplicateCheck) {
@@ -92,7 +91,7 @@ class AccountOpeningControllers extends Controller
             $oppp->lockinperiod = $request->lockinperiod;
             $oppp->lockindate = $lockindate;
             $oppp->status = $request->status;
-            $oppp->agentId = $request->agentId;
+            // $oppp->agentId = $request->agentId;
             $oppp->fdtypeid = $request->fdType;
             $oppp->fdtype = DB::table('fd_type_master')->where('id', '=', $request->fdType)->value('type');
             $oppp->save();
@@ -115,7 +114,7 @@ class AccountOpeningControllers extends Controller
 
     public function getschemeall(Request $request)
     {
-        $schems = DB::table('scheme_masters')->where('secheme_type', '=','FD')->where('fdtype', '=',$request->id)->get();
+        $schems = DB::table('scheme_masters')->where('secheme_type', '=', 'FD')->where('fdtype', '=', $request->id)->get();
         return response()->json($schems);
     }
     public function getschemesamount(Request $request)
@@ -128,11 +127,12 @@ class AccountOpeningControllers extends Controller
 
     public function fetdatamm(Request $request)
     {
-        $detail = opening_accounts::where('membershipno', $request->accountNo)->where('opening_accounts.membertype',$request->memberType)
+        $detail = opening_accounts::where('membershipno', $request->accountNo)->where('opening_accounts.membertype', $request->memberType)
             ->leftJoin('agent_masters', 'opening_accounts.agentId', '=', 'agent_masters.id')
             ->select('agent_masters.name as agentname', 'opening_accounts.*')
             ->get();
-        $member = DB::table('member_accounts')->where('accountNo', $request->accountNo)->where('memberType',$request->memberType)->first();
+
+        $member = DB::table('member_accounts')->where('accountNo', $request->accountNo)->where('memberType', $request->memberType)->first();
         if ($detail && $member) {
             return response()->json([
                 'status' => true,
@@ -148,56 +148,55 @@ class AccountOpeningControllers extends Controller
     }
 
 
-    public function deletefetdatamm(Request $request){
+    public function deletefetdatamm(Request $request)
+    {
 
         $accountNo = opening_accounts::where('id', '=', $request->id)->first();
 
         $type = $accountNo->accountname;
-        switch($type){
+        switch ($type) {
             case 'Saving':
-                $saving = DB::table('member_savings')->where('accountNo',$accountNo->membershipno)->where('memberType',$accountNo->membertype)->first();
+                $saving = DB::table('member_savings')->where('accountNo', $accountNo->membershipno)->where('memberType', $accountNo->membertype)->first();
 
-                if(!empty($saving)){
+                if (!empty($saving)) {
                     return response()->json(['status' => 'Fail', 'messages' => 'The Saving Account contains data and cannot be deleted.']);
-                }else{
-                    DB::table('opening_accounts')->where('id',$request->id)->delete();
+                } else {
+                    DB::table('opening_accounts')->where('id', $request->id)->delete();
 
                     // opening_accounts::where('id', '=', $request->id)->delete();
                     return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
                 }
-            break;
+                break;
 
             case 'FD':
                 opening_accounts::where('id', '=', $request->id)->delete();
-               return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
+                return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
 
-            break;
+                break;
 
             case 'RD':
-                $rd = DB::table('re_curring_rds')->where('accountId',$accountNo->accountNo)->first();
-                if($rd){
+                $rd = DB::table('re_curring_rds')->where('accountId', $accountNo->accountNo)->first();
+                if ($rd) {
                     return response()->json(['status' => 'Fail', 'messages' => 'The RD Account contains data and cannot be deleted.']);
-                }else{
+                } else {
                     opening_accounts::where('id', '=', $request->id)->delete();
                     return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
                 }
-            break;
+                break;
             case 'DailyDeposit':
-                $dailysaving = DB::table('daily_collections')->where('account_no',$accountNo->accountNo)->first();
-                if($dailysaving){
+                $dailysaving = DB::table('daily_collections')->where('account_no', $accountNo->accountNo)->first();
+                if ($dailysaving) {
                     return response()->json(['status' => 'Fail', 'messages' => 'The Daily Saving Account contains data and cannot be deleted.']);
-                }else{
+                } else {
                     opening_accounts::where('id', '=', $request->id)->delete();
                     return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
                 }
-            break;
+                break;
 
             case 'Daily Loan':
-                    opening_accounts::where('id', '=', $request->id)->delete();
-                    return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
-            break;
-
-
+                opening_accounts::where('id', '=', $request->id)->delete();
+                return response()->json(['status' => true, 'accountNo' => $accountNo, 'membertype' => $accountNo->membertype]);
+                break;
         }
     }
 }

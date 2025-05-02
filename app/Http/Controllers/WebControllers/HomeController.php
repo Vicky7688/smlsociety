@@ -469,7 +469,7 @@ class HomeController extends Controller
         $data['memberrd'] = ReCurringRd::where('is_delete', 'no')->count();
         $data['membershare'] = MemberShare::where('is_delete', 'no')->count();
         $data['memberloan'] = MemberLoan::where('is_delete', 'no')->count();
-        $data['membermis'] = Mis::where('is_delete', 'no')->count();
+        // $data['membermis'] = Mis::where('is_delete', 'no')->count();
 
         $start_date = date('Y-m-d');
         $end_date = date('Y-m-d');
@@ -478,83 +478,83 @@ class HomeController extends Controller
         $cashcode = LedgerMaster::where(['ledgerCode' => 'C002'])->first();
 
         // Calculate debit and credit amounts for opening balance
-        $debit_amount = DB::table('general_ledgers')
-            ->where('ledgerCode', $cashcode->ledgerCode)
-            ->whereDate('transactionDate', '<', $start_date)
-            ->where('transactionType', 'Dr')
-            ->where('is_delete', 'No')
-            ->sum('transactionAmount');
+        // $debit_amount = DB::table('general_ledgers')
+        //     ->where('ledgerCode', $cashcode->ledgerCode)
+        //     ->whereDate('transactionDate', '<', $start_date)
+        //     ->where('transactionType', 'Dr')
+        //     ->where('is_delete', 'No')
+        //     ->sum('transactionAmount');
 
-        $credit_amount = DB::table('general_ledgers')
-            ->where('ledgerCode', $cashcode->ledgerCode)
-            ->whereDate('transactionDate', '<', $start_date)
-            ->where('transactionType', 'Cr')
-            ->where('is_delete', 'No')
-            ->sum('transactionAmount');
+        // $credit_amount = DB::table('general_ledgers')
+        //     ->where('ledgerCode', $cashcode->ledgerCode)
+        //     ->whereDate('transactionDate', '<', $start_date)
+        //     ->where('transactionType', 'Cr')
+        //     ->where('is_delete', 'No')
+        //     ->sum('transactionAmount');
 
-        $opening_balance = $previous_amount + $debit_amount - $credit_amount;
-
-
-
-        $serial_numbers = DB::table('general_ledgers')
-            ->where('ledgerCode', $cashcode->ledgerCode)
-            ->where('is_delete', 'No')
-            ->pluck('serialNo');
-
-
-        if ($serial_numbers->isNotEmpty()) {
-
-            $debit_entries = DB::table('general_ledgers')
-                ->leftJoin('ledger_masters', 'general_ledgers.ledgerCode', '=', 'ledger_masters.ledgerCode')
-                ->leftJoin('member_accounts', function ($join) {
-                    $join->on('general_ledgers.accountNo', '=', 'member_accounts.accountNo')
-                        ->on('general_ledgers.memberType', '=', 'member_accounts.memberType');
-                })
-                ->whereIn('general_ledgers.serialNo', $serial_numbers)
-                ->where('general_ledgers.transactionType', 'Dr')
-                ->where('general_ledgers.ledgerCode', '!=', $cashcode->ledgerCode)
-                ->whereDate('general_ledgers.transactionDate', '>=', $start_date)
-                ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
-                ->where('general_ledgers.is_delete', 'No')
-                ->select(
-                    'general_ledgers.*',
-                    'ledger_masters.name as lname',
-                    'member_accounts.accountNo as memno',
-                    'member_accounts.name',
-                    'ledger_masters.ledgerCode as lg'
-                )
-                ->get();
+        // $opening_balance = $previous_amount + $debit_amount - $credit_amount;
 
 
 
-            $credit_entries = DB::table('general_ledgers')
-                ->leftJoin('ledger_masters', 'general_ledgers.ledgerCode', '=', 'ledger_masters.ledgerCode')
-                ->leftJoin('member_accounts', function ($join) {
-                    $join->on('general_ledgers.accountNo', '=', 'member_accounts.accountNo')
-                        ->on('general_ledgers.memberType', '=', 'member_accounts.memberType');
-                })
-                ->whereIn('general_ledgers.serialNo', $serial_numbers)
-                ->where('general_ledgers.transactionType', 'Cr')
-                ->where('general_ledgers.ledgerCode', '!=', $cashcode->ledgerCode)
-                ->whereDate('general_ledgers.transactionDate', '>=', $start_date)
-                ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
-                ->where('general_ledgers.is_delete', 'No')
-                ->select(
-                    'general_ledgers.*',
-                    'ledger_masters.name as lname',
-                    'member_accounts.accountNo as memno',
-                    'member_accounts.name',
-                    'ledger_masters.ledgerCode as lg'
-                )
-                ->get();
+        // $serial_numbers = DB::table('general_ledgers')
+        //     ->where('ledgerCode', $cashcode->ledgerCode)
+        //     ->where('is_delete', 'No')
+        //     ->pluck('serialNo');
 
-            $closing_cash = $opening_balance + $debit_entries->sum('transactionAmount') + $credit_entries->sum('transactionAmount');
 
-        }
+        // if ($serial_numbers->isNotEmpty()) {
+
+        //     $debit_entries = DB::table('general_ledgers')
+        //         ->leftJoin('ledger_masters', 'general_ledgers.ledgerCode', '=', 'ledger_masters.ledgerCode')
+        //         ->leftJoin('member_accounts', function ($join) {
+        //             $join->on('general_ledgers.accountNo', '=', 'member_accounts.accountNo')
+        //                 ->on('general_ledgers.memberType', '=', 'member_accounts.memberType');
+        //         })
+        //         ->whereIn('general_ledgers.serialNo', $serial_numbers)
+        //         ->where('general_ledgers.transactionType', 'Dr')
+        //         ->where('general_ledgers.ledgerCode', '!=', $cashcode->ledgerCode)
+        //         ->whereDate('general_ledgers.transactionDate', '>=', $start_date)
+        //         ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
+        //         ->where('general_ledgers.is_delete', 'No')
+        //         ->select(
+        //             'general_ledgers.*',
+        //             'ledger_masters.name as lname',
+        //             'member_accounts.accountNo as memno',
+        //             'member_accounts.name',
+        //             'ledger_masters.ledgerCode as lg'
+        //         )
+        //         ->get();
+
+
+
+        //     $credit_entries = DB::table('general_ledgers')
+        //         ->leftJoin('ledger_masters', 'general_ledgers.ledgerCode', '=', 'ledger_masters.ledgerCode')
+        //         ->leftJoin('member_accounts', function ($join) {
+        //             $join->on('general_ledgers.accountNo', '=', 'member_accounts.accountNo')
+        //                 ->on('general_ledgers.memberType', '=', 'member_accounts.memberType');
+        //         })
+        //         ->whereIn('general_ledgers.serialNo', $serial_numbers)
+        //         ->where('general_ledgers.transactionType', 'Cr')
+        //         ->where('general_ledgers.ledgerCode', '!=', $cashcode->ledgerCode)
+        //         ->whereDate('general_ledgers.transactionDate', '>=', $start_date)
+        //         ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
+        //         ->where('general_ledgers.is_delete', 'No')
+        //         ->select(
+        //             'general_ledgers.*',
+        //             'ledger_masters.name as lname',
+        //             'member_accounts.accountNo as memno',
+        //             'member_accounts.name',
+        //             'ledger_masters.ledgerCode as lg'
+        //         )
+        //         ->get();
+
+        //     $closing_cash = $opening_balance + $debit_entries->sum('transactionAmount') + $credit_entries->sum('transactionAmount');
+
+        // }
 
         // dd($closing_cash);
-        $data['opening_balance'] = $opening_balance;
-        $data['closing_cash'] = $closing_cash;
+        // $data['opening_balance'] = $opening_balance;
+        // $data['closing_cash'] = $closing_cash;
 
 
 

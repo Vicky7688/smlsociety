@@ -45,6 +45,7 @@ $table = "yes";
                                         <th>Name</th>
                                         <th>Opening </th>
                                         <th>Type</th>
+                                        <th>Created By</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -59,6 +60,7 @@ $table = "yes";
                                                 <td>{{ ucwords($row->name) }}</td>
                                                 <td>{{ $row->openingAmount }}</td>
                                                 <td>{{ $row->openingType }}</td>
+                                                <td>{{ $row->user_name }}</td>
                                                 <td>{{ $row->status }}</td>
                                                 <td>
                                                     @php
@@ -126,7 +128,7 @@ $table = "yes";
                         </div>
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="openingAmount" class="form-label">Opening Amount</label>
-                            <input type="text" id="openingAmount" name="openingAmount" class="form-control formInputsReport" placeholder="Enter value" required />
+                            <input type="text" id="openingAmount" name="openingAmount" value="0" class="form-control formInputsReport" placeholder="Enter value" required />
                         </div>
 
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport ecommerce-select2-dropdown">

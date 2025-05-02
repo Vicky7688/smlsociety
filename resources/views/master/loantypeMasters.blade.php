@@ -42,7 +42,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-
+                                {{-- @if(!empty($loanType))
+                                @foreach($loanType as $row)
+                                <tr>
+                                    <td>{{ $loop->index + 1 }}</td>
+                                    <td>{{ ucwords($row->name) }}</td>
+                                    <td>{{ $row->status }}</td>
+                                    <td></td>
+                                </tr>
+                                @endforeach
+                            @endif --}}
                             </tbody>
                         </table>
                     </div>
@@ -113,18 +122,17 @@
                     "data": "id",
                     render: function (data, type, full, meta) {
                         return `<div><span class='text-inverse m-l-10'><b>` +
-                            parseInt(meta.row+1) +
-                            `</b> </span><div class="clearfix"></div></div><span style='font-size:13px' class="pull=right">` +
-                            full.created_at + `</span>`;
+                            parseInt(meta.row+1) + `</span>`;
+                            // `</b> </span><div class="clearfix"></div></div><span style='font-size:13px' class="pull=right">` + full.created_at +
                     }
                 },
                 {
                     "data": "name",
                       render: function (data, type, full, meta) {
-                      
+
                           return full.name.toUpperCase();
                       }
-                    
+
                 },
                 {
                     "data": "status",

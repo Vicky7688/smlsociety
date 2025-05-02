@@ -27,7 +27,6 @@ class UserController extends Controller
 
     public function login(Request $post)
     {
-
         // dd($post);
         $user = User::where('username', $post->mobile)->first();
         $sesstion = SessionMaster::where('id', $post->sessionId)->first();
@@ -35,7 +34,6 @@ class UserController extends Controller
         if (!$sesstion) {
             return response()->json(['statuscode' => "ERR", 'message' => "Please select valid session"]);
         }
-
         $sessionDate = date('Y', strtotime($sesstion->startDate)) . "-" . date('Y', strtotime($sesstion->endDate));
 
         if (!$user) {

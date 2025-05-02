@@ -43,8 +43,8 @@ class MasterController extends Controller
     {
         switch ($type) {
             case 'form':
-            // case 'session':
-            //     break;
+                // case 'session':
+                //     break;
             case 'state':
                 break;
             case 'district':
@@ -63,7 +63,7 @@ class MasterController extends Controller
             case 'naretion':
                 break;
             case 'loanMaster':
-                 $data['types'] = LoanTypeMaster::get();
+                $data['types'] = LoanTypeMaster::get();
                 break;
             case 'purposeMaster':
                 break;
@@ -92,10 +92,10 @@ class MasterController extends Controller
             case 'branchMaster':
                 $data['states'] = StateMaster::all();
                 break;
-            case 'loantypeMasters'  :
-
-                break ;
-            case 'banners' :
+            case 'loantypeMasters':
+                $data['loanType'] = DB::table('loan_type_masters')->get();
+                break;
+            case 'banners':
 
                 break;
             default:
@@ -112,21 +112,21 @@ class MasterController extends Controller
         switch ($post->actiontype) {
 
             case 'sliderstatus':
-                  $action = Slider::updateOrCreate(['id' => $post->id], $post->all());
-                 if ($action) {
+                $action = Slider::updateOrCreate(['id' => $post->id], $post->all());
+                if ($action) {
                     return response()->json(['status' => "success"], 200);
-                 } else {
+                } else {
                     return response()->json(['status' => "Task Failed, please try again"], 200);
-                 }
-               break ;
-           case 'sliderDelete':
-                  $action = Slider::where('id' , $post->id)->delete();
-                 if ($action) {
+                }
+                break;
+            case 'sliderDelete':
+                $action = Slider::where('id', $post->id)->delete();
+                if ($action) {
                     return response()->json(['status' => "success"], 200);
-                 } else {
+                } else {
                     return response()->json(['status' => "Task Failed, please try again"], 200);
-                 }
-                break ;
+                }
+                break;
 
             case 'slider':
                 $rules = array(
@@ -189,7 +189,7 @@ class MasterController extends Controller
                 }
                 break;
 
-              case 'loantypemaster':
+            case 'loantypemaster':
                 $rules = array(
                     'name' => 'required',
                     'status' => 'required',
@@ -436,16 +436,16 @@ class MasterController extends Controller
                     // 'name' => 'required',
                     'processingFee' => 'required',
                     'interest' => 'required',
-                    'loantypess' => 'required',
+                    // 'loantypess' => 'required',
                     'penaltyInterest' => 'required',
                     'loan_app_charges' => 'required',
-                    'emiDate' => 'required',
+                    // 'emiDate' => 'required',
                     'insType' => 'required',
                     'years' => 'required',
                     'months' => 'required',
                     'days' => 'required',
-                    'advancementDate' => 'required',
-                    'recoveryDate' => 'required',
+                    // 'advancementDate' => 'required',
+                    // 'recoveryDate' => 'required',
                     'status' => 'required',
                 );
 
@@ -466,23 +466,24 @@ class MasterController extends Controller
 
 
                 do {
-                    $ledgerCode =  "LOAN" . rand(0000, 9999);
+                    $ledgerCode =  "LOAN" . time();
                 } while (LedgerMaster::where("ledgerCode", "=", $ledgerCode)->first() instanceof LedgerMaster);
 
 
                 $existsId = LoanMaster::where('id', $post->id)->first();
-                if($existsId){
+
+                if ($existsId) {
                     $checkLoanMasterExits = DB::table('member_loans')
-                        ->where('loanType',$existsId->id)
+                        ->where('loanType', $existsId->id)
                         ->first();
-                    if(!empty($checkLoanMasterExits)){
+                    if (!empty($checkLoanMasterExits)) {
                         return response()->json([
                             'status' => 'Fail',
                             'messages' => 'Loan Master Has Loan In Advancement Loan'
                         ], 422);
-                    }else{
+                    } else {
 
-                        DB::table('ledger_masters')->where('loanmasterId',$existsId->id)->delete();
+                        DB::table('ledger_masters')->where('loanmasterId', $existsId->id)->delete();
                         DB::table('loan_masters')->where('id', $post->id)->delete();
 
                         DB::beginTransaction();
@@ -496,13 +497,13 @@ class MasterController extends Controller
                                 'loantypess' => $post->loantypess,
                                 'penaltyInterest' => $post->penaltyInterest,
                                 'loan_app_charges' => $post->loan_app_charges,
-                                'emiDate' => $post->emiDate,
+                                // 'emiDate' => $post->emiDate,
                                 'insType' => $post->insType,
                                 'years' => $post->years,
                                 'months' => $post->months,
                                 'days' => $post->days,
-                                'advancementDate' => $post->advancementDate,
-                                'recoveryDate' => $post->recoveryDate,
+                                // 'advancementDate' => $post->advancementDate,
+                                // 'recoveryDate' => $post->recoveryDate,
                                 'status' => $post->status,
                             ]);
                             $loanId = $loanMaster->id;
@@ -564,8 +565,7 @@ class MasterController extends Controller
                                 'status' => 'success',
                                 'messages' => 'Record Inserted Successfully',
                             ]);
-
-                        }catch (\Exception $e) {
+                        } catch (\Exception $e) {
                             DB::rollback();
                             return response()->json([
                                 'status' => 'Fail',
@@ -574,10 +574,7 @@ class MasterController extends Controller
                             ]);
                         }
                     }
-
-
-
-                }else{
+                } else {
 
                     DB::beginTransaction();
                     try {
@@ -590,13 +587,13 @@ class MasterController extends Controller
                             'loantypess' => $post->loantypess,
                             'penaltyInterest' => $post->penaltyInterest,
                             'loan_app_charges' => $post->loan_app_charges,
-                            'emiDate' => $post->emiDate,
+                            // 'emiDate' => $post->emiDate,
                             'insType' => $post->insType,
                             'years' => $post->years,
                             'months' => $post->months,
                             'days' => $post->days,
-                            'advancementDate' => $post->advancementDate,
-                            'recoveryDate' => $post->recoveryDate,
+                            // 'advancementDate' => $post->advancementDate,
+                            // 'recoveryDate' => $post->recoveryDate,
                             'status' => $post->status,
                         ]);
 
@@ -798,7 +795,7 @@ class MasterController extends Controller
                     return response()->json(['status' => 'Task Failed, Please try again']);
                 }
                 break;
-            // case 'agentMaster':
+                // case 'agentMaster':
 
 
                 break;
@@ -980,7 +977,7 @@ class MasterController extends Controller
 
             case 'branchMaster':
                 $rules = array(
-                  //  'type' => 'required',
+                    //  'type' => 'required',
                     'name' => 'required',
                     'registrationNo' => 'required',
                     'registrationDate' => 'required',
@@ -1068,7 +1065,7 @@ class MasterController extends Controller
                     break;
                 case 'deleteLoan':
 
-                    case 'deleteLoan':
+                case 'deleteLoan':
 
 
 
@@ -1114,8 +1111,8 @@ class MasterController extends Controller
                     //         'message' => 'Delete not allowed ',
                     //     ]);
                     // }
-                   break;
-                    // Add more cases for other models as needed
+                    break;
+                // Add more cases for other models as needed
 
                 default:
                     throw new \InvalidArgumentException('Invalid actiontype provided');
@@ -1143,13 +1140,15 @@ class MasterController extends Controller
 
 
     //_______________Generate Group Code
-    public function GenerateGroupCode(Request $post){
+    public function GenerateGroupCode(Request $post)
+    {
         $group_name = $post->group_name;
         $newGroupCode = '';
     }
 
 
-    public function deleteloanmaster(Request $post){
+    public function deleteloanmaster(Request $post)
+    {
         $loanMaster = DB::table('loan_masters')->where('id', $post->id)->first();
 
         if ($loanMaster) {
@@ -1180,79 +1179,84 @@ class MasterController extends Controller
     }
 
 
-    public function getallstaffnumber(Request $post){
+    public function getallstaffnumber(Request $post)
+    {
         $rules = [
             "memberType" => "required",
             "staff_no" => "required",
         ];
 
-        $validator = Validator::make($post->all(),$rules);
+        $validator = Validator::make($post->all(), $rules);
 
-        if($validator->fails()){
-            return response()->json(['status' => 'Fail','error' => $validator->errors()]);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Fail', 'error' => $validator->errors()]);
         }
 
         $staff_no = $post->staff_no;
         $memberType = $post->memberType;
 
         $all_staffs = DB::table('member_accounts')
-            ->where('memberType',$memberType)
-            ->where('accountNo','LIKE',$staff_no.'%')
-            ->orderBy('accountNo','ASC')
+            ->where('memberType', $memberType)
+            ->where('accountNo', 'LIKE', $staff_no . '%')
+            ->orderBy('accountNo', 'ASC')
             ->get();
-        if(!empty($all_staffs)){
-            return response()->json(['status' => 'success','allstaff' => $all_staffs]);
-        }else{
-            return response()->json(['status' => 'Fail','messages' => 'Staff Number Not Found']);
+        if (!empty($all_staffs)) {
+            return response()->json(['status' => 'success', 'allstaff' => $all_staffs]);
+        } else {
+            return response()->json(['status' => 'Fail', 'messages' => 'Staff Number Not Found']);
         }
     }
 
-    public function getstaffnumber(Request $post){
+    public function getstaffnumber(Request $post)
+    {
         $rules = [
             "selectdId" => "required",
             "memberType" => "required"
         ];
 
-        $validator = Validator::make($post->all(),$rules);
+        $validator = Validator::make($post->all(), $rules);
 
-        if($validator->fails()){
-            return response()->json(['status' => 'Fail','error' => $validator->errors()]);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Fail', 'error' => $validator->errors()]);
         }
 
         $staff_no = $post->selectdId;
         $memberType = $post->memberType;
 
-        $exits_staff = DB::table('agent_masters')->where('memberType',$memberType)->where('staff_no',$staff_no)->first();
+        $exits_staff = DB::table('agent_masters')->where('memberType', $memberType)->where('staff_no', $staff_no)->first();
 
-        if(!empty($exits_staff)){
-            return response()->json(['status' => 'Fail','messages' => 'Agent Already Registerd']);
-        }else{
+        if (!empty($exits_staff)) {
+            return response()->json(['status' => 'Fail', 'messages' => 'Agent Already Registerd']);
+        } else {
 
             $staff_detail = DB::table('member_accounts')
-                ->where('memberType',$memberType)
-                ->where('accountNo',$staff_no)
-                ->orderBy('accountNo','ASC')
+                ->where('memberType', $memberType)
+                ->where('accountNo', $staff_no)
+                ->orderBy('accountNo', 'ASC')
                 ->first();
 
-            if(!empty($staff_detail)){
-                return response()->json(['status' => 'success','staff_detail' => $staff_detail]);
-            }else{
-                return response()->json(['status' => 'Fail','messages' => 'Staff Number Not Found']);
+            if (!empty($staff_detail)) {
+                return response()->json(['status' => 'success', 'staff_detail' => $staff_detail]);
+            } else {
+                return response()->json(['status' => 'Fail', 'messages' => 'Staff Number Not Found']);
             }
         }
     }
 
-    public function agentindex(){
-        $agents = DB::table('agent_masters')->orderBy('id','DESC')->get();
+    public function agentindex()
+    {
+        $agents = DB::table('agent_masters')->orderBy('id', 'DESC')->get();
         $data['agents'] = $agents;
-        return view('master.agentMaster',$data);
+        return view('master.agentMaster', $data);
     }
 
-    public function insertagent(Request $post){
-        $exitsId = DB::table('agent_masters')->where('id',$post->agentId)->first();
-        if(!empty($exitsId)){
-            return response()->json(['status' => 'success','exitsIdagent' => $exitsId]);
-        }else{
+    public function insertagent(Request $post)
+    {
+        // dd($post->all());
+        $exitsId = DB::table('agent_masters')->where('id', $post->agentId)->first();
+        if (!empty($exitsId)) {
+            return response()->json(['status' => 'success', 'exitsIdagent' => $exitsId]);
+        } else {
             $rules = array(
                 'memberType' => 'required',
                 'staff_no' => 'required',
@@ -1329,7 +1333,8 @@ class MasterController extends Controller
         }
     }
 
-    public function agentupdate(Request $post){
+    public function agentupdate(Request $post)
+    {
         // dd($post->all());
         $rules = array(
             'memberType' => 'required',
@@ -1353,12 +1358,11 @@ class MasterController extends Controller
         $validator = Validator::make($post->all(), $rules);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
-
         }
         DB::beginTransaction();
-        try{
+        try {
 
-            DB::table('agent_masters')->where('id',$post->agentid)->delete();
+            DB::table('agent_masters')->where('id', $post->agentid)->delete();
 
             $data = [
                 'name' => $post->name,
@@ -1401,48 +1405,50 @@ class MasterController extends Controller
 
             DB::commit();
 
-            return response()->json(['status' => 'success','messages' => 'Agent Inserted Successfully']);
-
-        }catch(\Exception $e){
+            return response()->json(['status' => 'success', 'messages' => 'Agent Inserted Successfully']);
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'Fail','error' => $e->getMessage()]);
+            return response()->json(['status' => 'Fail', 'error' => $e->getMessage()]);
         }
     }
 
-    public function deleteagent(Request $post){
+    public function deleteagent(Request $post)
+    {
         $agentId =  $post->agentId;
-        $exitsId = DB::table('agent_masters')->where('id',$agentId)->first();
-        if(is_null($exitsId)){
+        $exitsId = DB::table('agent_masters')->where('id', $agentId)->first();
+        if (is_null($exitsId)) {
             return response()->json(['status' => 'Fail', 'messages' => 'Record Not Found']);
-        }else{
-            DB::table('agent_masters')->where('id',$agentId)->delete();
+        } else {
+            DB::table('agent_masters')->where('id', $agentId)->delete();
             return response()->json(['status' => 'success', 'messages' => 'Record Successfully Deleted']);
         }
     }
 
 
     //________________Bank Fd Master_______________
-    public function bankfdmasterindex(){
-        $data['bankfdsDetails'] = DB::table('bank_fd_masters')->orderBy('id','DESC')->get();
-        return view('master.bankfdmaster',$data);
+    public function bankfdmasterindex()
+    {
+        $data['bankfdsDetails'] = DB::table('bank_fd_masters')->orderBy('id', 'DESC')->get();
+        return view('master.bankfdmaster', $data);
     }
 
-    public function insertfdmaster(Request $post){
+    public function insertfdmaster(Request $post)
+    {
         $rules = [
             "name" => "required"
         ];
 
-        $validator = Validator::make($post->all(),$rules);
+        $validator = Validator::make($post->all(), $rules);
 
-        if($validator->fails()){
-            return response()->json(['status' => 'Fail','messages' => 'Enter Bank Name']);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Fail', 'messages' => 'Enter Bank Name']);
         }
 
         DB::beginTransaction();
         try {
             //___________Bank Fd Master Entries
             $bankFdMasterId = DB::table('bank_fd_masters')->insertGetId([
-                'bank_name' =>'FD -' . $post->name,
+                'bank_name' => 'FD -' . $post->name,
                 'groupCode' => 'BANK001',
                 'ledgerCode' => $post->ledgercode,
                 'address' => $post->address,
@@ -1472,14 +1478,14 @@ class MasterController extends Controller
                 'updated_at' => now(),
             ]);
 
-            $interesLedger = $post->ledgercode . (string) ($bankFdMasterId+1);
-            $interestRecoverable = $post->ledgercode . (string) ($bankFdMasterId+1).($bankFdMasterId+1);
-            $tdspaid = $post->ledgercode . (string) ($bankFdMasterId+1).($bankFdMasterId+1).($bankFdMasterId+1);
+            $interesLedger = $post->ledgercode . (string) ($bankFdMasterId + 1);
+            $interestRecoverable = $post->ledgercode . (string) ($bankFdMasterId + 1) . ($bankFdMasterId + 1);
+            $tdspaid = $post->ledgercode . (string) ($bankFdMasterId + 1) . ($bankFdMasterId + 1) . ($bankFdMasterId + 1);
 
 
             //________Create Bank FD Interest Received Ledger
             $ledgerId = DB::table('ledger_masters')->insertGetId([
-                'name' => 'Int. Recevied From'.$post->name,
+                'name' => 'Int. Recevied From' . $post->name,
                 'groupCode' => 'INCM001',
                 'ledgerCode' => $interesLedger,
                 'reference_id' => $bankFdMasterId,
@@ -1496,7 +1502,7 @@ class MasterController extends Controller
 
             //________Create Bank FD Interest Recoverable Ledger
             DB::table('ledger_masters')->insert([
-                'name' => 'Int. Recoverable Of'.$post->name,
+                'name' => 'Int. Recoverable Of' . $post->name,
                 'groupCode' => 'INCM001',
                 'ledgerCode' => $interestRecoverable,
                 'reference_id' => $bankFdMasterId,
@@ -1513,7 +1519,7 @@ class MasterController extends Controller
 
             //________Create Bank FD Tds Paid Ledger
             DB::table('ledger_masters')->insert([
-                'name' => 'Tds Paid On Bank Fd -'.$post->name,
+                'name' => 'Tds Paid On Bank Fd -' . $post->name,
                 'groupCode' => '    ',
                 'ledgerCode' => $tdspaid,
                 'reference_id' => $bankFdMasterId,
@@ -1530,7 +1536,7 @@ class MasterController extends Controller
 
 
 
-            DB::table('bank_fd_masters')->where('id',$bankFdMasterId)->update([
+            DB::table('bank_fd_masters')->where('id', $bankFdMasterId)->update([
                 'interest_ledger' => $interesLedger,
                 'intrecoverable_ledger' => $interestRecoverable,
                 'tds_ledger' => $tdspaid
@@ -1542,7 +1548,6 @@ class MasterController extends Controller
                 'status' => 'success',
                 'messages' => 'Record Inserted Successfully',
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -1555,23 +1560,24 @@ class MasterController extends Controller
 
 
     //_____________Edit Bank Fd Ledger
-    public function editbankfdmasterid(Request $post){
+    public function editbankfdmasterid(Request $post)
+    {
         $rules = [
             "id" => "required"
         ];
 
-        $validator = Validator::make($post->all(),$rules);
+        $validator = Validator::make($post->all(), $rules);
 
-        if($validator->fails()){
-            return response()->json(['status' => 'Fail','messages' => 'REcord Not Found']);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Fail', 'messages' => 'REcord Not Found']);
         }
 
         $id = $post->id;
-        $existsId = DB::table('bank_fd_masters')->where('id',$id)->first();
-        if(is_null($existsId)){
-            return response()->json(['status' => 'Fail','messages' => 'Record Not Found']);
-        }else{
-            return response()->json(['status' => 'success','existsId' => $existsId]);
+        $existsId = DB::table('bank_fd_masters')->where('id', $id)->first();
+        if (is_null($existsId)) {
+            return response()->json(['status' => 'Fail', 'messages' => 'Record Not Found']);
+        } else {
+            return response()->json(['status' => 'success', 'existsId' => $existsId]);
         }
     }
 
@@ -1601,7 +1607,7 @@ class MasterController extends Controller
         try {
             //___________Bank FD Master Update
             DB::table('bank_fd_masters')->where('id', $id)->update([
-                'bank_name' =>   $post->name ?  $post->name: $existsId->name,
+                'bank_name' =>   $post->name ?  $post->name : $existsId->name,
                 'groupCode' => 'BANK001',
                 'ledgerCode' => $existsId->ledgerCode,
                 'address' => $post->address ? $post->address : $existsId->address,
@@ -1614,7 +1620,7 @@ class MasterController extends Controller
 
             //________Update Ledger Master Entries
             $referenceId = LedgerMaster::where('reference_id', $existsId->id)->where('ledgerCode', $existsId->ledgerCode)->first();
-            $referenceId->name = 'FD'.$post->name;
+            $referenceId->name = 'FD' . $post->name;
             $referenceId->save();
 
             //________Update Bank FD Interest Received Ledger
@@ -1633,7 +1639,6 @@ class MasterController extends Controller
                 'status' => 'success',
                 'messages' => 'Record Updated Successfully',
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -1644,7 +1649,8 @@ class MasterController extends Controller
         }
     }
 
-    public function deletebankfdmaster(Request $post){
+    public function deletebankfdmaster(Request $post)
+    {
 
         $rules = [
             "id" => "required"
@@ -1683,7 +1689,4 @@ class MasterController extends Controller
             return response()->json(['status' => 'Fail', 'messages' => $e->getMessage(), 'line' => $e->getLine()]);
         }
     }
-
-
-
 }

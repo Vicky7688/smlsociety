@@ -8,15 +8,22 @@ use App\Models\LedgerMaster;
 use App\Models\FdTypeMaster;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use DB;
+use Illuminate\Support\Facades\DB;
+
 
 class MasterControllers extends Controller
 {
 
     //____________________________Group Master Work_______________________
     public function GroupIndex(){
-        $groups = GroupMaster::orderBy('name','DESC')->get();
-        $data['groups'] = $groups;
+        // $data['groups'] = GroupMaster::orderBy('name','DESC')->get();
+        $data['groups'] = DB::table('group_masters')
+        ->select(
+            'group_masters.*',
+            'users.name as user_name'
+            )
+        ->leftJoin('users', 'users.id', '=', 'group_masters.updatedBy')
+        ->get();
         return view('master.group',$data);
     }
 
@@ -177,8 +184,15 @@ public function GenerateGroupCode(Request $post)
     //_________Ledger View Page
     public function LedgerIndex(){
         $groups = GroupMaster::orderBy('name','DESC')->get();
-        $ledgers = LedgerMaster::orderBy('name','DESC')->get();
-        $data['ledgers'] = $ledgers;
+        // $ledgers = LedgerMaster::orderBy('name','DESC')->get();
+        $data['ledgers'] = DB::table('ledger_masters')
+        ->select(
+            'ledger_masters.*',
+            'users.name as user_name'
+            )
+        ->leftJoin('users', 'users.id', '=', 'ledger_masters.updatedBy')
+        ->get();
+        // $data['ledgers'] = $ledgers;
         $data['groups'] = $groups;
         return view('master.ledger',$data);
     }

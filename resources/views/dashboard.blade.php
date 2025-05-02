@@ -14,7 +14,11 @@
                             <div class="avatar me-2">
                                 <span class="avatar-initial rounded bg-label-primary"><i class="ti ti-truck ti-md"></i></span>
                             </div>
-                            <h4 class="ms-1 mb-0">{{ $opening_balance }}</h4>
+                            <h4 class="ms-1 mb-0">
+                                @isset($opening_balance)
+                                {{ $opening_balance }}
+                                @endisset
+                            </h4>
                         </div>
                         <p class="mb-1">OPENING CASH</p>
 
@@ -28,7 +32,11 @@
                             <div class="avatar me-2">
                                 <span class="avatar-initial rounded bg-label-warning"><i class="ti ti-alert-triangle ti-md"></i></span>
                             </div>
-                            <h4 class="ms-1 mb-0">{{ $closing_cash }}</h4>
+                            <h4 class="ms-1 mb-0">
+                                @isset($closing_cash)
+                                {{ $closing_cash }}
+                                @endisset
+                            </h4>
                         </div>
                         <p class="mb-1">CLOSING CASH</p>
 
@@ -42,7 +50,11 @@
                             <div class="avatar me-2">
                                 <span class="avatar-initial rounded bg-label-danger"><i class="ti ti-git-fork ti-md"></i></span>
                             </div>
-                            <h4 class="ms-1 mb-0">{{$memberac}}</h4>
+                            <h4 class="ms-1 mb-0">
+                                @isset($memberac)
+                                {{$memberac}}
+                            @endisset
+                            </h4>
                         </div>
                         <p class="mb-1">MEMBERS ACCOUNT</p>
 
@@ -56,7 +68,11 @@
                             <div class="avatar me-2">
                                 <span class="avatar-initial rounded bg-label-info"><i class="ti ti-clock ti-md"></i></span>
                             </div>
-                            <h4 class="ms-1 mb-0">{{ $nonmember }}</h4>
+                            <h4 class="ms-1 mb-0">
+                                @isset($nonmember)
+                                {{ $nonmember }}
+                                @endisset
+                            </h4>
                         </div>
                         <p class="mb-1">NOMINAL MEMBERS</p>
 
@@ -68,7 +84,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$staff}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($staff)
+                                {{$staff}}
+                                @endisset
+                            </h5>
                             <small>Staff</small>
                         </div>
                         <div class="card-icon">
@@ -86,7 +106,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$memberfd}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($memberfd)
+                                {{$memberfd}}
+                                @endisset
+                            </h5>
                             <small>Fixed Deposit</small>
                         </div>
                         <div class="card-icon">
@@ -101,7 +125,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$membersaving}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($membersaving)
+                                {{$membersaving}}
+                                @endisset
+                            </h5>
                             <small>Saving</small>
                         </div>
                         <div class="card-icon">
@@ -116,7 +144,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$membershare}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($membershare)
+                                {{$membershare}}
+                                @endisset
+                            </h5>
                             <small>Share Member</small>
                         </div>
                         <div class="card-icon">
@@ -131,7 +163,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$memberrd}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($memberrd)
+                                {{$memberrd}}
+                                @endisset
+                            </h5>
                             <small>Recurring Deposit</small>
                         </div>
                         <div class="card-icon">
@@ -146,7 +182,11 @@
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
-                            <h5 class="mb-0 me-2">{{$memberloan}}</h5>
+                            <h5 class="mb-0 me-2">
+                                @isset($memberloan)
+                                {{$memberloan}}
+                                @endisset
+                            </h5>
                             <small>Loan</small>
                         </div>
                         <div class="card-icon">

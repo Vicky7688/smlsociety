@@ -140,7 +140,7 @@ $table = "yes";
 
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport">
                             <label for="name" class="form-label">Name</label>
-                            <input type="text" name="name" id="name" class="form-control formInputsReport" placeholder="Enter name" readonly />
+                            <input type="text" name="name" id="name" class="form-control formInputsReport" placeholder="Enter name"/>
                         </div>
 
 

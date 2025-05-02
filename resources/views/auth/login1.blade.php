@@ -59,8 +59,6 @@
             /* padding-top: 30px; */
         }
 
-
-
         .container {
             width: 70%;
             margin: auto;
@@ -152,7 +150,7 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="email" class="form-label"> Username</label>
+                                <label for="email" class="form-label">Username</label>
                                 <input type="text" id="email" class="form-control" name="mobile" placeholder="Enter your email or username" autofocus />
                             </div>
                             <div class="mb-3 form-password-toggle">

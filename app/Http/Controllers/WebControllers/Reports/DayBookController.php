@@ -15,6 +15,7 @@ class DayBookController extends Controller
     public function daybookindex(){
         $branch = BranchMaster::first();
         $data['branch'] = $branch;
+        // dd($branch);
         return view('report.dayBook',$data);
     }
 

@@ -15,17 +15,22 @@ use App\Models\LedgerMaster;
 use Illuminate\Support\Facades\DB;
 use App\Models\MemberSaving;
 use Session;
+use App\Models\GroupMaster;
 class ShareController extends Controller
 {
     public function index()
     {
         $data['title'] = "Share";
-        $data['agents'] = AgentMaster::get();
+        // $data['agents'] = AgentMaster::get();
+        $data['shares'] = MemberShare::get();
+        $data['groups'] = GroupMaster::whereIn('groupCode', ['C002', 'BANK001'])->get();
+        // dd($data['shares']);
         return view('transaction.share')->with($data);
     }
 
     public function transaction(Request $post)
     {
+        // dd($post->all());
         switch ($post->actiontype) {
             case 'getdata':
 
@@ -56,9 +61,9 @@ class ShareController extends Controller
                     });
 
                     $sessionenddate=$SessionMaster->endDate;
-                    $openingBal = DB::table('member_opening_balance')
-                        ->where('membership_no','=',$post->account)
-                        ->where('accType','Share')
+                    $openingBal = DB::table('member_accounts')
+                        ->where('accountNo','=',$post->account)
+                        // ->where('accType','Share')
                         ->first();
 
                     return response()->json(['status' => "success", "sessionenddate" => $sessionenddate, "acdetails" => $acdetails, "totalBalance"=>$totalBalance, "openingBal"=>$openingBal,'txndetails' => $txnacdetails, 'balance' => $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)))]);
@@ -88,9 +93,9 @@ class ShareController extends Controller
                     });
 
                     $sessionenddate=$SessionMaster->endDate;
-                    $openingBal = DB::table('member_opening_balance')
-                        ->where('membership_no','=',$post->account)
-                        ->where('accType','Share')
+                    $openingBal = DB::table('member_accounts')
+                        ->where('accountNo','=',$post->account)
+                        // ->where('accType','Share')
                         ->first();
 
                     //_______Saving Accounts
@@ -115,10 +120,9 @@ class ShareController extends Controller
                     ]);
                 }
 
-
-
                 break;
             case 'share':
+                // dd($post->all());
                 $rules = array(
                     'action' => 'required',
                     'account' => 'required',
@@ -150,7 +154,7 @@ class ShareController extends Controller
                 if ($post->action == "withdrawal") {
 
                     $balance =  $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)));
-                    if ($balance < $post->amount) {
+                    if ($balance == $post->amount) {
                         return response()->json(['status' => "Insufficient Balance", "message" => "Insufficient Balance"], 200);
                     }
                     $ldgerid = LedgerMaster::where('id', 1)
@@ -158,6 +162,7 @@ class ShareController extends Controller
 
                     DB::beginTransaction();
                     try {
+
                         $lastInsertedId = DB::table('member_shares')->insertGetId([
                             "serialNo" => $generalLedgers,
                             "accountId"  =>  $acdetails->id,
@@ -182,9 +187,9 @@ class ShareController extends Controller
                             "accountId"  =>  $acdetails->id,
                             'accountNo' => $post->account,
                             'memberType' => $post->memberType,
-                            'agentId' => $post->agentId,
-                            'ledgerCode' => "C002",
-                            'groupCode' => "C002",
+                            // 'agentId' => $post->agentId,
+                            'ledgerCode' => $post->bank,
+                            'groupCode' => $post->groupCode,
                             'formName'   => "Share",
                             'referenceNo' => $lastInsertedId,
                             'transactionDate' => date('Y-m-d', strtotime($post->transactionDate)),
@@ -376,6 +381,7 @@ class ShareController extends Controller
                     }
 
                 } else {
+                    // dd($post->all());
                     DB::beginTransaction();
                     try {
                         $lastInsertedId = DB::table('member_shares')->insertGetId([
@@ -403,8 +409,8 @@ class ShareController extends Controller
                             'accountNo' => $post->account,
                             'memberType' => 'Member',
                             'agentId' => $post->agentId ?? 1,
-                            'ledgerCode' => "C002",
-                            'groupCode' => "C002",
+                            'ledgerCode' => $post->bank,
+                            'groupCode' => $post->groupCode,
                             'referenceNo' => $lastInsertedId,
                             'formName'   => "Share",
                             'transactionDate' => date('Y-m-d', strtotime($post->transactionDate)),
@@ -450,7 +456,7 @@ class ShareController extends Controller
                     'transactionDate' => 'required',
                     'action' => 'required',
                 );
-
+                // dd($post->all());
                 $validator = \Validator::make($post->all(), $rules);
                 if ($validator->fails()) {
                     return response()->json(['errors' => $validator->errors()], 422);
@@ -568,7 +574,7 @@ class ShareController extends Controller
     }
 
     public function getbalance($ac, $lastDate){
-        $openingBal = DB::table('member_opening_balance')->where('membership_no',$ac)->where('accType','Share')->first();
+        $openingBal = DB::table('member_accounts')->where('accountNo',$ac)->first();
         $shareBal = $openingBal->opening_amount ?? 0 ;
         $credit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Deposit')->whereDate('transactionDate', '<=', $lastDate)->sum("depositAmount");
         $debit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Withdraw')->whereDate('transactionDate', '<=', $lastDate)->sum("withdrawAmount");

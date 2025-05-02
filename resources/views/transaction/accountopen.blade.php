@@ -4,7 +4,7 @@
     <div class="container-xxl flex-grow-1 container-p-y">
         <div class="card page_headings mb-4 cards">
             <div class="card-body py-2">
-                <h4 class="py-2"><span class="text-muted fw-light">Account / </span>Open Account</h4>
+                <h4 class="py-2"><span class="text-muted fw-light">Account / </span>Member Account</h4>
             </div>
         </div>
         <div class="row">
@@ -21,20 +21,20 @@
                                             Account Details
                                         </a>
                                     </li>
-                                    <li class="nav-item" role="presentation">
+                                    {{-- <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="address-details-tab" data-bs-toggle="tab"
                                             href="#address-details" role="tab" aria-controls="address-details"
                                             aria-selected="false">
                                             Address Details
                                         </a>
-                                    </li>
-                                    <li class="nav-item" role="presentation">
+                                    </li> --}}
+                                    {{-- <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="nominee-details-tab" data-bs-toggle="tab"
                                             href="#nominee-details" role="tab" aria-controls="nominee-details"
                                             aria-selected="false">
                                             Nominee Details
                                         </a>
-                                    </li>
+                                    </li> --}}
                                 </ul>
                                 <script>
                                     function resetform() {
@@ -59,15 +59,23 @@
                                                 <div class="row row-gap-2">
                                                     @php
                                                         $sessionId = Session::get('sessionId');
-                                                        $session = DB::table('session_masters')->where('id', $sessionId)->first();
+                                                        $session = DB::table('session_masters')
+                                                            ->where('id', $sessionId)
+                                                            ->first();
                                                         $startDate = date('d-m-Y');
 
                                                         if ($session) {
                                                             $currentYear = date('Y');
-                                                            $sessionStartYear = date('Y', strtotime($session->startDate));
+                                                            $sessionStartYear = date(
+                                                                'Y',
+                                                                strtotime($session->startDate),
+                                                            );
 
                                                             if ($sessionStartYear < $currentYear) {
-                                                                $startDate = date('d-m-Y', strtotime($session->startDate));
+                                                                $startDate = date(
+                                                                    'd-m-Y',
+                                                                    strtotime($session->startDate),
+                                                                );
                                                             }
                                                         }
                                                     @endphp
@@ -89,15 +97,12 @@
                                                             <option value="NonMember">Nominal Member</option>
                                                         </select>
                                                     </div>
-                                                    <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    {{-- <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
                                                         <label class="form-label" for="ACCTYPE">ACC TYPE</label>
-                                                        <select name="account_type" id="account_type"
-                                                            class="form-select form-select-sm" onchange="toggleDiv()">
-                                                            <option value="Single">Single</option>
-                                                            <option value="Joint">Joint Account</option>
-                                                            <option value="UnderGuardian">Under Guardian</option>
-                                                        </select>
-                                                    </div>
+                                                        <input type="text" id="account_type" value="Single"
+                                                            class="form-control form-control-sm" name="account_type"
+                                                            autocomplete="off">
+                                                    </div> --}}
                                                     <div
                                                         class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding saving_column">
                                                         <label class="form-label" for="MEMBERSHIPNO">MEMBERSHIP
@@ -139,9 +144,16 @@
 
                                                     <div
                                                         class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="OCCUPATION">OCCUPATION</label>
-                                                        <input type="text" id="occupation"
-                                                            class="form-control form-control-sm" name="occupation"
+                                                        <label class="form-label" for="department">Department</label>
+                                                        <input type="text" id="department"
+                                                            class="form-control form-control-sm" name="department"
+                                                            autocomplete="off">
+                                                    </div>
+                                                    <div
+                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
+                                                        <label class="form-label" for="designation">Designation</label>
+                                                        <input type="text" id="designation"
+                                                            class="form-control form-control-sm" name="designation"
                                                             autocomplete="off">
                                                     </div>
                                                     <!-- </div> -->
@@ -154,18 +166,6 @@
                                                             class="form-control form-control-sm" name="pan_number"
                                                             maxlength="10" oninput="this.value = this.value.toUpperCase()"
                                                             autocomplete="off">
-                                                    </div>
-
-                                                    <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                        <label class="form-label" for="CASTE">CASTE</label>
-                                                        <select name="member_caste" id="member_caste"
-                                                            class="form-select form-select-sm">
-                                                            <option value="General">General</option>
-                                                            <option value="OBC">OBC</option>
-                                                            <option value="ST">ST</option>
-                                                            <option value="SC">SC</option>
-                                                            <option value="Others">Others</option>
-                                                        </select>
                                                     </div>
 
                                                     <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
@@ -204,7 +204,7 @@
                                                         <input type="text" id="emp_code"
                                                             class="form-control form-control-sm" name="emp_code">
                                                     </div>
-                                                    <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    {{-- <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
                                                         <label class="form-label" for="AGENT">AGENT</label>
                                                         <select name="agent" id="agent"
                                                             class="form-select form-select-sm">
@@ -214,9 +214,108 @@
                                                                 </option>
                                                             @endforeach
                                                         </select>
-                                                    </div>
+                                                    </div> --}}
                                                 </div>
                                                 <!-- </div> -->
+                                            </div>
+                                            <h2>Address</h2>
+                                            <div class="row row-gap-2">
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="ADDRESS">ADDRESS</label>
+                                                    <input type="text" id="address" name="address"
+                                                        class="form-control form-control-sm">
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="STATE">STATE</label>
+                                                    <input type="text" id="state" name="state"
+                                                        class="form-control form-control-sm">
+                                                    {{-- <select name="state" id="state"
+                                                        class="form-select form-select-sm" onchange="getDistrict(this)">
+                                                        <option value="">Select State</option>
+                                                        @foreach ($state as $state)
+                                                            <option id="{{ $state->id }}"
+                                                                value="{{ $state->name }}">
+                                                                {{ $state->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select> --}}
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="DISTRICT">DISTRICT</label>
+                                                    <input type="text" id="districtId" name="districtId"
+                                                        class="form-control form-control-sm">
+                                                    {{-- <select name="districtId" id="districtId" onchange="gettehsil(this)"
+                                                        class="form-select form-select-sm">
+                                                        <option value="">Select</option> --}}
+                                                    </select>
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="TEHSIL">TEHSIL</label>
+                                                    <input type="text" id="tehsilId" name="tehsilId"
+                                                        class="form-control form-control-sm">
+                                                    {{-- <select name="tehsilId" id="tehsilId" onchange="getvillage(this)"
+                                                        class="form-select form-select-sm">
+                                                        <option value="">Select</option>
+                                                    </select> --}}
+                                                </div>
+                                                <!-- </div>
+
+                                                        <div class="row row-gap-2"> -->
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="VILLAGE POST">VILLAGE POST</label>
+                                                    <input type="text" id="villageId" name="villageId"
+                                                        class="form-control form-control-sm">
+                                                    {{-- <select name="villageId" id="villageId"
+                                                        class="form-select form-select-sm">
+                                                        <option value="">Select</option>
+                                                    </select> --}}
+                                                </div>
+                                                {{-- <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="WARD NO">WARD NO</label>
+                                                    <input type="text" id="ward_no" name="ward_no"
+                                                        class="form-control form-control-sm">
+                                                </div> --}}
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="CONTACT NO.">CONTACT NO.</label>
+                                                    <input type="text" id="contact_no" name="contact_no"
+                                                        class="form-control form-control-sm">
+                                                </div>
+                                            </div>
+                                            <h2>Nominee Detail</h2>
+                                            <div class="row row-gap-2">
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="NOMINEENAME">NOMINEE
+                                                        NAME</label>
+                                                    <input type="text" id="nominee_name" name="nominee_name"
+                                                        class="form-control form-control-sm">
+                                                </div>
+
+                                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="RELATION">RELATION</label>
+                                                    <input type="text" id="relation" name="relation"
+                                                        class="form-control form-control-sm">
+                                                </div>
+                                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="AdharNo">Adhaar No</label>
+                                                    <input type="text" id="nomineeadhaarno" name="nomineeadhaarno"
+                                                        class="form-control form-control-sm">
+                                                </div>
+                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="NOMINEEADDRESS">ADDRESS</label>
+                                                    <input type="text" id="nominee_address" name="nominee_address"
+                                                        class="form-control form-control-sm">
+                                                </div>
+                                                {{-- <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="AGE">AGE</label>
+                                                    <input type="text" id="age" name="age"
+                                                        class="form-control form-control-sm">
+                                                </div> --}}
+
+                                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    <label class="form-label" for="CONTACTNO">CONTACT NO</label>
+                                                    <input type="text" id="nomineecontact_no" name="contact_no"
+                                                        class="form-control form-control-sm">
+                                                </div>
                                             </div>
                                             <div class="row mt-4 uploadimagesdata">
                                                 <div class="col-md-3 col-sm-4 pt-4 col-6 inputesPadding">
@@ -301,379 +400,20 @@
                                                 </div>
                                             </div>
 
-                                            <div id="jointDiv" style="display: none;">
-                                                <h3 class="mt-5">Joint A/C</h3>
-                                                <div class="row row-gap-2">
-                                                    <div
-                                                        class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="NAME">NAME</label>
-                                                        <input type="text" id="joint_name"
-                                                            class="form-control form-control-sm" name="joint_name">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="USERTYPE">FATHER/HUSBAND</label>
-                                                        <input type="text" name="joint_father_husband"
-                                                            id="joint_father_husband"
-                                                            class="form-control form-control-sm">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding form-group">
-                                                        <label class="form-label" for="GENDER">GENDER</label>
-                                                        <select name="joint_gender" id="joint_gender"
-                                                            class="form-select form-select-sm">
-                                                            <option value="Male">Male</option>
-                                                            <option value="Female">Female</option>
-                                                            <option value="Other">Other</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="OCCUPATION">OCCUPATION</label>
-                                                        <input type="text" id="joint_occupation"
-                                                            class="form-control form-control-sm" name="joint_occupation">
-                                                    </div>
-                                                    <!-- </div>
-
-                                                <div class="row row-gap-2"> -->
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="pan_number">PAN NO.</label>
-                                                        <input type="text" id="joint_pan_number"
-                                                            class="form-control form-control-sm" name="joint_pan_number"
-                                                            maxlength="10"
-                                                            oninput="this.value = this.value.toUpperCase()">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="CASTE">CASTE</label>
-                                                        <select name="joint_member_caste" id="joint_member_caste"
-                                                            class="form-select form-select-sm">
-                                                            <option value="General">General</option>
-                                                            <option value="OBC">OBC</option>
-                                                            <option value="ST">ST</option>
-                                                            <option value="SC">SC</option>
-                                                            <option value="Others">Others</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="DATEOFBIRTH">DATE OF BIRTH</label>
-                                                        <input type="date" id="joint_member_dob"
-                                                            class="form-control form-control-sm" name="joint_member_dob">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="ADHAARNO">ADHAAR NO.</label>
-                                                        <input type="text" id="joint_adhaar_no"
-                                                            class="form-control form-control-sm" name="joint_adhaar_no"
-                                                            maxlength="12" minlength="12"
-                                                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                                                            pattern="[0-9]{12}" inputmode="numeric" autocomplete="off">
-                                                    </div>
-
-                                                    <!-- </div>
-
-                                                <div class="row row-gap-2"> -->
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="EMPLOYEECODE">EMPLOYEE CODE</label>
-                                                        <input type="text" id="joint_emp_code"
-                                                            class="form-control form-control-sm" name="joint_emp_code">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="ADDRESS">ADDRESS</label>
-                                                        <input type="text" id="joint_address" name="joint_address"
-                                                            class="form-control form-control-sm">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="STATE">STATE</label>
-                                                        <select name="joint_state" id="joint_state"
-                                                            class="form-select form-select-sm"
-                                                            onchange="getDistrict(this)">
-                                                            <option value="">Select State</option>
-                                                            @foreach ($state as $jointstate)
-                                                                <option id="{{ $jointstate->id }}"
-                                                                    value="{{ $jointstate->name }}">
-                                                                    {{ $jointstate->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="DISTRICT">DISTRICT</label>
-                                                        <select name="districtId" id="joint_districtId"
-                                                            onchange="gettehsil(this)" class="form-select form-select-sm">
-                                                            <option value="">Select</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- </div>
-
-                                                <div class="row row-gap-2"> -->
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="TEHSIL">TEHSIL</label>
-                                                        <select name="tehsilId" id="joint_tehsilId"
-                                                            onchange="getjointvillage(this)"
-                                                            class="form-select form-select-sm">
-                                                            <option value="">Select</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="VILLAGE POST">VILLAGE POST</label>
-                                                        <select name="villageId" id="joint_villageId"
-                                                            class="form-select form-select-sm">
-                                                            <option value="">Select</option>
-                                                        </select>
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="WARD NO">WARD NO</label>
-                                                        <input type="text" id="joint_ward_no" name="joint_ward_no"
-                                                            class="form-control form-control-sm">
-                                                    </div>
-
-                                                    <div
-                                                        class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 saving_column inputesPadding">
-                                                        <label class="form-label" for="CONTACT NO.">CONTACT NO.</label>
-                                                        <input type="text" id="joint_contact_no"
-                                                            name="joint_contact_no" class="form-control form-control-sm">
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="row row-gap-2 mt-4 uploadimagesdata">
-
-                                                    <div class="col-md-3 col-sm-4 pt-4 col-6 inputesPadding"
-                                                        id=" signature2">
-                                                        <div class="cardd bg-transparent">
-                                                            <div class="card-body cardBodyCustom">
-                                                                <div class="photo_upload text-center">
-                                                                    <label for=""
-                                                                        class="form-label">Signature</label>
-                                                                    <div class="photo_upload_inner position-relative">
-                                                                        <img src="http://placehold.it/180"
-                                                                            id="signature2person" alt="Image"
-                                                                            class="upload">
-                                                                    </div>
-                                                                    <div class="buttons">
-                                                                        <label for="signature2img"
-                                                                            class="custom-file-upload"><i
-                                                                                class="rder-0 iconsColorCustom"></i></label>
-                                                                        <button class="close_btn" type="button"
-                                                                            onclick="removeNewImage2()"><i
-                                                                                class="fa-solid fa-cloud-arrow-up bo-trash iconsColorCustom"></i></button>
-                                                                        <input class="inputFile" type="file"
-                                                                            id="signature2img" name="signature2img"
-                                                                            onchange="readurlc(this)"
-                                                                            value="{{ old('signature2img') }}"
-                                                                            style="display: none;">
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-md-3 col-sm-4 pt-4 col-6 inputesPadding"
-                                                        id="photoimg2">
-                                                        <div class="cardd bg-transparent">
-                                                            <div class="card-body cardBodyCustom">
-                                                                <div class="photo_upload text-center">
-                                                                    <label for="" class="form-label">Photo</label>
-                                                                    <div class="photo_upload_inner position-relative">
-                                                                        <img src="http://placehold.it/180"
-                                                                            id="imgphoto2screen" alt="Image"
-                                                                            class="upload">
-                                                                    </div>
-                                                                    <div class="buttons">
-                                                                        <label for="imgphoto2"
-                                                                            class="custom-file-upload"><i
-                                                                                class="fa-solid fa-cloud-arrow-up border-0 iconsColorCustom"></i></label>
-                                                                        <button class="close_btn" type="button"
-                                                                            onclick="removeImgphototimg()"><i
-                                                                                class="fa-solid fa-trash iconsColorCustom"></i></button>
-                                                                        <input class="inputFile" type="file"
-                                                                            id="imgphoto2" name="imgphoto2"
-                                                                            onchange="readUrle(this)"
-                                                                            value="{{ old('imgphoto2') }}"
-                                                                            style="display: none;">
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-md-3 col-sm-4 pt-4 col-6 inputesPadding"
-                                                        id="photoimg3">
-                                                        <div class="cardd bg-transparent">
-                                                            <div class="card-body cardBodyCustom">
-                                                                <div class="photo_upload text-center">
-                                                                    <label for="" class="form-label">ID
-                                                                        Proof</label>
-                                                                    <div class="photo_upload_inner position-relative">
-                                                                        <img src="http://placehold.it/180"
-                                                                            id="userprofilescreen3" alt="Image"
-                                                                            class="upload">
-                                                                    </div>
-                                                                    <div class="buttons">
-                                                                        <label for="useridprove"
-                                                                            class="custom-file-upload"><i
-                                                                                class="fa-solid fa-cloud-arrow-up border-0 iconsColorCustom"></i></label>
-                                                                        <button class="close_btn" type="button"
-                                                                            onclick="removeImgphotoprofile3remove()"><i
-                                                                                class="fa-solid fa-trash iconsColorCustom"></i></button>
-                                                                        <input class="inputFile" type="file"
-                                                                            id="useridprove" name="useridprove"
-                                                                            onchange="readUrlg(this)"
-                                                                            value="{{ old('useridprove') }}"
-                                                                            style="display: none;">
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-
                                             <div class="button justify-content-end text-end pt-3" id="submitbtns">
                                                 <button type="submit"
                                                     class="btn btn-primary px-4 reportSmallBtnCustom">Save</button>
                                             </div>
                                         </form>
                                     </div>
-                                    <div class="tab-pane fade" id="address-details" role="tabpanel"
-                                        aria-labelledby="address-details-tab">
-                                        <!-- Content for Address Details tab -->
-                                        <form action="javascript:void(0)" id="addressdetailsform">
-                                            <div class="row row-gap-2">
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="ADDRESS">ADDRESS</label>
-                                                    <input type="text" id="address" name="address"
-                                                        class="form-control form-control-sm">
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="STATE">STATE</label>
-                                                    <select name="state" id="state"
-                                                        class="form-select form-select-sm" onchange="getDistrict(this)">
-                                                        <option value="">Select State</option>
-                                                        @foreach ($state as $state)
-                                                            <option id="{{ $state->id }}"
-                                                                value="{{ $state->name }}">
-                                                                {{ $state->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="DISTRICT">DISTRICT</label>
-                                                    <select name="districtId" id="districtId" onchange="gettehsil(this)"
-                                                        class="form-select form-select-sm">
-                                                        <option value="">Select</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="TEHSIL">TEHSIL</label>
-                                                    <select name="tehsilId" id="tehsilId" onchange="getvillage(this)"
-                                                        class="form-select form-select-sm">
-                                                        <option value="">Select</option>
-                                                    </select>
-                                                </div>
-                                                <!-- </div>
 
-                                            <div class="row row-gap-2"> -->
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="VILLAGE POST">VILLAGE POST</label>
-                                                    <select name="villageId" id="villageId"
-                                                        class="form-select form-select-sm">
-                                                        <option value="">Select</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="WARD NO">WARD NO</label>
-                                                    <input type="text" id="ward_no" name="ward_no"
-                                                        class="form-control form-control-sm">
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                    <label class="form-label" for="CONTACT NO.">CONTACT NO.</label>
-                                                    <input type="text" id="contact_no" name="contact_no"
-                                                        class="form-control form-control-sm">
-                                                </div>
-                                                <div class="button justify-content-end text-end pt-3">
-                                                    <button type="submit"
-                                                        class="btn btn-primary px-4 reportSmallBtnCustom">Save</button>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
                                     <div class="tab-pane fade" id="nominee-details" role="tabpanel"
                                         aria-labelledby="nominee-details-tab">
                                         <!-- Content for Nominee Details tab -->
                                         <form action="javascript:void(0)" id="nomineedetailsform">
                                             <div class="">
                                                 <div class="">
-                                                    <div class="row row-gap-2">
-                                                        <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="NOMINEENAME">NOMINEE
-                                                                NAME</label>
-                                                            <input type="text" id="nominee_name" name="nominee_name"
-                                                                class="form-control form-control-sm">
-                                                        </div>
 
-                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="RELATION">RELATION</label>
-                                                            <input type="text" id="relation" name="relation"
-                                                                class="form-control form-control-sm">
-                                                        </div>
-                                                        <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="NOMINEEADDRESS">ADDRESS</label>
-                                                            <input type="text" id="nominee_address"
-                                                                name="nominee_address"
-                                                                class="form-control form-control-sm">
-                                                        </div>
-
-                                                        <div
-                                                            class="col-sm-3 py-2 col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="DOB">DATE OF BIRTH</label>
-                                                            <input type="date" id="date_of_birth" name="date_of_birth"
-                                                                class="form-control form-control-sm">
-                                                        </div>
-
-                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="AGE">AGE</label>
-                                                            <input type="text" id="age" name="age"
-                                                                class="form-control form-control-sm">
-                                                        </div>
-
-                                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
-                                                            <label class="form-label" for="CONTACTNO">CONTACT NO</label>
-                                                            <input type="text" id="nomineecontact_no"
-                                                                name="contact_no" class="form-control form-control-sm">
-                                                        </div>
-
-                                                        <div class="button justify-content-end text-end pt-3">
-                                                            <button type="submit"
-                                                                class="btn btn-primary px-4 reportSmallBtnCustom">Save</button>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </form>
@@ -693,46 +433,47 @@
                                 <thead class="table_head verticleAlignCenter">
                                     <tr>
                                         <th class="w-17">S No</th>
-                                        <th>Member Type</th>
-                                        <th>A/c No </th>
-                                        <th>Saving Ac/No</th>
-                                        <th>Acc Type</th>
                                         <th>Name</th>
+                                        <th>A/c No </th>
+                                        <th>Member Type</th>
+                                        {{-- <th>Acc Type</th> --}}
                                         <th>Contact</th>
-                                        <th>Status</th>
+                                        {{-- <th>Status</th> --}}
                                         <th>Created by</th>
                                         <th>AC Opening Date</th>
-                                        <!-- <th>Action</th> -->
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        @if (empty($memberacc->memberType) &&
-                                                empty($memberacc->accountNo) &&
-                                                empty($memberacc->accountType) &&
-                                                empty($memberacc->name) &&
-                                                empty($memberacc->phone) &&
-                                                empty($memberacc->openingDate))
-                                            <td colspan="11">All values are empty</td>
-                                        @else
-                                            <td></td>
-                                            <td>{{ $memberacc->memberType }}</td>
-                                            <td>{{ $memberacc->accountNo }}</td>
-                                            <td></td>
-                                            <td>{{ $memberacc->accountType }}</td>
-                                            <td>{{ $memberacc->name }}</td>
-                                            <td>{{ $memberacc->phone }}</td>
-                                            <td>{{ $status }}</td>
-                                            @php
-                                                $createdby = DB::table('users')
-                                                    ->where('id', $memberacc->updatedBy)
-                                                    ->value('username');
-                                            @endphp
 
-                                            <td>{{ $createdby }}</td>
-                                            <td>{{ $memberacc->openingDate }}</td>
-                                        @endif
-                                    </tr>
+                                    {{-- @if (empty($memberacc->memberType) && empty($memberacc->accountNo) && empty($memberacc->accountType) && empty($memberacc->name) && empty($memberacc->phone) && empty($memberacc->openingDate))
+                                            <td colspan="11">All values are empty</td>
+                                        @else --}}
+                                    @isset($memberacc)
+                                        @foreach ($memberacc as $row)
+                                            <tr>
+                                                <td>{{ $loop->index + 1 }}</td>
+                                                <td>{{ $row->name }}</td>
+                                                <td>{{ $row->accountNo }}</td>
+                                                <td>{{ $row->memberType }}</td>
+                                                {{-- <td>{{ $row->accountType }}</td> --}}
+                                                <td>{{ $row->panNo }}</td>
+                                                {{-- <td>{{ $status }}</td> --}}
+                                                @php
+                                                    $createdby = DB::table('users')
+                                                        ->where('id', $row->updatedBy)
+                                                        ->value('username');
+                                                @endphp
+
+                                                <td>{{ $createdby }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($row->openingDate)->format('d-m-Y') }}</td>
+
+                                                <td><button class="btn deletebtn" data-id="{{ $row->id }}">
+                                                    <i class="fa-solid fa-trash iconsColorCustom"></i>
+                                                </button></td>
+                                            </tr>
+                                        @endforeach
+                                    @endisset
                                 </tbody>
                             </table>
                         </div>
@@ -1121,9 +862,9 @@
                     gender: {
                         required: true,
                     },
-                    account_type: {
-                        required: true,
-                    },
+                    // account_type: {
+                    //     required: true,
+                    // },
 
                     member_ship_no: {
                         required: true,
@@ -1145,7 +886,7 @@
                     father_husband: "This field is required",
                     membertype: "This field is required",
                     gender: "This field is required",
-                    account_type: "This field is required",
+                    // account_type: "This field is required",
 
                     member_dob: "This field is required",
                     member_ship_no: "This field is required",
@@ -1332,32 +1073,35 @@
                         // var formattedDate = moment(response.data.member.openingDate).format('DD-MM-YYYY');
                         $("#openingdate").val(formattedDate);
                         $("#membertype").val(response.data.member.memberType);
-                        $("#account_type").val(response.data.member.accountType);
+                        // $("#account_type").val(response.data.member.accountType);
 
 
                         $("#father_husband").val(response.data.member.fatherName);
                         $("#gender").val(response.data.member.gender);
-                        $("#member_caste").val(response.data.member.caste);
                         $("#adhaar_no").val(response.data.member.aadharNo);
                         $("#pan_number").val(response.data.member.panNo);
-                        $("#occupation").val(response.data.member.occupation);
+                        $("#department").val(response.data.member.department);
+                        $("#designation").val(response.data.member.designation);
                         $("#ledger_no").val(response.data.member.ledgerNo);
                         $("#page_no").val(response.data.member.pageNo);
                         $("#member_dob").val(response.data.member.birthDate);
                         $("#emp_code").val(response.data.member.employeeCode);
-                        $("#agent").val(response.data.member.agentId);
+                        // $("#agent").val(response.data.member.agentId);
 
                         //member address
                         $("#address").val(response.data.member.address);
                         $("#state").val(response.data.member.state);
-                        $("#ward_no").val(response.data.member.wardNo);
+                        $("#districtId").val(response.data.member.district);
+                        $("#tehsilId").val(response.data.member.tehsil);
+                        $("#villageId").val(response.data.member.village);
                         $("#contact_no").val(response.data.member.phone);
 
                         //Nominee
                         $("#nominee_name").val(response.data.member.nomineeName);
                         $("#relation").val(response.data.member.nomineeRelation);
+                        $("#nomineeadhaarno").val(response.data.member.nomineeadhaarno);
                         $("#nominee_address").val(response.data.member.nomineeAddress);
-                        $("#date_of_birth").val(response.data.member.nomineeBirthDate);
+                        // $("#date_of_birth").val(response.data.member.nomineeBirthDate);
                         $("#nomineecontact_no").val(response.data.member.nomineePhone);
 
                         if (response.data.signature) {
@@ -1370,43 +1114,6 @@
 
                         if (response.data.photoidproof) {
                             document.getElementById("upload3").src = response.data.photoidproof;
-                        }
-
-
-                        if (response.data.member.accountType == "Joint") {
-                            $("#jointDiv").show();
-
-                            if (response.data.member.getjointmember.length > 0) {
-                                const jointMember = response.data.member.getjointmember[0];
-
-                                $("#joint_name").val(jointMember.name || '');
-                                $("#joint_father_husband").val(jointMember.fatherName || '');
-                                $("#joint_member_dob").val(jointMember.birthDate || '');
-                                $("#joint_gender").val(jointMember.gender || '');
-                                $("#joint_member_caste").val(jointMember.caste || '');
-                                $("#joint_adhaar_no").val(jointMember.aadharNo || '');
-                                $("#joint_pan_number").val(jointMember.panNo || '');
-                                $("#joint_occupation").val(jointMember.occupation || '');
-                                $("#joint_emp_code").val(jointMember.employeeCode || '');
-                                $("#joint_address").val(jointMember.address || '');
-                                $("#joint_contact_no").val(jointMember.phone || '');
-                                $("#joint_ward_no").val(jointMember.wardNo || '');
-
-                                if (response.data.signaturejoint) {
-                                    document.getElementById("signature2person").src = response.data
-                                        .signaturejoint;
-                                }
-                                if (response.data.photojoint) {
-                                    document.getElementById("imgphoto2screen").src = response.data
-                                        .photojoint;
-                                }
-                                if (response.data.photoidproofjoint) {
-                                    document.getElementById("userprofilescreen3").src = response
-                                        .data.photoidproofjoint;
-                                }
-                            }
-
-
                         }
 
                         $("#membershipmodel").modal('hide');
@@ -1427,5 +1134,48 @@
         if (document.readyState == "complete") {
             $(".transactionDate").val({{ session('currentdate') }});
         }
+        $(document).on('click','.deletebtn',function(event){
+                event.preventDefault();
+                let id = $(this).data('id');
+
+                swal({
+                    title: 'Are you sure?',
+                    text: "You want to delete a transaction. It cannot be recovered.",
+                    icon: 'warning',
+                    buttons: {
+                        cancel: "Cancel",
+                        confirm: {
+                            text: "Yes, Delete",
+                            closeModal: false
+                        }
+                    }
+                }).then((willDelete) => {
+                    if (willDelete) {
+                        // Show loading spinner
+                        swal({
+                            title: 'Deleting...',
+                            text: 'Please wait while the transaction is being deleted.',
+                            icon: 'info',
+                            buttons: false,
+                            closeOnClickOutside: false
+                        });
+
+                        $.ajax({
+                            url : "{{ route('deleteaccount') }}",
+                            type : 'post',
+                            data : {id : id},
+                            headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                            dataType : 'json',
+                            success : function(res){
+                                if(res.status === 'success'){
+                                    window.location.href="{{ route('accountopen.page') }}";
+                                }else{
+                                    notify(res.messages,'warning');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
     </script>
 @endpush

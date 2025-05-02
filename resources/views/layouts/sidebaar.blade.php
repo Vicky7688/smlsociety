@@ -35,7 +35,7 @@
 
             <ul class="menu-sub">
                    <li class="menu-item">
-                        <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
+                        {{-- <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
                             <div data-i18n="Head Office">Head Office</div>
                         </a>
                    </li>
@@ -74,11 +74,6 @@
                     </ul>
                 </li>
 
-
-
-
-
-
                 <li class="menu-item" style="">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <div data-i18n="Address Module">Address Module</div>
@@ -110,7 +105,7 @@
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> --}}
 
 
                 <li class="menu-item" style="">
@@ -128,17 +123,9 @@
                                 <div data-i18n="Create Ledger">Create Ledger </div>
                             </a>
                         </li>
-                        {{--  <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'naretion']) }}" class="menu-link">
-                                <div data-i18n="Create Naretion">Create Naretion</div>
-                            </a>
-                        </li>  --}}
                     </ul>
                 </li>
-
-
-
-                <li class="menu-item" style="">
+                {{-- <li class="menu-item" style="">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <div data-i18n="Schemes Module">Schemes Module</div>
                     </a>
@@ -154,13 +141,7 @@
                             </a>
                         </li>
                     </ul>
-                </li>
-
-
-
-
-
-
+                </li> --}}
 
                 <li class="menu-item" style="">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -177,14 +158,14 @@
                                 <div data-i18n="Create Loan Master">Create Loan Master</div>
                             </a>
                         </li>
-                        <li class="menu-item">
+                        {{-- <li class="menu-item">
                             <a href="{{ route('master', ['type' => 'purposeMaster']) }}" class="menu-link">
                                 <div data-i18n="Purpose Master">Purpose Master </div>
                             </a>
-                        </li>
+                        </li> --}}
                     </ul>
                 </li>
-                <li class="menu-item" style="">
+                {{-- <li class="menu-item" style="">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <div data-i18n="Daily Collection">Daily Collection</div>
                     </a>
@@ -197,62 +178,23 @@
                         </li>
 
                     </ul>
-                </li>
-                <li class="menu-item">
+                </li> --}}
+                {{-- <li class="menu-item">
                     <a href="{{route('tds-index')}}" class="menu-link">
                         <div data-i18n="TDS">TDS</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('sodmasterindex')}}" class="menu-link">
                         <div data-i18n="Secured Over Draft(SOD)">Secured Over Draft(SOD)</div>
                     </a>
-                </li>
-                <li class="menu-item">
+                </li> --}}
+                {{-- <li class="menu-item">
                     <a href="{{route('bankfdmasterindex')}}" class="menu-link">
                         <div data-i18n="Bank FD Master">Bank FD Master</div>
                     </a>
-                </li>
-                {{--  <li class="menu-item">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <div data-i18n="Inventory Module">Inventory Module</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'taxMaster']) }}" class="menu-link">
-                                <div data-i18n="Create Tax">Create Tax</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'unitMaster']) }}" class="menu-link">
-                                <div data-i18n="Create Unit">Create Unit</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'itemMaster']) }}" class="menu-link">
-                                <div data-i18n="Create Item">Create Item</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'depotMaster']) }}" class="menu-link">
-                                <div data-i18n="Depot Master">Depot Master</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'saleClientMaster']) }}" class="menu-link">
-                                <div data-i18n="Sale Client">Sale Client</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('master', ['type' => 'purchaseClientMaster']) }}" class="menu-link">
-                                <div data-i18n="Purchase Client">Purchase Client</div>
-                            </a>
-                        </li>
-
-
-                    </ul>
-                </li>  --}}
+                </li> --}}
             </ul>
         </li>
 
@@ -266,9 +208,16 @@
                         <div data-i18n="Membership Opening">Membership Opening</div>
                     </a>
                 </li>
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{ route('account-opening-index') }}" class="menu-link">
                         <div data-i18n="Account Opening">Account Opening</div>
+                    </a>
+                </li> --}}
+
+
+                <li class="menu-item">
+                    <a href="{{route('share')}}" class="menu-link">
+                        <div data-i18n="Share">Share</div>
                     </a>
                 </li>
                 <li class="menu-item">
@@ -276,75 +225,48 @@
                         <div data-i18n="Saving">Saving</div>
                     </a>
                 </li>
-                   {{--  <li class="menu-item">
-                    <a href="{{route('cds.index')}}" class="menu-link">
-                        <div data-i18n="Compulsory Deposit">Compulsory Deposit</div>
-                    </a>
-                </li>  --}}
-                <li class="menu-item">
-                    <a href="{{route('share')}}" class="menu-link">
-                        <div data-i18n="Share">Share</div>
-                    </a>
-                </li>
                 {{-- <li class="menu-item">
-                    <a href="{{route('fd.index')}}" class="menu-link">
-                        <div data-i18n="Fixed Deposit">Fixed Deposit</div>
-                    </a>
-                </li> --}}
-                <li class="menu-item">
                     <a href="{{route('fdscheme.index')}}" class="menu-link">
                         <div data-i18n="Fixed Deposit  (Scheme)">Fixed Deposit (Scheme)</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('rd.recurring.index')}}" class="menu-link">
                         <div data-i18n="Recurring Deposit">Recurring Deposit</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('bankfdindex')}}" class="menu-link">
                         <div data-i18n="Bank Fixed Deposit">Bank Fixed Deposit</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('cclIndex')}}" class="menu-link">
                         <div data-i18n="CCL Advancement">CCL Advancement</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('loan')}}" class="menu-link">
                         <div data-i18n="Loan">Loan</div>
                     </a>
-                </li>
+                </li> --}}
 
-                {{--  <li class="menu-item">
-                    <a href="{{route('')}}" class="menu-link">
-                        <div data-i18n="CCL Recovery">CCL Recovery</div>
-                    </a>
-                </li>  --}}
-
-
-                {{--  <li class="menu-item">
-                    <a href="{{route('transaction.misspage')}}" class="menu-link">
-                        <div data-i18n="MIS">MIS</div>
-                    </a>
-                </li>  --}}
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('journalVoucher.index')}}" class="menu-link">
                         <div data-i18n="Journal Voucher">Journal Voucher</div>
                     </a>
-                </li>
-                <li class="menu-item">
+                </li> --}}
+                {{-- <li class="menu-item">
                     <a href="{{route('dividend.index')}}" class="menu-link">
                         <div data-i18n="Dividend">Dividend</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item" style="">
+                {{-- <li class="menu-item" style="">
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
                         <div data-i18n="Daily Collection">Daily Collection</div>
                     </a>
@@ -354,43 +276,20 @@
                                 <div data-i18n="Daily Collection Saving">Daily Collection Saving</div>
                             </a>
                         </li>
-                        {{--  <li class="menu-item">
-                            <a href="{{route('daily.collection.page.loan')}}" class="menu-link">
-                                <div data-i18n="Daily Collection Loan">Daily Collection Loan</div>
-                            </a>
-                        </li>  --}}
-                    </ul>
-                </li>
 
-             {{--  <li class="menu-item" style="">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <div data-i18n="Trading">Trading</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li class="menu-item">
-                            <a href="{{ route('purchase.index') }}" class="menu-link">
-                                <div data-i18n="Purchase">Purchase</div>
-                            </a>
-                        </li>
-                        <li class="menu-item">
-                            <a href="{{ route('sale.index') }}" class="menu-link">
-                                <div data-i18n="Sale">Sale</div>
-                            </a>
-                        </li>
                     </ul>
-                </li>  --}}
-
-                <li class="menu-item">
+                </li> --}}
+                {{-- <li class="menu-item">
                     <a href="{{route('agent-commission-index')}}" class="menu-link">
                         <div data-i18n="Agent Commission">Agent Commission</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('securityoncommissionIndex')}}" class="menu-link">
                         <div data-i18n="Security On Commission">Security On Commission</div>
                     </a>
-                </li>
+                </li> --}}
 
 
             </ul>
@@ -407,12 +306,6 @@
                     </a>
                 </li> --}}
 
-                <li class="menu-item">
-                    <a href="{{ route('generalLegderIndex') }}" class="menu-link">
-                        <div data-i18n="General Ledger">General Ledger</div>
-                    </a>
-                </li>
-
 
                 <li class="menu-item">
                     <a href="{{ route('receiptanddisbursementIndex') }}" class="menu-link">
@@ -425,11 +318,11 @@
                     </a>
                 </li>
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{ route('cashbookindex') }}" class="menu-link">
                         <div data-i18n="Cash Book">Cash Book</div>
                     </a>
-                </li>
+                </li> --}}
 
 
 
@@ -439,11 +332,7 @@
                     </a>
                 </li>
 
-                 {{--  <li class="menu-item">
-                    <a href="{{ route('cds.index.report') }}" class="menu-link">
-                        <div data-i18n="Cds List">Cds List</div>
-                    </a>
-                </li>  --}}
+
 
 
                 <li class="menu-item">
@@ -451,12 +340,8 @@
                         <div data-i18n="Share List">Share List</div>
                     </a>
                 </li>
-                {{--  <li class="menu-item">
-                    <a href="{{route('misReport.index')}}" class="menu-link">
-                        <div data-i18n="MIS Report">MIS Report</div>
-                    </a>
-                </li>  --}}
-                <li class="menu-item">
+
+                {{-- <li class="menu-item">
                     <a href="{{route('fdReport.index')}}" class="menu-link">
                         <div data-i18n="FD List">FD Report</div>
                     </a>
@@ -465,9 +350,8 @@
                     <a href="{{route('rdReport.index')}}" class="menu-link">
                         <div data-i18n="RD List">RD Report</div>
                     </a>
-                </li>
-
-                <li class="menu-item">
+                </li> --}}
+                {{-- <li class="menu-item">
                     <a href="{{route('ccllistIndex')}}" class="menu-link">
                         <div data-i18n="SOD List">SOD List</div>
                     </a>
@@ -477,19 +361,19 @@
                     <a href="{{route('sodledgerindexlist')}}" class="menu-link">
                         <div data-i18n="SOD Ledger">SOD Ledger</div>
                     </a>
-                </li>
+                </li> --}}
 
 
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('securitydepositlist')}}" class="menu-link">
                         <div data-i18n="Security On Comm. List">Security On Comm. List</div>
                     </a>
-                </li>
+                </li> --}}
 
 
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('issueLoanReport.index')}}" class="menu-link">
                         <div data-i18n="Issue Loan List">Issue Loan Report</div>
                     </a>
@@ -498,18 +382,13 @@
                     <a href="{{route('dailyreportindex')}}" class="menu-link">
                         <div data-i18n="DailyCollection Report">DailyCollection Report</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('bankfdreportindex')}}" class="menu-link">
                         <div data-i18n="Bank FD Report">Bank FD Report</div>
                     </a>
                 </li>
-
-
-
-
-
 
                 <li class="menu-item">
                     <a href="{{route('balancebookindex')}}" class="menu-link">
@@ -517,31 +396,14 @@
                     </a>
                 </li>
 
-                {{--  <li class="menu-item">
-                    <a href="{{route('bankfd.index')}}" class="menu-link">
-                        <div data-i18n="Bank FD Report">Bank FD Report</div>
-                    </a>
-                </li>  --}}
-
-                {{--  <li class="menu-item">
-                    <a href="{{route('personal.ledger.index')}}" class="menu-link">
-                        <div data-i18n="Personal Ledger">Personal Ledger</div>
-                    </a>
-                </li>  --}}
-                {{--  <li class="menu-item">
-                    <a href="{{route('calculation.index')}}" class="menu-link">
-                        <div data-i18n="Intrest Calculation">Intrest Calculation</div>
-                    </a>
-                </li>  --}}
-
                 <li class="menu-item">
                     <a href="{{route('securitylistIndex')}}" class="menu-link">
                         <div data-i18n="Security Intt. Calculationt">Security Intt. Calculationt</div>
                     </a>
-                </li>
+                </li> --}}
 
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('interestcalculationindex')}}" class="menu-link">
                         <div data-i18n="Saving Intt. Calculation">Saving Intt. Calculation</div>
                     </a>
@@ -553,26 +415,11 @@
                     </a>
                 </li>
 
-{{--
-                <li class="menu-item">
-                    <a href="{{route('npaList.index')}}" class="menu-link">
-                        <div data-i18n="NPA Report">NPA Report</div>
-                    </a>
-                </li>  --}}
-
-
-
                  <li class="menu-item">
                     <a href="{{ route('balancesheetindex') }}" class="menu-link">
                         <div data-i18n="Balance Sheet">Balance Sheet</div>
                     </a>
-                </li>
-
-                  {{--  <li class="menu-item">
-                    <a href="{{ route('list.index') }}" class="menu-link">
-                        <div data-i18n="Auto Deduction">Auto Deduction</div>
-                    </a>
-                </li>  --}}
+                </li> --}}
 
             </ul>
         </li>

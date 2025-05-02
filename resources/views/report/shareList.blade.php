@@ -45,7 +45,7 @@
                                         Print
                                     </button>
 
-                                    <div class="ms-2 dropdown">
+                                    {{-- <div class="ms-2 dropdown">
                                         <button class="btn btn-primary dropdown-toggle reportSmallBtnCustom" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                             More
                                         </button>
@@ -54,7 +54,7 @@
                                             <li><a class="dropdown-item" href="#" onclick="downloadWord()"><i class="fa-regular fa-file-word"></i> &nbsp; Download as Word</a></li>
                                             <li><a class="dropdown-item" href="#" onclick="share()"><i class="fa-solid fa-share-nodes"></i> &nbsp; Share</a></li>
                                         </ul>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                         </div>
@@ -189,8 +189,7 @@ function printReport() {
             // Add header for printing
             var header = `
                  <div style="text-align: center;">
-                    <h4>{{$branch->name}}</h4>
-                    <h6>{{$branch->address}}</h6>
+
                     <h6> Share List upto `+ formatDate(endDate) +`</h6>
                 </div>
             `;

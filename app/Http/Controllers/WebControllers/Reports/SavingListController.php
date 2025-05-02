@@ -29,10 +29,10 @@ class SavingListController extends Controller
     {
         $memberType = $post->memberType;
 
-        $schemes = DB::table('scheme_masters')
-            ->where('memberType', $memberType)
-            ->where('secheme_type','Saving')
-            ->get();
+        // $schemes = DB::table('scheme_masters')
+        //     ->where('memberType', $memberType)
+        //     ->where('secheme_type','Saving')
+        //     ->get();
 
         if (!empty($schemes)) {
             return response()->json([
@@ -58,18 +58,30 @@ class SavingListController extends Controller
 
         if ($membertype === 'all') {
                 // Get all active saving accounts
-                $saving_accounts = DB::table('opening_accounts')
-                    ->select('opening_accounts.*', 'member_accounts.accountNo as membership', 'member_accounts.name')
-                    ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'opening_accounts.membershipno')
-                    ->where('accountname', '=', 'Saving')
-                    ->where('opening_accounts.status', '=', 'Active')
-                    ->get();
+              // Get all active saving accounts
+            // $saving_accounts = DB::table('member_accounts')
+            //     ->get()
+            //     ->keyBy('account_no');
 
-                // Get opening balances for saving accounts
-                $opening_balances = DB::table('member_opening_balance')
-                    ->where('accType', '=', 'Saving')
-                    ->get()
-                    ->keyBy('account_no');
+            //     // Get opening balances for saving accounts
+            //     // $opening_balances = DB::table('member_opening_balance')
+            //     //     ->where('accType', 'Saving')
+            //     //     ->get()
+            //     //     ->keyBy('account_no');
+
+            //     // Loop through and match
+            //     foreach ($saving_accounts as $account_no => $account) {
+            //     $balance = $account[$account_no]->saving ?? 0; // or null if not found
+            //     // Do something with $account and $balance
+            //     dd([
+            //         'account' => $account,
+            //         'opening_balance' => $balance,
+            //     ]);
+            // }
+
+                $saving_accounts = DB::table('member_accounts')->get()->keyBy('accountNo');
+
+
 
                 $session_master = SessionMaster::find(Session::get('sessionId'));
 
@@ -77,8 +89,7 @@ class SavingListController extends Controller
 
                 foreach ($saving_accounts as $sa) {
 
-                    $opening_amount = isset($opening_balances[$sa->accountNo]) ? $opening_balances[$sa->accountNo]->opening_amount : 0;
-
+                    $opening_amount = $sa->saving ?? 0;
 
 
 
