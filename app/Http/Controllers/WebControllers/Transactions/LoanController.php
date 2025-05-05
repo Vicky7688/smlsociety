@@ -146,6 +146,7 @@ class LoanController extends Controller
                     ->where('id', $post->loanId)
                     ->where('loantypess', 'FD')
                     ->first();
+
                 $data = DB::table('member_fds_scheme')
                     ->join('scheme_masters', 'member_fds_scheme.secheme_id', '=', 'scheme_masters.id')
                     ->select('member_fds_scheme.*', 'scheme_masters.name as schemname')
@@ -218,10 +219,12 @@ class LoanController extends Controller
 
                 break;
             default:
+            // dd($post->loanId);
                 $loan = DB::table('loan_masters')
                     ->where('id', $post->loanId)
                     ->where('loantypess', 'MTLoan')
                     ->first();
+                    dd($loan);
                 if (!empty($loan)) {
                     return response()->json(['status' => 'success', 'loanType' => $loan]);
                 } else {

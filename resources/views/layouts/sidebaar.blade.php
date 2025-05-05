@@ -158,11 +158,11 @@
                                 <div data-i18n="Create Loan Master">Create Loan Master</div>
                             </a>
                         </li>
-                        {{-- <li class="menu-item">
+                        <li class="menu-item">
                             <a href="{{ route('master', ['type' => 'purposeMaster']) }}" class="menu-link">
                                 <div data-i18n="Purpose Master">Purpose Master </div>
                             </a>
-                        </li> --}}
+                        </li>
                     </ul>
                 </li>
                 {{-- <li class="menu-item" style="">
@@ -249,11 +249,11 @@
                     </a>
                 </li> --}}
 
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{route('loan')}}" class="menu-link">
                         <div data-i18n="Loan">Loan</div>
                     </a>
-                </li> --}}
+                </li>
 
                 {{-- <li class="menu-item">
                     <a href="{{route('journalVoucher.index')}}" class="menu-link">

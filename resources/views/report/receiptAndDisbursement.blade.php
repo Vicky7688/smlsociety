@@ -97,8 +97,8 @@
                         </thead>
                         <tbody id="tableBody" class="table-border-bottom-0">
                             <!-- <tr>
-                                    <td colspan="4" class="text-center">No data available</td>
-                                </tr> -->
+                                        <td colspan="4" class="text-center">No data available</td>
+                                    </tr> -->
 
                         </tbody>
                         <tbody id="openingCash">
@@ -246,18 +246,17 @@
                             } else {
                                 $('#openingCash').append(
                                     `<tr><td colspan="4">No Opening Cash Available</td></tr>`
-                                    );
+                                );
                                 $('#closingCash').append(
                                     `<tr><td colspan="4">No Closing Cash Available</td></tr>`
-                                    );
+                                );
                             }
 
                             if (Array.isArray(type) && type.length > 0) {
                                 type.forEach((data, index) => {
                                     let headName = data.headName || data.name || 'N/A';
                                     let totalDebit = parseFloat(data.total_debit) || 0;
-                                    let totalCredit = parseFloat(data.total_credit) ||
-                                    0;
+                                    let totalCredit = parseFloat(data.total_credit) || 0;
 
                                     let row = `
                                         <tr>
