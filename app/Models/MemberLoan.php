@@ -71,19 +71,19 @@ class MemberLoan extends Model
     }
 
     public function getLoannameAttribute()
-{
-    $data = '';
-    if ($this->loanType) {
-        $loan = \App\Models\LoanMaster::where('id', $this->loanType)->first(['name']);
-        if ($loan) {
-            $data = $loan->name;
-        } else {
-            // Return empty if no matching loan type is found
-            $data = '';
+    {
+        $data = '';
+        if ($this->loanType) {
+            $loan = \App\Models\LoanMaster::where('id', $this->loanType)->first(['name']);
+            if ($loan) {
+                $data = $loan->name;
+            } else {
+                // Return empty if no matching loan type is found
+                $data = '';
+            }
         }
+        return $data;
     }
-    return $data;
-}
 
     public function getDeletedAtAttribute($value)
     {
@@ -97,11 +97,11 @@ class MemberLoan extends Model
 
     public function memberAccountGuranter1()
     {
-        return $this->belongsTo(MemberAccount::class, 'guranter1', 'accountNo')->where('memberType','Member');
+        return $this->belongsTo(MemberAccount::class, 'guranter1', 'accountNo')->where('memberType', 'Member');
     }
 
     public function memberAccountGuranter2()
     {
-        return $this->belongsTo(MemberAccount::class, 'guranter2', 'accountNo')->where('memberType','Member');
+        return $this->belongsTo(MemberAccount::class, 'guranter2', 'accountNo')->where('memberType', 'Member');
     }
 }

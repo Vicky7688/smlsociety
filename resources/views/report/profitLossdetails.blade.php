@@ -169,8 +169,7 @@
                 // Add header for printing
                 var header = `
                 <div style="text-align: center;">
-                    <h4>{{ $branch->name }}</h4>
-                    <h6>{{ $branch->address }}</h6>
+
                     <h6> Profit & Loss From ` + formatDate(start_date) + ` To ` + formatDate(end_date) + `</h6>
                 </div>
             `;

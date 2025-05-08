@@ -297,8 +297,7 @@
 
         var header = `
             <div style="text-align: center; margin-bottom: 1rem;">
-                <h4>{{$branch->name}}</h4>
-                <h6>{{$branch->address}}</h6>
+
                 <h6>General Ledger from ${startDate} to ${endDate}</h6>
             </div>`;
 

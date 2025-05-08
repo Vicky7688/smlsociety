@@ -14,12 +14,13 @@
                         <div class="row">
                             <div class="col-12">
                                 <ul class="nav nav-tabs gap-2 account_tabs" id="myTabs" role="tablist">
-                                    <li class="nav-item" role="presentation">
+                                    <li class="nav-item d-flex" role="presentation">
                                         <a class="nav-link active" id="account-details-tab" data-bs-toggle="tab"
                                             href="#account-details" role="tab" aria-controls="account-details"
-                                            aria-selected="true">
+                                            aria-selected="true" style="width: 300px;">
                                             Account Details
                                         </a>
+                                        <a class="nav-link active" href="{{ route('accountopen.page') }}">Reset</a>
                                     </li>
                                     {{-- <li class="nav-item" role="presentation">
                                         <a class="nav-link" id="address-details-tab" data-bs-toggle="tab"

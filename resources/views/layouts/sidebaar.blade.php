@@ -220,11 +220,11 @@
                         <div data-i18n="Share">Share</div>
                     </a>
                 </li>
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('savingaccountindex')}}" class="menu-link">
                         <div data-i18n="Saving">Saving</div>
                     </a>
-                </li>
+                </li> --}}
                 {{-- <li class="menu-item">
                     <a href="{{route('fdscheme.index')}}" class="menu-link">
                         <div data-i18n="Fixed Deposit  (Scheme)">Fixed Deposit (Scheme)</div>
@@ -300,11 +300,11 @@
                 <div data-i18n="Reports">Reports</div>
             </a>
             <ul class="menu-sub">
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{ route('generalLegderIndex') }}" class="menu-link">
                         <div data-i18n="General Ledger">General Ledger</div>
                     </a>
-                </li> --}}
+                </li>
 
 
                 <li class="menu-item">
@@ -318,19 +318,19 @@
                     </a>
                 </li>
 
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{ route('cashbookindex') }}" class="menu-link">
                         <div data-i18n="Cash Book">Cash Book</div>
                     </a>
-                </li> --}}
+                </li>
 
 
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{ route('savingList.index') }}" class="menu-link">
                         <div data-i18n="Saving List">Saving List</div>
                     </a>
-                </li>
+                </li> --}}
 
 
 
@@ -373,12 +373,12 @@
 
 
 
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{route('issueLoanReport.index')}}" class="menu-link">
                         <div data-i18n="Issue Loan List">Issue Loan Report</div>
                     </a>
                 </li>
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('dailyreportindex')}}" class="menu-link">
                         <div data-i18n="DailyCollection Report">DailyCollection Report</div>
                     </a>
@@ -407,15 +407,15 @@
                     <a href="{{route('interestcalculationindex')}}" class="menu-link">
                         <div data-i18n="Saving Intt. Calculation">Saving Intt. Calculation</div>
                     </a>
-                </li>
+                </li> --}}
 
-                <li class="menu-item">
+                {{-- <li class="menu-item">
                     <a href="{{route('profitlossindex')}}" class="menu-link">
                         <div data-i18n="Profit&Loss Report">Profit&Loss Report</div>
                     </a>
-                </li>
+                </li> --}}
 
-                 <li class="menu-item">
+                 {{-- <li class="menu-item">
                     <a href="{{ route('balancesheetindex') }}" class="menu-link">
                         <div data-i18n="Balance Sheet">Balance Sheet</div>
                     </a>

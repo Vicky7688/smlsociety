@@ -21,7 +21,7 @@ use App\Models\ReCurringRd;
 use App\Models\dailyrcovery;
 use App\Models\MemberSaving;
 use DateTime;
-use DateInterval;
+// use DateInterval;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -114,18 +114,18 @@ class LoanController extends Controller
             if ($post->schemes) {
                 $data = DB::table('member_fds_scheme')->whereIn('id', $post->schemes)->sum('principalAmount');
                 $interestRate = DB::table('member_fds_scheme')->whereIn('id', $post->schemes)->max('interestRate');
-                return response()->json(['status' => "success", "upto" => $data,'interestRate' => $interestRate]);
+                return response()->json(['status' => "success", "upto" => $data, 'interestRate' => $interestRate]);
             } else {
                 return response()->json(['status' => "fail", "upto" => 0]);
             }
-        } elseif($post->type == 'RD') {
+        } elseif ($post->type == 'RD') {
             if ($post->schemes) {
                 $data = DB::table('rd_receiptdetails')->whereIn('rc_account_no', $post->schemes)->sum('amount');
                 return response()->json(['status' => "success", "upto" => $data]);
             } else {
                 return response()->json(['status' => "fail", "upto" => 0]);
             }
-        }elseif($post->type == 'DailyDeposit'){
+        } elseif ($post->type == 'DailyDeposit') {
             if ($post->schemes) {
                 $data = DB::table('daily_collectionsavings')->whereIn('dailyaccountid', $post->schemes)->sum('deposit');
                 return response()->json(['status' => "success", "upto" => $data]);
@@ -139,129 +139,140 @@ class LoanController extends Controller
 
     public function getfdschemesloan(Request $post)
     {
-        $loanType = $post->loanType;
-        switch ($loanType) {
-            case "FD":
-                $loan = DB::table('loan_masters')
-                    ->where('id', $post->loanId)
-                    ->where('loantypess', 'FD')
-                    ->first();
+        $loanType = $post->loanId;
 
-                $data = DB::table('member_fds_scheme')
-                    ->join('scheme_masters', 'member_fds_scheme.secheme_id', '=', 'scheme_masters.id')
-                    ->select('member_fds_scheme.*', 'scheme_masters.name as schemname')
-                    ->where('member_fds_scheme.membershipno', '=', $post->accountNumber)
-                    ->where('member_fds_scheme.memberType', '=', $post->member)
-                    ->whereIn('member_fds_scheme.status', ['Active', 'Pluge'])
-                    ->get();
-                if (!empty($loan) && !empty($data)) {
-                    return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
-                } else {
-                    return response()->json(['status' => 'Fail', 'messages' => 'Fd A/c Not Found']);
-                }
-                break;
-            case "RD":
-                $loan = DB::table('loan_masters')
-                    ->where('id', $post->loanId)
-                    ->where('loantypess', 'RD')
-                    ->first();
+        $loan = DB::table('loan_masters')->where('id', $post->loanId)->first();
 
-                $data = DB::table('re_curring_rds')
-                    ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
-                    ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->select(
-                        're_curring_rds.id',
-                        're_curring_rds.rd_account_no',
-                        'scheme_masters.name as schemname',
-                        're_curring_rds.status',
-                        DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
-                    )
-                    ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
-                    ->where('re_curring_rds.memberType', '=', $post->member)
-                    ->whereIn('re_curring_rds.status', ['Active', 'Pluge'])
-                    ->groupBy('re_curring_rds.id', 're_curring_rds.rd_account_no', 'scheme_masters.name', 're_curring_rds.status',)
-                    ->get();
-                if (!empty($loan) && !empty($data)) {
-                    return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
-                } else {
-                    return response()->json(['status' => 'Fail', 'messages' => 'Rd A/c Not Found']);
-                }
-
-                break;
-            case "DailyDeposit" :
-
-                    $loan = DB::table('loan_masters')
-                        ->where('id', $post->loanId)
-                        ->where('loantypess', 'DailyDeposit')
-                        ->first();
-
-                    $data = DB::table('daily_collections')
-                        ->join('scheme_masters', 'daily_collections.schemeid', '=', 'scheme_masters.id')
-                        ->leftJoin('daily_collectionsavings', 'daily_collectionsavings.dailyaccountid', '=', 'daily_collections.id')
-                        ->select(
-                            'daily_collections.id',
-                            'daily_collections.account_no',
-                            'scheme_masters.name as schemname',
-                            'daily_collections.status',
-                            DB::raw('SUM(daily_collectionsavings.deposit) as deposit_amount')
-                        )
-                        ->where('daily_collections.membershipno', '=', $post->accountNumber)
-                        ->where('daily_collections.memberType', '=', $post->member)
-                        ->whereIn('daily_collections.status', ['Active', 'Pluge'])
-                        ->groupBy('daily_collections.id', 'daily_collections.account_no', 'scheme_masters.name', 'daily_collections.status')
-                        ->get();
-
-                        if (!empty($loan) && !empty($data)) {
-                            return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
-                        } else {
-                            return response()->json(['status' => 'Fail', 'messages' => 'Rd A/c Not Found']);
-                        }
-
-                break;
-            default:
-            // dd($post->loanId);
-                $loan = DB::table('loan_masters')
-                    ->where('id', $post->loanId)
-                    ->where('loantypess', 'MTLoan')
-                    ->first();
-                    dd($loan);
-                if (!empty($loan)) {
-                    return response()->json(['status' => 'success', 'loanType' => $loan]);
-                } else {
-                    return response()->json(['status' => 'Fail', 'messages' => 'Record Not Found']);
-                }
+        if (!empty($loan)) {
+            return response()->json(['status' => 'success', 'loanType' => $loan]);
+        } else {
+            return response()->json(['status' => 'Fail', 'messages' => 'Record Not Found']);
         }
+
+        // switch ($loanType) {
+        //     case "FD":
+        //         $loan = DB::table('loan_masters')
+        //             ->where('id', $post->loanId)
+        //             ->where('loantypess', 'FD')
+        //             ->first();
+
+        //         $data = DB::table('member_fds_scheme')
+        //             ->join('scheme_masters', 'member_fds_scheme.secheme_id', '=', 'scheme_masters.id')
+        //             ->select('member_fds_scheme.*', 'scheme_masters.name as schemname')
+        //             ->where('member_fds_scheme.membershipno', '=', $post->accountNumber)
+        //             ->where('member_fds_scheme.memberType', '=', $post->member)
+        //             ->whereIn('member_fds_scheme.status', ['Active', 'Pluge'])
+        //             ->get();
+        //         if (!empty($loan) && !empty($data)) {
+        //             return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
+        //         } else {
+        //             return response()->json(['status' => 'Fail', 'messages' => 'Fd A/c Not Found']);
+        //         }
+        //         break;
+        //     case "RD":
+        //         $loan = DB::table('loan_masters')
+        //             ->where('id', $post->loanId)
+        //             ->where('loantypess', 'RD')
+        //             ->first();
+
+        //         $data = DB::table('re_curring_rds')
+        //             ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
+        //             ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+        //             ->select(
+        //                 're_curring_rds.id',
+        //                 're_curring_rds.rd_account_no',
+        //                 'scheme_masters.name as schemname',
+        //                 're_curring_rds.status',
+        //                 DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
+        //             )
+        //             ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
+        //             ->where('re_curring_rds.memberType', '=', $post->member)
+        //             ->whereIn('re_curring_rds.status', ['Active', 'Pluge'])
+        //             ->groupBy('re_curring_rds.id', 're_curring_rds.rd_account_no', 'scheme_masters.name', 're_curring_rds.status',)
+        //             ->get();
+        //         if (!empty($loan) && !empty($data)) {
+        //             return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
+        //         } else {
+        //             return response()->json(['status' => 'Fail', 'messages' => 'Rd A/c Not Found']);
+        //         }
+
+        //         break;
+        //     case "DailyDeposit" :
+
+        //             $loan = DB::table('loan_masters')
+        //                 ->where('id', $post->loanId)
+        //                 ->where('loantypess', 'DailyDeposit')
+        //                 ->first();
+
+        //             $data = DB::table('daily_collections')
+        //                 ->join('scheme_masters', 'daily_collections.schemeid', '=', 'scheme_masters.id')
+        //                 ->leftJoin('daily_collectionsavings', 'daily_collectionsavings.dailyaccountid', '=', 'daily_collections.id')
+        //                 ->select(
+        //                     'daily_collections.id',
+        //                     'daily_collections.account_no',
+        //                     'scheme_masters.name as schemname',
+        //                     'daily_collections.status',
+        //                     DB::raw('SUM(daily_collectionsavings.deposit) as deposit_amount')
+        //                 )
+        //                 ->where('daily_collections.membershipno', '=', $post->accountNumber)
+        //                 ->where('daily_collections.memberType', '=', $post->member)
+        //                 ->whereIn('daily_collections.status', ['Active', 'Pluge'])
+        //                 ->groupBy('daily_collections.id', 'daily_collections.account_no', 'scheme_masters.name', 'daily_collections.status')
+        //                 ->get();
+
+        //                 if (!empty($loan) && !empty($data)) {
+        //                     return response()->json(['status' => 'success', 'loanType' => $loan, 'data' => $data]);
+        //                 } else {
+        //                     return response()->json(['status' => 'Fail', 'messages' => 'Rd A/c Not Found']);
+        //                 }
+
+        //         break;
+        //     default:
+        //     // dd($post->loanId);
+        //         $loan = DB::table('loan_masters')
+        //             ->where('id', $post->loanId)
+        //             // ->where('loantypess', 'MTLoan')
+        //             ->first();
+        //             // dd($loan);
+        //         if (!empty($loan)) {
+        //             return response()->json(['status' => 'success', 'loanType' => $loan]);
+        //         } else {
+        //             return response()->json(['status' => 'Fail', 'messages' => 'Record Not Found']);
+        //         }
+        // }
     }
 
 
 
     // public function getrdschemesloan(Request $post)
-    // {
+        // {
 
-    //     $data = DB::table('re_curring_rds')
-    //     ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
-    //     ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-    //     ->select(
-    //         're_curring_rds.id',
-    //         're_curring_rds.rd_account_no',
-    //         'scheme_masters.name as schemname',
-    //         DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
-    //     )
-    //     ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
-    //     ->where('re_curring_rds.status', '=', 'Active')
-    //     ->groupBy('re_curring_rds.id','re_curring_rds.rd_account_no','scheme_masters.name') // Group by the necessary columns
-    //     ->get();
+        //     $data = DB::table('re_curring_rds')
+        //     ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
+        //     ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+        //     ->select(
+        //         're_curring_rds.id',
+        //         're_curring_rds.rd_account_no',
+        //         'scheme_masters.name as schemname',
+        //         DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
+        //     )
+        //     ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
+        //     ->where('re_curring_rds.status', '=', 'Active')
+        //     ->groupBy('re_curring_rds.id','re_curring_rds.rd_account_no','scheme_masters.name') // Group by the necessary columns
+        //     ->get();
 
-    // if (sizeof($data)<=0) {
-    //     return response()->json(['status' => "fail", "data" => $data]);
-    // }
-    //     return response()->json(['status' => "success", "data" => $data]);
+        // if (sizeof($data)<=0) {
+        //     return response()->json(['status' => "fail", "data" => $data]);
+        // }
+        //     return response()->json(['status' => "success", "data" => $data]);
     // }
 
 
 
     public function transaction(Request $post)
     {
+        // dd($post->all());
+
         switch ($post->actiontype) {
             case 'getLoanType':
                 $loantypes = LoanMaster::where('memberType', $post->memberType)->get();
@@ -298,6 +309,7 @@ class LoanController extends Controller
                 break;
             case 'getLoanAc':
                 $acloan = MemberLoan::where('accountNo', $post->loanAcNo)->where('memberType', $post->member)->orderBy('id', 'desc')->get();
+                // dd($acloan);
                 if (count($acloan) > 0) {
                     return response()->json(['status' => "success", 'data' => $acloan]);
                 }
@@ -323,32 +335,45 @@ class LoanController extends Controller
                 return response()->json(['status' => "success", 'data' => $data]);
                 break;
             case 'transactionloan':
+                // dd($post->all());
                 $acdetails = MemberAccount::where(['accountNo' => $post->accountNumber, 'memberType' => $post->memberType])->first();
+
+
 
                 if (!$acdetails) {
                     return response()->json(['status' => "Invalid Account number"]);
                 }
-                $acloan = MemberLoan::where(['loanAcNo' => $post->loanAcNo, 'accountNo' => $post->accountNumber, 'memberType' => $post->memberType])->where('is_delete', '=', 'No')->first(['id']);
+
+                //_______Get Old Loan
+                $acloan = MemberLoan::where(
+                    [
+                        'loanAcNo' => $post->loanAcNo,
+                        'accountNo' => $post->accountNumber,
+                        'memberType' => $post->memberType
+                    ]
+                )
+                    ->where('is_delete', '=', 'No')
+                    ->first(['id']);
+
+
                 if ($acloan) {
                     return response()->json(['status' => "Account number already exist"]);
                 }
 
-                if (!empty($post->schemenames)) {
-                } else {
-                    $loanmaster = LoanMaster::where('id', $post->loanType)->first();
-                    if (!$loanmaster) {
-                        return response()->json(['status' => "Invalid Loan Type"]);
-                    }
+                $loanmaster = LoanMaster::where('id', $post->loanType)->first();
+                if (!$loanmaster) {
+                    return response()->json(['status' => "Invalid Loan Type"]);
                 }
 
-
+                $endDate =  date('Y-m-d', strtotime($post->loanDate));
 
                 if (date('Y-m-d', strtotime($post->loanDate)) < $acdetails->openingDate) {
                     return response()->json(['status' => "Date should not greator " . $acdetails->openingDate]);
                 }
 
-                $endDate =  date('Y-m-d', strtotime($post->loanDate));
+
                 $result = $this->isDateBetween(date('Y-m-d', strtotime($post->loanDate)));
+
                 if (!$result) {
                     return response()->json(['statuscode' => 'ERR', 'status' => 'Access denied for this session', 'message' => "Access denied for this session"], 400);
                 }
@@ -357,11 +382,14 @@ class LoanController extends Controller
                     $newDateTimestamp = strtotime("+$post->loanYear years", strtotime($loanDtate));
                     $endDate = date('Y-m-d', $newDateTimestamp);
                 }
+
                 if (isset($post->loanMonth) && $post->loanMonth > 0) {
+                    // dd($post->loanMonth);
                     $loanDtate  = date('Y-m-d', strtotime($endDate));
                     $newDateTimestamp = strtotime("+$post->loanMonth months", strtotime($loanDtate));
                     $endDate = date('Y-m-d', $newDateTimestamp);
                 }
+
 
 
                 $loancode = DB::table('loan_masters')
@@ -376,40 +404,35 @@ class LoanController extends Controller
 
 
 
-                $fdIdsStrings = '';
-                $rdIdsStrings = '';
-                $dailyIdsStrings = '';
 
-                if ($loancode->loantypess === 'FD') {
-                    if (!empty($post->schemenames)) {
-                        $fdIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $fdIdsStrings = "";
-                    }
-                }
+                // $fdIdsStrings = '';
+                // $rdIdsStrings = '';
+                // $dailyIdsStrings = '';
 
-                if ($loancode->loantypess === 'RD') {
-                    if (!empty($post->schemenames)) {
-                        $rdIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $rdIdsStrings = "";
-                    }
-                }
+                // if ($loancode->loantypess === 'FD') {
+                //     if (!empty($post->schemenames)) {
+                //         $fdIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $fdIdsStrings = "";
+                //     }
+                // }
 
-
-                if ($loancode->loantypess === 'DailyDeposit') {
-                    if (!empty($post->schemenames)) {
-                        $dailyIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $dailyIdsStrings = "";
-                    }
-                }
+                // if ($loancode->loantypess === 'RD') {
+                //     if (!empty($post->schemenames)) {
+                //         $rdIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $rdIdsStrings = "";
+                //     }
+                // }
 
 
-
-
-
-
+                // if ($loancode->loantypess === 'DailyDeposit') {
+                //     if (!empty($post->schemenames)) {
+                //         $dailyIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $dailyIdsStrings = "";
+                //     }
+                // }
 
                 $share = new ShareController;
                 $sharebalance = $share->getbalance($post->accountNumber, date('Y-m-d', strtotime($post->transactionDate)));
@@ -423,40 +446,41 @@ class LoanController extends Controller
                     $generalLedgers = "loan" . time();
                 } while (GeneralLedger::where("serialNo", "=", $generalLedgers)->first() instanceof GeneralLedger);
 
-                if ($post->memberType == "Member") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONM001")->first(['groupCode', 'ledgerCode']);
-                } else if ($post->memberType == "NonMember") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONN001")->first(['groupCode', 'ledgerCode']);
-                } else if ($post->memberType == "Staff") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONS001")->first(['groupCode', 'ledgerCode']);
-                }
+                // if ($post->memberType == "Member") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //      dd($ledgerMaster);
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONM001")->first(['groupCode', 'ledgerCode']);
+                // } else if ($post->memberType == "NonMember") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONN001")->first(['groupCode', 'ledgerCode']);
+                // } else if ($post->memberType == "Staff") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONS001")->first(['groupCode', 'ledgerCode']);
+                // }
 
 
 
@@ -465,128 +489,129 @@ class LoanController extends Controller
                     if (!$ledgerMasterCR) {
                         return response()->json(['status' => "Invalid Bank or Type"]);
                     }
-                } else if ($post->loanBy == "Saving") {
-                    $member_ship = $post->accountNumber;
-                    $account_opening = DB::table('opening_accounts')
-                        ->select(
-                            'opening_accounts.*',
-                            'schmeaster.id as sch_id',
-                            'schmeaster.scheme_code',
-                            'ledger_masters.reference_id',
-                            'ledger_masters.ledgerCode',
-                            'ledger_masters.groupCode',
-                            'refSchemeMaster.scheme_code as ref_scheme_code'
-                        )
-                        ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-                        ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-                        ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-                        ->where('opening_accounts.membershipno', $member_ship)
-                        ->where('opening_accounts.accountname', 'Saving')
-                        ->where('opening_accounts.status', 'Active')
-                        ->first();
+                    // } else if ($post->loanBy == "Saving") {
 
-                    $account_nos = $post->savingaccounts;
+                    //     $member_ship = $post->accountNumber;
+                    //     $account_opening = DB::table('opening_accounts')
+                    //         ->select(
+                    //             'opening_accounts.*',
+                    //             'schmeaster.id as sch_id',
+                    //             'schmeaster.scheme_code',
+                    //             'ledger_masters.reference_id',
+                    //             'ledger_masters.ledgerCode',
+                    //             'ledger_masters.groupCode',
+                    //             'refSchemeMaster.scheme_code as ref_scheme_code'
+                    //         )
+                    //         ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+                    //         ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+                    //         ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+                    //         ->where('opening_accounts.membershipno', $member_ship)
+                    //         ->where('opening_accounts.accountname', 'Saving')
+                    //         ->where('opening_accounts.status', 'Active')
+                    //         ->first();
 
-                    if ($account_opening) {
-                        if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                            // $saving_group = $account_opening->groupCode;
-                            // $saving_ledger = $account_opening->ledgerCode;
-                            $ledgerMasterCR = [
-                                'groupCode' => $account_opening->groupCode,
-                                'ledgerCode' => $account_opening->ledgerCode
-                            ];
-                        } else {
-                            return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-                        }
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
-                    }
+                    //     $account_nos = $post->savingaccounts;
+
+                    //     if ($account_opening) {
+                    //         if ($account_opening->groupCode && $account_opening->ledgerCode) {
+                    //             // $saving_group = $account_opening->groupCode;
+                    //             // $saving_ledger = $account_opening->ledgerCode;
+                    //             $ledgerMasterCR = [
+                    //                 'groupCode' => $account_opening->groupCode,
+                    //                 'ledgerCode' => $account_opening->ledgerCode
+                    //             ];
+                    //         } else {
+                    //             return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+                    //         }
+                    //     } else {
+                    //         return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+                    //     }
                 } else {
                     $ledgerMasterCR = LedgerMaster::where('ledgerCode', "C002")->first(['groupCode', 'ledgerCode']);
                 }
 
 
-                if (!empty($post->schemenames)) {
-                    $post['year'] =  $post->loanYear;
-                    $post['month'] =  $post->loanMonth;
-                    $post['intrest'] =  $post->loanInterest;
-                    $post['loanAmount']  = $post->amount;
-                    $post['loanType']  =  $post->loanType;
-                    $post['loandate']  =  $post->loanDate;
-                    $processingFee = $post->processingRates;
-                } else {
-                    $post['year'] =  $loanmaster->years;
-                    $post['month'] =  $loanmaster->months;
-                    $post['intrest'] =  $loanmaster->interest;
-                    $post['loanAmount']  = $post->amount;
-                    $post['loanType']  =  $loanmaster->id;
-                    $post['loandate']  =  $post->loanDate;
-                    $processingFee = (($post->amount * $loanmaster->processingFee) / 100);
-                }
+                // if (!empty($post->schemenames)) {
+                //     $post['year'] =  $post->loanYear;
+                //     $post['month'] =  $post->loanMonth;
+                //     $post['intrest'] =  $post->loanInterest;
+                //     $post['loanAmount']  = $post->amount;
+                //     $post['loanType']  =  $post->loanType;
+                //     $post['loandate']  =  $post->loanDate;
+                //     $processingFee = $post->processingRates;
+                // } else {
+                //     $post['year'] =  $loanmaster->years;
+                //     $post['month'] =  $loanmaster->months;
+                //     $post['intrest'] =  $loanmaster->interest;
+                //     $post['loanAmount']  = $post->amount;
+                //     $post['loanType']  =  $loanmaster->id;
+                //     $post['loandate']  =  $post->loanDate;
+                $processingFee = (($post->amount * $loanmaster->processingFee) / 100);
+                // }
+
+                // dd($processingFee);
 
 
                 $member_ship = $post->accountNumber;
-                $account_opening = DB::table('opening_accounts')
-                    ->select(
-                        'opening_accounts.*',
-                        'schmeaster.id as sch_id',
-                        'schmeaster.scheme_code',
-                        'ledger_masters.reference_id',
-                        'ledger_masters.ledgerCode',
-                        'ledger_masters.groupCode',
-                        'refSchemeMaster.scheme_code as ref_scheme_code'
-                    )
-                    ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-                    ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-                    ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-                    ->where('opening_accounts.membershipno', $member_ship)
-                    ->where('opening_accounts.accountname', 'Saving')
-                    ->where('opening_accounts.status', 'Active')
-                    ->first();
+                // $account_opening = DB::table('opening_accounts')
+                //     ->select(
+                //         'opening_accounts.*',
+                //         'schmeaster.id as sch_id',
+                //         'schmeaster.scheme_code',
+                //         'ledger_masters.reference_id',
+                //         'ledger_masters.ledgerCode',
+                //         'ledger_masters.groupCode',
+                //         'refSchemeMaster.scheme_code as ref_scheme_code'
+                //     )
+                //     ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+                //     ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+                //     ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+                //     ->where('opening_accounts.membershipno', $member_ship)
+                //     ->where('opening_accounts.accountname', 'Saving')
+                //     ->where('opening_accounts.status', 'Active')
+                //     ->first();
 
-                $account_nos = $account_opening->accountNo;
+                // $account_nos = $account_opening->accountNo;
 
-                if ($account_opening) {
-                    if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                        $savingss = [
-                            'groupCode' => $account_opening->groupCode,
-                            'ledgerCode' => $account_opening->ledgerCode
-                        ];
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-                    }
-                } else {
-                    return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
-                }
-
-                // dd($post->all());
+                // if ($account_opening) {
+                //     if ($account_opening->groupCode && $account_opening->ledgerCode) {
+                //         $savingss = [
+                //             'groupCode' => $account_opening->groupCode,
+                //             'ledgerCode' => $account_opening->ledgerCode
+                //         ];
+                //     } else {
+                //         return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+                //     }
+                // } else {
+                //     return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+                // }
 
                 DB::beginTransaction();
                 try {
-
+                    // dd(date('Y-m-d', strtotime($post->loanDate)),$endDate);
                     $lastInsertedId = DB::table('member_loans')->insertGetId([
                         'accountNo' => $acdetails->accountNo,
                         "accountId"  =>  $acdetails->id,
                         "serialNo" => $generalLedgers,
                         "loanDate"  => date('Y-m-d', strtotime($post->loanDate)),
-                        "loanEndDate" =>  $endDate,
+                        "loanEndDate" => $endDate,
                         'memberType' => $post->memberType,
-                        "ledgerCode"   => $ledgerMaster->ledgerCode,
-                        'groupCode' =>  $ledgerMaster->groupCode,
+                        "ledgerCode"   => $ledgerMasterCR->ledgerCode,
+                        'groupCode' =>  $ledgerMasterCR->groupCode,
                         "loanAcNo"  => $post->loanAcNo,
                         "purpose"   => $post->purpose,
                         "loanType"  => $post->loanType,
                         "processingFee" => $processingFee,
                         "processingRates" => $post->processingRates,
-                        "loanYear" => $post['year'],
-                        "loanMonth" => $post['month'],
+                        "loanYear" => $post->loanYear,
+                        "loanMonth" => $post->loanMonth,
                         "loanInterest"  =>  $post->loanInterest,
                         "loanPanelty" => $post->defintr,
-                        "fdId"   =>  $fdIdsStrings,
+                        // "fdId"   =>  $fdIdsStrings,
                         // "fdAmount"  =>  $fdAcsString,
-                        "rd_id"   =>  $rdIdsStrings,
+                        // "rd_id"   =>  $rdIdsStrings,
                         // "rd_aacount"  =>  $rdAcsString,
-                        "dailyId" => $dailyIdsStrings,
+                        // "dailyId" => $dailyIdsStrings,
                         "loanAmount" => $post->amount,
                         "bankDeduction" => $post->bankDeduction,
                         "deductionAmount" => $post->deduction,
@@ -596,6 +621,8 @@ class LoanController extends Controller
                         "loan_app_fee" => $post->loan_app_fee,
                         "installmentType" => $post->installmentType,
                         "guranter1" => "",
+                        // "gaurantor1name" => "",
+                        // "documents" => "",
                         "guranter2" => "",
                         "Status"   => "Disbursed",
                         "branchId"   => session('branchid') ?? 1,
@@ -609,465 +636,467 @@ class LoanController extends Controller
                     } else {
                         $this->insertInstallments($this->getinstallmetslist($post), $lastInsertedId);
                     }
-                    if ($post->loanBy == "Saving") {
-                        $saving_withdraw = new MemberSaving();
-                        $saving_withdraw->secheme_id = $account_opening->sch_id;
-                        $saving_withdraw->serialNo = $generalLedgers;
-                        $saving_withdraw->accountId = $account_nos;
-                        $saving_withdraw->accountNo = $post->accountNumber;
-                        $saving_withdraw->memberType = $post->memberType;
-                        $saving_withdraw->groupCode = $ledgerMasterCR['groupCode'];
-                        $saving_withdraw->ledgerCode = $ledgerMasterCR['ledgerCode'];
-                        $saving_withdraw->savingNo = '';
-                        $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->loanDate));
-                        $saving_withdraw->transactionType = 'toloan';
-                        $saving_withdraw->depositAmount = $post->amount;
-                        $saving_withdraw->withdrawAmount = 0;
-                        $saving_withdraw->paymentType = '';
-                        $saving_withdraw->bank = '';
-                        $saving_withdraw->chequeNo = 'trfdFromLoan';
-                        $saving_withdraw->narration = 'Saving A/c- ' . $account_nos . ' - From Loan' . $post->accountNumber;
-                        $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
-                        $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
-                        $saving_withdraw->agentId = $post->agentId;
-                        $saving_withdraw->updatedBy = $post->user()->id;
-                        $saving_withdraw->is_delete = 'No';
-                        $saving_withdraw->save();
 
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            'memberType' => $post->memberType,
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
-                            'groupCode' => $ledgerMasterCR['groupCode'],
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName"        => "LoanDisbursed",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Cr',
-                            'transactionAmount' => $post->amount,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
+                    // if ($post->loanBy == "Saving") {
+                    //     $saving_withdraw = new MemberSaving();
+                    //     $saving_withdraw->secheme_id = $account_opening->sch_id;
+                    //     $saving_withdraw->serialNo = $generalLedgers;
+                    //     $saving_withdraw->accountId = $account_nos;
+                    //     $saving_withdraw->accountNo = $post->accountNumber;
+                    //     $saving_withdraw->memberType = $post->memberType;
+                    //     $saving_withdraw->groupCode = $ledgerMasterCR['groupCode'];
+                    //     $saving_withdraw->ledgerCode = $ledgerMasterCR['ledgerCode'];
+                    //     $saving_withdraw->savingNo = '';
+                    //     $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->loanDate));
+                    //     $saving_withdraw->transactionType = 'toloan';
+                    //     $saving_withdraw->depositAmount = $post->amount;
+                    //     $saving_withdraw->withdrawAmount = 0;
+                    //     $saving_withdraw->paymentType = '';
+                    //     $saving_withdraw->bank = '';
+                    //     $saving_withdraw->chequeNo = 'trfdFromLoan';
+                    //     $saving_withdraw->narration = 'Saving A/c- ' . $account_nos . ' - From Loan' . $post->accountNumber;
+                    //     $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
+                    //     $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
+                    //     $saving_withdraw->agentId = $post->agentId;
+                    //     $saving_withdraw->updatedBy = $post->user()->id;
+                    //     $saving_withdraw->is_delete = 'No';
+                    //     $saving_withdraw->save();
 
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            'memberType' => 'Member',
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   => $ledgerMaster->ledgerCode,
-                            'groupCode' =>  $ledgerMaster->groupCode,
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName" => "LoanDisbursed",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Dr',
-                            'transactionAmount' => $post->amount,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $acdetails->id,
+                    //     'memberType' => $post->memberType,
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
+                    //     'groupCode' => $ledgerMasterCR['groupCode'],
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName"        => "LoanDisbursed",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Cr',
+                    //     'transactionAmount' => $post->amount,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
 
-
-
-                        if ($processingFee > 0) {
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => 'PRO01',
-                                'groupCode' => 'INCM001',
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Processing Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $processingFee,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $account_nos,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => $ledgerMasterCR['ledgerCode'],
-                                'groupCode' => $ledgerMasterCR['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Processing Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $processingFee,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-
-                            DB::table('member_savings')->insert([
-                                'secheme_id' => $account_opening->sch_id,
-                                'serialNo' => $generalLedgers,
-                                'accountId' => $account_nos,
-                                'accountNo' => $post->accountNumber,
-                                'memberType' => $post->memberType,
-                                'groupCode' => $ledgerMasterCR['groupCode'],
-                                'ledgerCode' => $ledgerMasterCR['ledgerCode'],
-                                'savingNo' => '',
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'toloan',
-                                'depositAmount' => 0,
-                                'withdrawAmount' => $processingFee,
-                                'paymentType' => '',
-                                'bank' => '',
-                                'chequeNo' => 'trfdFromLoan',
-                                'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
-                                'branchId' => session('branchId') ? session('branchId') : 1,
-                                'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                'agentId' => $post->agentId,
-                                'updatedBy' => $post->user()->id,
-                                'is_delete' => 'No',
-                            ]);
-                        }
-
-                        $loan_application_charges = $post->loan_app_fee;
-
-                        if ($loan_application_charges > 0) {
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => 'LO05',
-                                'groupCode' => 'INCM001',
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Loan Applicaton Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $loan_application_charges,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('member_savings')->insert([
-                                'secheme_id' => $account_opening->sch_id,
-                                'serialNo' => $generalLedgers,
-                                'accountId' => $account_nos,
-                                'accountNo' => $post->accountNumber,
-                                'memberType' => $post->memberType,
-                                'groupCode' => $savingss['groupCode'],
-                                'ledgerCode' => $savingss['ledgerCode'],
-                                'savingNo' => '',
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'toloan',
-                                'depositAmount' => 0,
-                                'withdrawAmount' => $loan_application_charges,
-                                'paymentType' => '',
-                                'bank' => '',
-                                'chequeNo' => 'trfdFromLoan',
-                                'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
-                                'branchId' => session('branchId') ? session('branchId') : 1,
-                                'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                'agentId' => $post->agentId,
-                                'updatedBy' => $post->user()->id,
-                                'is_delete' => 'No',
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   =>  $savingss['ledgerCode'],
-                                'groupCode' => $savingss['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $loan_application_charges,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-                        }
-
-                        if ($loancode->loantypess === 'FD') {
-
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $fdid) {
-                                    MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
-
-                        if ($loancode->loantypess === 'RD') {
-
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $fdid) {
-                                    ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
-
-                        if ($loancode->loantypess === 'DailyDeposit') {
-
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $dailyId) {
-                                    DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
-
-                    } else {
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            'memberType' => $post->memberType,
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   => 'PRO01',
-                            'groupCode' => 'INCM001',
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName"        => "Processing Fee",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Cr',
-                            'transactionAmount' => $processingFee,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
-
-                        DB::table('member_savings')->insert([
-                            'secheme_id' => $account_opening->sch_id,
-                            'serialNo' => $generalLedgers,
-                            'accountId' => $account_nos,
-                            'accountNo' => $post->accountNumber,
-                            'memberType' => $post->memberType,
-                            'groupCode' => $savingss['groupCode'],
-                            'ledgerCode' => $savingss['ledgerCode'],
-                            'savingNo' => '',
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'toloan',
-                            'depositAmount' => 0,
-                            'withdrawAmount' => $processingFee,
-                            'paymentType' => '',
-                            'bank' => '',
-                            'chequeNo' => 'trfdFromLoan',
-                            'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
-                            'branchId' => session('branchId') ? session('branchId') : 1,
-                            'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                            'agentId' => $post->agentId,
-                            'updatedBy' => $post->user()->id,
-                            'is_delete' => 'No',
-                        ]);
-
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $account_opening->id,
-                            'memberType' => $post->memberType,
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   => $savingss['ledgerCode'],
-                            'groupCode' => $savingss['groupCode'],
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName"        => "Processing Fee",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Dr',
-                            'transactionAmount' => $processingFee,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
-
-
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            'memberType' => $post->memberType,
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
-                            'groupCode' => $ledgerMasterCR['groupCode'],
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName"        => "LoanDisbursed",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Cr',
-                            'transactionAmount' => $post->amount,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
-
-                        DB::table('general_ledgers')->insert([
-                            "serialNo" => $generalLedgers,
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            'memberType' => 'Member',
-                            'agentId' => $post->agentId,
-                            "ledgerCode"   => $ledgerMaster->ledgerCode,
-                            'groupCode' =>  $ledgerMaster->groupCode,
-                            'referenceNo' => $lastInsertedId,
-                            'entryMode' => "automatic",
-                            "formName" => "LoanDisbursed",
-                            'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                            'transactionType' => 'Dr',
-                            'transactionAmount' => $post->amount,
-                            'narration' => $post->naration,
-                            'branchId' =>  session('branchid') ?? 1,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'created_at' => date('Y-m-d H:i:s'),
-                            'updatedBy' => $post->user()->id,
-                        ]);
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $acdetails->id,
+                    //     'memberType' => 'Member',
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   => $ledgerMaster->ledgerCode,
+                    //     'groupCode' =>  $ledgerMaster->groupCode,
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName" => "LoanDisbursed",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Dr',
+                    //     'transactionAmount' => $post->amount,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
 
 
 
-                        $loan_application_charges = $post->loan_app_fee;
+                    // if ($processingFee > 0) {
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   => 'PRO01',
+                    //         'groupCode' => 'INCM001',
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "Processing Fee",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Cr',
+                    //         'transactionAmount' => $processingFee,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
 
-                        if ($loan_application_charges > 0) {
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => 'LO05',
-                                'groupCode' => 'INCM001',
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Loan Applicaton Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $loan_application_charges,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('member_savings')->insert([
-                                'secheme_id' => $account_opening->sch_id,
-                                'serialNo' => $generalLedgers,
-                                'accountId' => $account_nos,
-                                'accountNo' => $post->accountNumber,
-                                'memberType' => $post->memberType,
-                                'groupCode' => $savingss['groupCode'],
-                                'ledgerCode' => $savingss['ledgerCode'],
-                                'savingNo' => '',
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'toloan',
-                                'depositAmount' => 0,
-                                'withdrawAmount' => $loan_application_charges,
-                                'paymentType' => '',
-                                'bank' => '',
-                                'chequeNo' => 'trfdFromLoan',
-                                'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
-                                'branchId' => session('branchId') ? session('branchId') : 1,
-                                'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                'agentId' => $post->agentId,
-                                'updatedBy' => $post->user()->id,
-                                'is_delete' => 'No',
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   =>  $savingss['ledgerCode'],
-                                'groupCode' => $savingss['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $loan_application_charges,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-                        }
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $account_nos,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   => $ledgerMasterCR['ledgerCode'],
+                    //         'groupCode' => $ledgerMasterCR['groupCode'],
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "Processing Fee",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Dr',
+                    //         'transactionAmount' => $processingFee,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
 
 
-                        // dd($post->all());
+                    //     DB::table('member_savings')->insert([
+                    //         'secheme_id' => $account_opening->sch_id,
+                    //         'serialNo' => $generalLedgers,
+                    //         'accountId' => $account_nos,
+                    //         'accountNo' => $post->accountNumber,
+                    //         'memberType' => $post->memberType,
+                    //         'groupCode' => $ledgerMasterCR['groupCode'],
+                    //         'ledgerCode' => $ledgerMasterCR['ledgerCode'],
+                    //         'savingNo' => '',
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'toloan',
+                    //         'depositAmount' => 0,
+                    //         'withdrawAmount' => $processingFee,
+                    //         'paymentType' => '',
+                    //         'bank' => '',
+                    //         'chequeNo' => 'trfdFromLoan',
+                    //         'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
+                    //         'branchId' => session('branchId') ? session('branchId') : 1,
+                    //         'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //         'agentId' => $post->agentId,
+                    //         'updatedBy' => $post->user()->id,
+                    //         'is_delete' => 'No',
+                    //     ]);
+                    // }
 
-                        $loancode = DB::table('loan_masters')
-                            ->select(
-                                'loan_masters.*',
-                                'ledger_masters.id as ledgerid',
-                                'ledger_masters.*'
-                            )
-                            ->where('loan_masters.id', $post->loanType)
-                            ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                            ->first();
+                    // $loan_application_charges = $post->loan_app_fee;
+
+                    // if ($loan_application_charges > 0) {
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   => 'LO05',
+                    //         'groupCode' => 'INCM001',
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "Loan Applicaton Fee",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Cr',
+                    //         'transactionAmount' => $loan_application_charges,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+
+                    //     DB::table('member_savings')->insert([
+                    //         'secheme_id' => $account_opening->sch_id,
+                    //         'serialNo' => $generalLedgers,
+                    //         'accountId' => $account_nos,
+                    //         'accountNo' => $post->accountNumber,
+                    //         'memberType' => $post->memberType,
+                    //         'groupCode' => $savingss['groupCode'],
+                    //         'ledgerCode' => $savingss['ledgerCode'],
+                    //         'savingNo' => '',
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'toloan',
+                    //         'depositAmount' => 0,
+                    //         'withdrawAmount' => $loan_application_charges,
+                    //         'paymentType' => '',
+                    //         'bank' => '',
+                    //         'chequeNo' => 'trfdFromLoan',
+                    //         'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
+                    //         'branchId' => session('branchId') ? session('branchId') : 1,
+                    //         'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //         'agentId' => $post->agentId,
+                    //         'updatedBy' => $post->user()->id,
+                    //         'is_delete' => 'No',
+                    //     ]);
+
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   =>  $savingss['ledgerCode'],
+                    //         'groupCode' => $savingss['groupCode'],
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "LoanDisbursed",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Dr',
+                    //         'transactionAmount' => $loan_application_charges,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+                    // }
+
+                    // if ($loancode->loantypess === 'FD') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $fdid) {
+                    //             MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+
+                    // if ($loancode->loantypess === 'RD') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $fdid) {
+                    //             ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+
+                    // if ($loancode->loantypess === 'DailyDeposit') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $dailyId) {
+                    //             DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+
+                    // } else {
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $acdetails->id,
+                    //     'memberType' => $post->memberType,
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   => 'PRO01',
+                    //     'groupCode' => 'INCM001',
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName"        => "Processing Fee",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Cr',
+                    //     'transactionAmount' => $processingFee,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
+
+                    // DB::table('member_savings')->insert([
+                    //     'secheme_id' => $account_opening->sch_id,
+                    //     'serialNo' => $generalLedgers,
+                    //     'accountId' => $account_nos,
+                    //     'accountNo' => $post->accountNumber,
+                    //     'memberType' => $post->memberType,
+                    //     'groupCode' => $savingss['groupCode'],
+                    //     'ledgerCode' => $savingss['ledgerCode'],
+                    //     'savingNo' => '',
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'toloan',
+                    //     'depositAmount' => 0,
+                    //     'withdrawAmount' => $processingFee,
+                    //     'paymentType' => '',
+                    //     'bank' => '',
+                    //     'chequeNo' => 'trfdFromLoan',
+                    //     'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
+                    //     'branchId' => session('branchId') ? session('branchId') : 1,
+                    //     'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //     'agentId' => $post->agentId,
+                    //     'updatedBy' => $post->user()->id,
+                    //     'is_delete' => 'No',
+                    // ]);
+
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $account_opening->id,
+                    //     'memberType' => $post->memberType,
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   => $savingss['ledgerCode'],
+                    //     'groupCode' => $savingss['groupCode'],
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName"        => "Processing Fee",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Dr',
+                    //     'transactionAmount' => $processingFee,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
 
 
 
-                        if ($loancode->loantypess === 'FD') {
+                    DB::table('general_ledgers')->insert([
+                        "serialNo" => $generalLedgers,
+                        'accountNo' => $acdetails->accountNo,
+                        "accountId"  =>  $acdetails->id,
+                        'memberType' => $post->memberType,
+                        'agentId' => $post->agentId,
+                        "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
+                        'groupCode' => $ledgerMasterCR['groupCode'],
+                        'referenceNo' => $lastInsertedId,
+                        'entryMode' => "automatic",
+                        "formName"  => "LoanDisbursed",
+                        'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                        'transactionType' => 'Cr',
+                        'transactionAmount' => $post->amount,
+                        'narration' => $post->naration,
+                        'branchId' =>  session('branchid') ?? 1,
+                        'sessionId' => session('sessionId') ?? 1,
+                        'created_at' => now(),
+                        'updatedBy' => $post->user()->id,
+                    ]);
 
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $fdid) {
-                                    MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
+                    DB::table('general_ledgers')->insert([
+                        "serialNo" => $generalLedgers,
+                        'accountNo' => $acdetails->accountNo,
+                        "accountId"  =>  $acdetails->id,
+                        'memberType' => 'Member',
+                        'agentId' => $post->agentId,
+                        "ledgerCode"   => $loancode->ledgerCode,
+                        'groupCode' =>  $loancode->groupCode,
+                        'referenceNo' => $lastInsertedId,
+                        'entryMode' => "automatic",
+                        "formName" => "LoanDisbursed",
+                        'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                        'transactionType' => 'Dr',
+                        'transactionAmount' => $post->amount,
+                        'narration' => $post->naration,
+                        'branchId' =>  session('branchid') ?? 1,
+                        'sessionId' => session('sessionId') ?? 1,
+                        'created_at' => now(),
+                        'updatedBy' => $post->user()->id,
+                    ]);
 
-                        if ($loancode->loantypess === 'RD') {
 
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $fdid) {
-                                    ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
 
-                        if ($loancode->loantypess === 'DailyDeposit') {
+                    // $loan_application_charges = $post->loan_app_fee;
 
-                            if (!empty($post->schemenames)) {
-                                foreach ($post->schemenames as $dailyId) {
-                                    DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
-                                }
-                            }
-                        }
-                    }
+                    // if ($loan_application_charges > 0) {
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   => 'LO05',
+                    //         'groupCode' => 'INCM001',
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "Loan Applicaton Fee",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Cr',
+                    //         'transactionAmount' => $loan_application_charges,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+
+                    //     DB::table('member_savings')->insert([
+                    //         'secheme_id' => $account_opening->sch_id,
+                    //         'serialNo' => $generalLedgers,
+                    //         'accountId' => $account_nos,
+                    //         'accountNo' => $post->accountNumber,
+                    //         'memberType' => $post->memberType,
+                    //         'groupCode' => $savingss['groupCode'],
+                    //         'ledgerCode' => $savingss['ledgerCode'],
+                    //         'savingNo' => '',
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'toloan',
+                    //         'depositAmount' => 0,
+                    //         'withdrawAmount' => $loan_application_charges,
+                    //         'paymentType' => '',
+                    //         'bank' => '',
+                    //         'chequeNo' => 'trfdFromLoan',
+                    //         'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
+                    //         'branchId' => session('branchId') ? session('branchId') : 1,
+                    //         'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //         'agentId' => $post->agentId,
+                    //         'updatedBy' => $post->user()->id,
+                    //         'is_delete' => 'No',
+                    //     ]);
+
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   =>  $savingss['ledgerCode'],
+                    //         'groupCode' => $savingss['groupCode'],
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "LoanDisbursed",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Dr',
+                    //         'transactionAmount' => $loan_application_charges,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+                    // }
+
+
+                    // dd($post->all());
+
+                    // $loancode = DB::table('loan_masters')
+                    //     ->select(
+                    //         'loan_masters.*',
+                    //         'ledger_masters.id as ledgerid',
+                    //         'ledger_masters.*'
+                    //     )
+                    //     ->where('loan_masters.id', $post->loanType)
+                    //     ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                    //     ->first();
+
+
+
+                    // if ($loancode->loantypess === 'FD') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $fdid) {
+                    //             MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+
+                    // if ($loancode->loantypess === 'RD') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $fdid) {
+                    //             ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+
+                    // if ($loancode->loantypess === 'DailyDeposit') {
+
+                    //     if (!empty($post->schemenames)) {
+                    //         foreach ($post->schemenames as $dailyId) {
+                    //             DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
+                    //         }
+                    //     }
+                    // }
+                    // }
 
                     DB::commit();
                     return response()->json([
@@ -1077,10 +1106,11 @@ class LoanController extends Controller
                 } catch (\Exception $e) {
                     DB::rollBack();
                     // dd($e->getMessage());
-                    return response()->json(['status' => $e->getMessage(), "message" => $e->getline()], 200);
+                    return response()->json(['status' => $e->getMessage(), "message" => $e->getLine()]);
                 }
                 break;
             case 'actiontypeupdate':
+
                 $acdetails = MemberAccount::where(['accountNo' => $post->accountNumber, 'memberType' => $post->memberType])->first();
 
                 if (!$acdetails) {
@@ -1093,13 +1123,13 @@ class LoanController extends Controller
                 //     return response()->json(['status' => "Account number already exist"]);
                 // }
 
-                if (!empty($post->schemenames)) {
-                } else {
-                    $loanmaster = LoanMaster::where('id', $post->loanType)->first();
-                    if (!$loanmaster) {
-                        return response()->json(['status' => "Invalid Loan Type"]);
-                    }
+                // if (!empty($post->schemenames)) {
+                // } else {
+                $loanmaster = LoanMaster::where('id', $post->loanType)->first();
+                if (!$loanmaster) {
+                    return response()->json(['status' => "Invalid Loan Type"]);
                 }
+                // }
 
 
                 if (date('Y-m-d', strtotime($post->loanDate)) < $acdetails->openingDate) {
@@ -1134,33 +1164,33 @@ class LoanController extends Controller
 
 
 
-                $fdIdsStrings = '';
-                $rdIdsStrings = '';
-                $dailyIdsStrings = '';
+                // $fdIdsStrings = '';
+                // $rdIdsStrings = '';
+                // $dailyIdsStrings = '';
 
-                if ($loancode->loantypess === 'FD') {
-                    if (!empty($post->schemenames)) {
-                        $fdIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $fdIdsStrings = "";
-                    }
-                }
+                // if ($loancode->loantypess === 'FD') {
+                //     if (!empty($post->schemenames)) {
+                //         $fdIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $fdIdsStrings = "";
+                //     }
+                // }
 
-                if ($loancode->loantypess === 'RD') {
-                    if (!empty($post->schemenames)) {
-                        $rdIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $rdIdsStrings = "";
-                    }
-                }
+                // if ($loancode->loantypess === 'RD') {
+                //     if (!empty($post->schemenames)) {
+                //         $rdIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $rdIdsStrings = "";
+                //     }
+                // }
 
-                if ($loancode->loantypess === 'DailyDeposit') {
-                    if (!empty($post->schemenames)) {
-                        $dailyIdsStrings = implode(',', $post->schemenames);
-                    } else {
-                        $dailyIdsStrings = "";
-                    }
-                }
+                // if ($loancode->loantypess === 'DailyDeposit') {
+                //     if (!empty($post->schemenames)) {
+                //         $dailyIdsStrings = implode(',', $post->schemenames);
+                //     } else {
+                //         $dailyIdsStrings = "";
+                //     }
+                // }
 
 
                 // $rdIdsStrings = implode(',', $rdIdStrings);
@@ -1180,40 +1210,40 @@ class LoanController extends Controller
 
 
 
-                if ($post->memberType == "Member") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONM001")->first(['groupCode', 'ledgerCode']);
-                } else if ($post->memberType == "NonMember") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONN001")->first(['groupCode', 'ledgerCode']);
-                } else if ($post->memberType == "Staff") {
-                    $ledgerMaster = DB::table('loan_masters')
-                        ->select(
-                            'loan_masters.*',
-                            'ledger_masters.id as ledgerid',
-                            'ledger_masters.*'
-                        )
-                        ->where('loan_masters.id', $post->loanType)
-                        ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                        ->first();
-                    // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONS001")->first(['groupCode', 'ledgerCode']);
-                }
+                // if ($post->memberType == "Member") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONM001")->first(['groupCode', 'ledgerCode']);
+                // } else if ($post->memberType == "NonMember") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONN001")->first(['groupCode', 'ledgerCode']);
+                // } else if ($post->memberType == "Staff") {
+                //     $ledgerMaster = DB::table('loan_masters')
+                //         ->select(
+                //             'loan_masters.*',
+                //             'ledger_masters.id as ledgerid',
+                //             'ledger_masters.*'
+                //         )
+                //         ->where('loan_masters.id', $post->loanType)
+                //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                //         ->first();
+                //     // $ledgerMaster = LedgerMaster::where('ledgerCode', "LONS001")->first(['groupCode', 'ledgerCode']);
+                // }
 
 
                 if ($post->loanBy == "Transfer") {
@@ -1221,99 +1251,100 @@ class LoanController extends Controller
                     if (!$ledgerMasterCR) {
                         return response()->json(['status' => "Invalid Bank or Type"]);
                     }
-                } else if ($post->loanBy == "Saving") {
-                    $member_ship = $post->accountNumber;
-                    $account_opening = DB::table('opening_accounts')
-                        ->select(
-                            'opening_accounts.*',
-                            'schmeaster.id as sch_id',
-                            'schmeaster.scheme_code',
-                            'ledger_masters.reference_id',
-                            'ledger_masters.ledgerCode',
-                            'ledger_masters.groupCode',
-                            'refSchemeMaster.scheme_code as ref_scheme_code'
-                        )
-                        ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-                        ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-                        ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-                        ->where('opening_accounts.membershipno', $member_ship)
-                        ->where('opening_accounts.accountname', 'Saving')
-                        ->where('opening_accounts.status', 'Active')
-                        ->first();
-
-                    $account_nos = $post->savingaccounts;
-
-                    if ($account_opening) {
-                        if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                            // $saving_group = $account_opening->groupCode;
-                            // $saving_ledger = $account_opening->ledgerCode;
-                            $ledgerMasterCR = [
-                                'groupCode' => $account_opening->groupCode,
-                                'ledgerCode' => $account_opening->ledgerCode
-                            ];
-                        } else {
-                            return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-                        }
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
-                    }
                 } else {
+                    //  else if ($post->loanBy == "Saving") {
+                    //     $member_ship = $post->accountNumber;
+                    //     $account_opening = DB::table('opening_accounts')
+                    //         ->select(
+                    //             'opening_accounts.*',
+                    //             'schmeaster.id as sch_id',
+                    //             'schmeaster.scheme_code',
+                    //             'ledger_masters.reference_id',
+                    //             'ledger_masters.ledgerCode',
+                    //             'ledger_masters.groupCode',
+                    //             'refSchemeMaster.scheme_code as ref_scheme_code'
+                    //         )
+                    //         ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+                    //         ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+                    //         ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+                    //         ->where('opening_accounts.membershipno', $member_ship)
+                    //         ->where('opening_accounts.accountname', 'Saving')
+                    //         ->where('opening_accounts.status', 'Active')
+                    //         ->first();
+
+                    //     $account_nos = $post->savingaccounts;
+
+                    //     if ($account_opening) {
+                    //         if ($account_opening->groupCode && $account_opening->ledgerCode) {
+                    //             // $saving_group = $account_opening->groupCode;
+                    //             // $saving_ledger = $account_opening->ledgerCode;
+                    //             $ledgerMasterCR = [
+                    //                 'groupCode' => $account_opening->groupCode,
+                    //                 'ledgerCode' => $account_opening->ledgerCode
+                    //             ];
+                    //         } else {
+                    //             return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+                    //         }
+                    //     } else {
+                    //         return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+                    //     }
+                    // } else {
                     $ledgerMasterCR = LedgerMaster::where('ledgerCode', "C002")->first(['groupCode', 'ledgerCode']);
                 }
 
 
-                if (!empty($post->schemenames)) {
-                    $post['year'] =  $post->loanYear;
-                    $post['month'] =  $post->loanMonth;
-                    $post['intrest'] =  $post->loanInterest;
-                    $post['loanAmount']  = $post->amount;
-                    $post['loanType']  =  $post->loanType;
-                    $post['loandate']  =  $post->loanDate;
-                    $processingFee = $post->processingRates;
-                } else {
-                    $post['year'] =  $loanmaster->years;
-                    $post['month'] =  $loanmaster->months;
-                    $post['intrest'] =  $loanmaster->interest;
-                    $post['loanAmount']  = $post->amount;
-                    $post['loanType']  =  $loanmaster->id;
-                    $post['loandate']  =  $post->loanDate;
-                    $processingFee = (($post->amount * $loanmaster->processingFee) / 100);
-                }
+                // if (!empty($post->schemenames)) {
+                //     $post['year'] =  $post->loanYear;
+                //     $post['month'] =  $post->loanMonth;
+                //     $post['intrest'] =  $post->loanInterest;
+                //     $post['loanAmount']  = $post->amount;
+                //     $post['loanType']  =  $post->loanType;
+                //     $post['loandate']  =  $post->loanDate;
+                $processingFee = $post->processingRates;
+                // } else {
+                //     $post['year'] =  $loanmaster->years;
+                //     $post['month'] =  $loanmaster->months;
+                //     $post['intrest'] =  $loanmaster->interest;
+                //     $post['loanAmount']  = $post->amount;
+                //     $post['loanType']  =  $loanmaster->id;
+                //     $post['loandate']  =  $post->loanDate;
+                //     $processingFee = (($post->amount * $loanmaster->processingFee) / 100);
+                // }
 
 
                 $member_ship = $post->accountNumber;
-                $account_opening = DB::table('opening_accounts')
-                    ->select(
-                        'opening_accounts.*',
-                        'schmeaster.id as sch_id',
-                        'schmeaster.scheme_code',
-                        'ledger_masters.reference_id',
-                        'ledger_masters.ledgerCode',
-                        'ledger_masters.groupCode',
-                        'refSchemeMaster.scheme_code as ref_scheme_code'
-                    )
-                    ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
-                    ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
-                    ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
-                    ->where('opening_accounts.membershipno', $member_ship)
-                    ->where('opening_accounts.accountname', 'Saving')
-                    ->where('opening_accounts.status', 'Active')
-                    ->first();
+                // $account_opening = DB::table('opening_accounts')
+                //     ->select(
+                //         'opening_accounts.*',
+                //         'schmeaster.id as sch_id',
+                //         'schmeaster.scheme_code',
+                //         'ledger_masters.reference_id',
+                //         'ledger_masters.ledgerCode',
+                //         'ledger_masters.groupCode',
+                //         'refSchemeMaster.scheme_code as ref_scheme_code'
+                //     )
+                //     ->leftJoin('scheme_masters as schmeaster', 'schmeaster.id', '=', 'opening_accounts.schemetype')
+                //     ->leftJoin('ledger_masters', 'ledger_masters.ledgerCode', '=', 'schmeaster.scheme_code')
+                //     ->leftJoin('scheme_masters as refSchemeMaster', 'refSchemeMaster.id', '=', 'ledger_masters.reference_id')
+                //     ->where('opening_accounts.membershipno', $member_ship)
+                //     ->where('opening_accounts.accountname', 'Saving')
+                //     ->where('opening_accounts.status', 'Active')
+                //     ->first();
 
-                $account_nos = $account_opening->accountNo;
+                // $account_nos = $account_opening->accountNo;
 
-                if ($account_opening) {
-                    if ($account_opening->groupCode && $account_opening->ledgerCode) {
-                        $savingss = [
-                            'groupCode' => $account_opening->groupCode,
-                            'ledgerCode' => $account_opening->ledgerCode
-                        ];
-                    } else {
-                        return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
-                    }
-                } else {
-                    return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
-                }
+                // if ($account_opening) {
+                //     if ($account_opening->groupCode && $account_opening->ledgerCode) {
+                //         $savingss = [
+                //             'groupCode' => $account_opening->groupCode,
+                //             'ledgerCode' => $account_opening->ledgerCode
+                //         ];
+                //     } else {
+                //         return response()->json(['status' => 'fail', 'messages' => 'Saving Group && Ledger Code Not Found']);
+                //     }
+                // } else {
+                //     return response()->json(['status' => 'fail', 'messages' => 'Saving Account Not Found']);
+                // }
 
 
 
@@ -1334,547 +1365,544 @@ class LoanController extends Controller
 
                     $receipt = LoanRecovery::where('LoanId', $post->id)->where('is_delete', 'No')->first();
 
-                    if ($receipt) {
-                        return response()->json(['status' => "Please Detele Recovery First"]);
+                    // if ($receipt) {
+                    //     return response()->json(['status' => "Please Detele Recovery First"]);
+                    // }else {
+
+                    // if (!empty($loanFetch->fdId)) {
+                    //     $fdidis = explode(',', $loanFetch->fdId);
+                    //     foreach ($fdidis as $fdidisis) {
+                    //         MemberFdScheme::where('id', $fdidisis)->update(['status' => "Active"]);
+                    //     }
+                    // }
+
+                    // if (!empty($loanFetch->rd_id)) {
+                    //     $rdidis = explode(',', $loanFetch->rd_id);
+                    //     foreach ($rdidis as $rdidisis) {
+                    //         DB::table('re_curring_rds')->where('id', $rdidisis)->update(['status' => "Active"]);
+                    //     }
+                    // }
+
+                    // if (!empty($loanFetch->dailyId)) {
+                    //     $dailyids = explode(',', $loanFetch->dailyId);
+                    //     foreach ($dailyids as $ids) {
+                    //         DB::table('daily_collections')->where('id', $ids)->update(['status' => "Active"]);
+                    //     }
+                    // }
+
+
+                    DB::table('general_ledgers')->where('serialNo', $loanFetch->serialNo)->delete();
+                    DB::table('member_loans')->where("id", $post->id)->delete();
+                    DB::table('loan_installments')->where("LoanId", $post->id)->delete();
+                    // DB::table('member_savings')->where('serialNo', $loanFetch->serialNo)->delete();
+
+
+                    $lastInsertedId = DB::table('member_loans')->insertGetId([
+                        'accountNo' => $acdetails->accountNo,
+                        "accountId"  =>  $acdetails->id,
+                        "serialNo" => $generalLedgers,
+                        "loanDate"  => date('Y-m-d', strtotime($post->loanDate)),
+                        "loanEndDate" =>  $endDate,
+                        'memberType' => $post->memberType,
+                        "ledgerCode"   => $ledgerMasterCR->ledgerCode,
+                        'groupCode' =>  $ledgerMasterCR->groupCode,
+                        "loanAcNo"  => $post->loanAcNo,
+                        "purpose"   => $post->purpose,
+                        "loanType"  => $post->loanType,
+                        "processingFee" => $processingFee,
+                        "processingRates" => $post->processingRates,
+                        "loanYear" => $post->loanYear,
+                        "loanMonth" => $post->loanMonth,
+                        "loanInterest"  =>  $post->loanInterest,
+                        "loanPanelty" => $post->defintr,
+                        // "fdId"   =>  $fdIdsStrings,
+                        // "fdAmount"  =>  $fdAcsString,
+                        // "rd_id"   =>  $rdIdsStrings,
+                        // "rd_aacount"  =>  $rdAcsString,
+                        // "dailyId"   =>  $dailyIdsStrings,
+
+                        "loanAmount" => $post->amount,
+                        "bankDeduction" => $post->bankDeduction,
+                        "deductionAmount" => $post->deduction,
+                        "pernote"  => $post->pernote,
+                        "loanBy" => $post->loanBy,
+                        "chequeNo" => "",
+                        "loan_app_fee" => $post->loan_app_fee,
+                        "installmentType" => $post->installmentType,
+                        "guranter1" => "",
+                        "guranter2" => "",
+                        // "documents" => "",
+                        // "gaurantor1name" => "",
+                        "Status"   => "Disbursed",
+                        "branchId"   => session('branchid') ?? 1,
+                        'agentId' => $post->agentId,
+                        'sessionId' => session('sessionId') ?? 1,
+                        'updatedBy' => $post->user()->id,
+                    ]);
+
+                    if (!empty($post->schemenames)) {
+                        $this->insertInstallments($this->getinstallmetslistfd($post), $lastInsertedId);
                     } else {
-
-                        if (!empty($loanFetch->fdId)) {
-                            $fdidis = explode(',', $loanFetch->fdId);
-                            foreach ($fdidis as $fdidisis) {
-                                MemberFdScheme::where('id', $fdidisis)->update(['status' => "Active"]);
-                            }
-                        }
-
-                        if (!empty($loanFetch->rd_id)) {
-                            $rdidis = explode(',', $loanFetch->rd_id);
-                            foreach ($rdidis as $rdidisis) {
-                                DB::table('re_curring_rds')->where('id', $rdidisis)->update(['status' => "Active"]);
-                            }
-                        }
-
-                        if (!empty($loanFetch->dailyId)) {
-                            $dailyids = explode(',', $loanFetch->dailyId);
-                            foreach ($dailyids as $ids) {
-                                DB::table('daily_collections')->where('id', $ids)->update(['status' => "Active"]);
-                            }
-                        }
-
-
-                        DB::table('general_ledgers')->where('serialNo', $loanFetch->serialNo)->delete();
-                        DB::table('member_loans')->where("id", $post->id)->delete();
-                        DB::table('loan_installments')->where("LoanId", $post->id)->delete();
-                        DB::table('member_savings')->where('serialNo', $loanFetch->serialNo)->delete();
-
-
-                        $lastInsertedId = DB::table('member_loans')->insertGetId([
-                            'accountNo' => $acdetails->accountNo,
-                            "accountId"  =>  $acdetails->id,
-                            "serialNo" => $generalLedgers,
-                            "loanDate"  => date('Y-m-d', strtotime($post->loanDate)),
-                            "loanEndDate" =>  $endDate,
-                            'memberType' => $post->memberType,
-                            "ledgerCode"   => $ledgerMaster->ledgerCode,
-                            'groupCode' =>  $ledgerMaster->groupCode,
-                            "loanAcNo"  => $post->loanAcNo,
-                            "purpose"   => $post->purpose,
-                            "loanType"  => $post->loanType,
-                            "processingFee" => $processingFee,
-                            "processingRates" => $post->processingRates,
-                            "loanYear" => $post['year'],
-                            "loanMonth" => $post['month'],
-                            "loanInterest"  =>  $post->loanInterest,
-                            "loanPanelty" => $post->defintr,
-                            "fdId"   =>  $fdIdsStrings,
-                            // "fdAmount"  =>  $fdAcsString,
-                            "rd_id"   =>  $rdIdsStrings,
-                            // "rd_aacount"  =>  $rdAcsString,
-                            "dailyId"   =>  $dailyIdsStrings,
-
-                            "loanAmount" => $post->amount,
-                            "bankDeduction" => $post->bankDeduction,
-                            "deductionAmount" => $post->deduction,
-                            "pernote"  => $post->pernote,
-                            "loanBy" => $post->loanBy,
-                            "chequeNo" => "",
-                            "loan_app_fee" => $post->loan_app_fee,
-                            "installmentType" => $post->installmentType,
-                            "guranter1" => "",
-                            "guranter2" => "",
-                            "Status"   => "Disbursed",
-                            "branchId"   => session('branchid') ?? 1,
-                            'agentId' => $post->agentId,
-                            'sessionId' => session('sessionId') ?? 1,
-                            'updatedBy' => $post->user()->id,
-                        ]);
-
-                        if (!empty($post->schemenames)) {
-                            $this->insertInstallments($this->getinstallmetslistfd($post), $lastInsertedId);
-                        } else {
-                            $this->insertInstallments($this->getinstallmetslist($post), $lastInsertedId);
-                        }
-
-                        if ($post->loanBy == "Saving") {
-                            $saving_withdraw = new MemberSaving();
-                            $saving_withdraw->secheme_id = $account_opening->sch_id;
-                            $saving_withdraw->serialNo = $generalLedgers;
-                            $saving_withdraw->accountId = $account_nos;
-                            $saving_withdraw->accountNo = $post->accountNumber;
-                            $saving_withdraw->memberType = $post->memberType;
-                            $saving_withdraw->groupCode = $ledgerMasterCR['groupCode'];
-                            $saving_withdraw->ledgerCode = $ledgerMasterCR['ledgerCode'];
-                            $saving_withdraw->savingNo = '';
-                            $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->loanDate));
-                            $saving_withdraw->transactionType = 'toloan';
-                            $saving_withdraw->depositAmount = $post->amount;
-                            $saving_withdraw->withdrawAmount = 0;
-                            $saving_withdraw->paymentType = '';
-                            $saving_withdraw->bank = '';
-                            $saving_withdraw->chequeNo = 'trfdFromLoan';
-                            $saving_withdraw->narration = 'Saving A/c- ' . $account_nos . ' - From Trfd Loan ' . $post->accountNumber;
-                            $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
-                            $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
-                            $saving_withdraw->agentId = $post->agentId;
-                            $saving_withdraw->updatedBy = $post->user()->id;
-                            $saving_withdraw->is_delete = 'No';
-                            $saving_withdraw->save();
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
-                                'groupCode' => $ledgerMasterCR['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $post->amount,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => 'Member',
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => $ledgerMaster->ledgerCode,
-                                'groupCode' =>  $ledgerMaster->groupCode,
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName" => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $post->amount,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-
-
-                            if ($processingFee > 0) {
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $acdetails->id,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   => 'PRO01',
-                                    'groupCode' => 'INCM001',
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "Processing Fee",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Cr',
-                                    'transactionAmount' => $processingFee,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $account_nos,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   => $ledgerMasterCR['ledgerCode'],
-                                    'groupCode' => $ledgerMasterCR['groupCode'],
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "Processing Fee",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Dr',
-                                    'transactionAmount' => $processingFee,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-
-
-                                DB::table('member_savings')->insert([
-                                    'secheme_id' => $account_opening->sch_id,
-                                    'serialNo' => $generalLedgers,
-                                    'accountId' => $account_nos,
-                                    'accountNo' => $post->accountNumber,
-                                    'memberType' => $post->memberType,
-                                    'groupCode' => $ledgerMasterCR['groupCode'],
-                                    'ledgerCode' => $ledgerMasterCR['ledgerCode'],
-                                    'savingNo' => '',
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'toloan',
-                                    'depositAmount' => 0,
-                                    'withdrawAmount' => $processingFee,
-                                    'paymentType' => '',
-                                    'bank' => '',
-                                    'chequeNo' => 'trfdFromLoan',
-                                    'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
-                                    'branchId' => session('branchId') ? session('branchId') : 1,
-                                    'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                    'agentId' => $post->agentId,
-                                    'updatedBy' => $post->user()->id,
-                                    'is_delete' => 'No',
-                                ]);
-                            }
-
-                            $loan_application_charges = $post->loan_app_fee;
-
-                            if ($loan_application_charges > 0) {
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $acdetails->id,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   => 'LO05',
-                                    'groupCode' => 'INCM001',
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "Loan Applicaton Fee",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Cr',
-                                    'transactionAmount' => $loan_application_charges,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-
-                                DB::table('member_savings')->insert([
-                                    'secheme_id' => $account_opening->sch_id,
-                                    'serialNo' => $generalLedgers,
-                                    'accountId' => $account_nos,
-                                    'accountNo' => $post->accountNumber,
-                                    'memberType' => $post->memberType,
-                                    'groupCode' => $savingss['groupCode'],
-                                    'ledgerCode' => $savingss['ledgerCode'],
-                                    'savingNo' => '',
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'toloan',
-                                    'depositAmount' => 0,
-                                    'withdrawAmount' => $loan_application_charges,
-                                    'paymentType' => '',
-                                    'bank' => '',
-                                    'chequeNo' => 'trfdFromLoan',
-                                    'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
-                                    'branchId' => session('branchId') ? session('branchId') : 1,
-                                    'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                    'agentId' => $post->agentId,
-                                    'updatedBy' => $post->user()->id,
-                                    'is_delete' => 'No',
-                                ]);
-
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $acdetails->id,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   =>  $savingss['ledgerCode'],
-                                    'groupCode' => $savingss['groupCode'],
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "LoanDisbursed",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Dr',
-                                    'transactionAmount' => $loan_application_charges,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-
-                            }
-
-                            if ($loancode->loantypess === 'FD') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $fdid) {
-                                        MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-
-                            if ($loancode->loantypess === 'RD') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $fdid) {
-                                        ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-
-                            if ($loancode->loantypess === 'DailyDeposit') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $dailyId) {
-                                        DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-                        } else {
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => 'PRO01',
-                                'groupCode' => 'INCM001',
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Processing Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $processingFee,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('member_savings')->insert([
-                                'secheme_id' => $account_opening->sch_id,
-                                'serialNo' => $generalLedgers,
-                                'accountId' => $account_nos,
-                                'accountNo' => $post->accountNumber,
-                                'memberType' => $post->memberType,
-                                'groupCode' => $savingss['groupCode'],
-                                'ledgerCode' => $savingss['ledgerCode'],
-                                'savingNo' => '',
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'toloan',
-                                'depositAmount' => 0,
-                                'withdrawAmount' => $processingFee,
-                                'paymentType' => '',
-                                'bank' => '',
-                                'chequeNo' => 'trfdFromLoan',
-                                'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
-                                'branchId' => session('branchId') ? session('branchId') : 1,
-                                'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                'agentId' => $post->agentId,
-                                'updatedBy' => $post->user()->id,
-                                'is_delete' => 'No',
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $account_opening->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => $savingss['ledgerCode'],
-                                'groupCode' => $savingss['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "Processing Fee",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $processingFee,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => $post->memberType,
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
-                                'groupCode' => $ledgerMasterCR['groupCode'],
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName"        => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Cr',
-                                'transactionAmount' => $post->amount,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-                            DB::table('general_ledgers')->insert([
-                                "serialNo" => $generalLedgers,
-                                'accountNo' => $acdetails->accountNo,
-                                "accountId"  =>  $acdetails->id,
-                                'memberType' => 'Member',
-                                'agentId' => $post->agentId,
-                                "ledgerCode"   => $ledgerMaster->ledgerCode,
-                                'groupCode' =>  $ledgerMaster->groupCode,
-                                'referenceNo' => $lastInsertedId,
-                                'entryMode' => "automatic",
-                                "formName" => "LoanDisbursed",
-                                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                'transactionType' => 'Dr',
-                                'transactionAmount' => $post->amount,
-                                'narration' => $post->naration,
-                                'branchId' =>  session('branchid') ?? 1,
-                                'sessionId' => session('sessionId') ?? 1,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updatedBy' => $post->user()->id,
-                            ]);
-
-
-
-                            $loan_application_charges = $post->loan_app_fee;
-
-                            if ($loan_application_charges > 0) {
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $acdetails->id,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   => 'LO05',
-                                    'groupCode' => 'INCM001',
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "Loan Applicaton Fee",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Cr',
-                                    'transactionAmount' => $loan_application_charges,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-
-                                DB::table('member_savings')->insert([
-                                    'secheme_id' => $account_opening->sch_id,
-                                    'serialNo' => $generalLedgers,
-                                    'accountId' => $account_nos,
-                                    'accountNo' => $post->accountNumber,
-                                    'memberType' => $post->memberType,
-                                    'groupCode' => $savingss['groupCode'],
-                                    'ledgerCode' => $savingss['ledgerCode'],
-                                    'savingNo' => '',
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'toloan',
-                                    'depositAmount' => 0,
-                                    'withdrawAmount' => $loan_application_charges,
-                                    'paymentType' => '',
-                                    'bank' => '',
-                                    'chequeNo' => 'trfdFromLoan',
-                                    'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
-                                    'branchId' => session('branchId') ? session('branchId') : 1,
-                                    'sessionId' => session('sessionId') ? session('sessionId') : 1,
-                                    'agentId' => $post->agentId,
-                                    'updatedBy' => $post->user()->id,
-                                    'is_delete' => 'No',
-                                ]);
-
-                                DB::table('general_ledgers')->insert([
-                                    "serialNo" => $generalLedgers,
-                                    'accountNo' => $acdetails->accountNo,
-                                    "accountId"  =>  $acdetails->id,
-                                    'memberType' => $post->memberType,
-                                    'agentId' => $post->agentId,
-                                    "ledgerCode"   =>  $savingss['ledgerCode'],
-                                    'groupCode' => $savingss['groupCode'],
-                                    'referenceNo' => $lastInsertedId,
-                                    'entryMode' => "automatic",
-                                    "formName"        => "LoanDisbursed",
-                                    'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
-                                    'transactionType' => 'Dr',
-                                    'transactionAmount' => $loan_application_charges,
-                                    'narration' => $post->naration,
-                                    'branchId' =>  session('branchid') ?? 1,
-                                    'sessionId' => session('sessionId') ?? 1,
-                                    'created_at' => date('Y-m-d H:i:s'),
-                                    'updatedBy' => $post->user()->id,
-                                ]);
-                            }
-
-
-
-
-                            $loancode = DB::table('loan_masters')
-                                ->select(
-                                    'loan_masters.*',
-                                    'ledger_masters.id as ledgerid',
-                                    'ledger_masters.*'
-                                )
-                                ->where('loan_masters.id', $post->loanType)
-                                ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
-                                ->first();
-
-
-
-                            if ($loancode->loantypess === 'FD') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $fdid) {
-                                        MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-
-                            if ($loancode->loantypess === 'RD') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $fdid) {
-                                        ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-
-                            if ($loancode->loantypess === 'DailyDeposit') {
-
-                                if (!empty($post->schemenames)) {
-                                    foreach ($post->schemenames as $dailyId) {
-                                        DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
-                                    }
-                                }
-                            }
-                        }
+                        $this->insertInstallments($this->getinstallmetslist($post), $lastInsertedId);
                     }
 
+                    // if ($post->loanBy == "Saving") {
+                    //     $saving_withdraw = new MemberSaving();
+                    //     $saving_withdraw->secheme_id = $account_opening->sch_id;
+                    //     $saving_withdraw->serialNo = $generalLedgers;
+                    //     $saving_withdraw->accountId = $account_nos;
+                    //     $saving_withdraw->accountNo = $post->accountNumber;
+                    //     $saving_withdraw->memberType = $post->memberType;
+                    //     $saving_withdraw->groupCode = $ledgerMasterCR['groupCode'];
+                    //     $saving_withdraw->ledgerCode = $ledgerMasterCR['ledgerCode'];
+                    //     $saving_withdraw->savingNo = '';
+                    //     $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->loanDate));
+                    //     $saving_withdraw->transactionType = 'toloan';
+                    //     $saving_withdraw->depositAmount = $post->amount;
+                    //     $saving_withdraw->withdrawAmount = 0;
+                    //     $saving_withdraw->paymentType = '';
+                    //     $saving_withdraw->bank = '';
+                    //     $saving_withdraw->chequeNo = 'trfdFromLoan';
+                    //     $saving_withdraw->narration = 'Saving A/c- ' . $account_nos . ' - From Trfd Loan ' . $post->accountNumber;
+                    //     $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
+                    //     $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
+                    //     $saving_withdraw->agentId = $post->agentId;
+                    //     $saving_withdraw->updatedBy = $post->user()->id;
+                    //     $saving_withdraw->is_delete = 'No';
+                    //     $saving_withdraw->save();
 
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => $post->memberType,
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
+                    //         'groupCode' => $ledgerMasterCR['groupCode'],
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName"        => "LoanDisbursed",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Cr',
+                    //         'transactionAmount' => $post->amount,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+
+                    //     DB::table('general_ledgers')->insert([
+                    //         "serialNo" => $generalLedgers,
+                    //         'accountNo' => $acdetails->accountNo,
+                    //         "accountId"  =>  $acdetails->id,
+                    //         'memberType' => 'Member',
+                    //         'agentId' => $post->agentId,
+                    //         "ledgerCode"   => $ledgerMaster->ledgerCode,
+                    //         'groupCode' =>  $ledgerMaster->groupCode,
+                    //         'referenceNo' => $lastInsertedId,
+                    //         'entryMode' => "automatic",
+                    //         "formName" => "LoanDisbursed",
+                    //         'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //         'transactionType' => 'Dr',
+                    //         'transactionAmount' => $post->amount,
+                    //         'narration' => $post->naration,
+                    //         'branchId' =>  session('branchid') ?? 1,
+                    //         'sessionId' => session('sessionId') ?? 1,
+                    //         'created_at' => date('Y-m-d H:i:s'),
+                    //         'updatedBy' => $post->user()->id,
+                    //     ]);
+
+
+
+                    //     if ($processingFee > 0) {
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $acdetails->id,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   => 'PRO01',
+                    //             'groupCode' => 'INCM001',
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "Processing Fee",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Cr',
+                    //             'transactionAmount' => $processingFee,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $account_nos,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   => $ledgerMasterCR['ledgerCode'],
+                    //             'groupCode' => $ledgerMasterCR['groupCode'],
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "Processing Fee",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Dr',
+                    //             'transactionAmount' => $processingFee,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+
+
+                    //         DB::table('member_savings')->insert([
+                    //             'secheme_id' => $account_opening->sch_id,
+                    //             'serialNo' => $generalLedgers,
+                    //             'accountId' => $account_nos,
+                    //             'accountNo' => $post->accountNumber,
+                    //             'memberType' => $post->memberType,
+                    //             'groupCode' => $ledgerMasterCR['groupCode'],
+                    //             'ledgerCode' => $ledgerMasterCR['ledgerCode'],
+                    //             'savingNo' => '',
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'toloan',
+                    //             'depositAmount' => 0,
+                    //             'withdrawAmount' => $processingFee,
+                    //             'paymentType' => '',
+                    //             'bank' => '',
+                    //             'chequeNo' => 'trfdFromLoan',
+                    //             'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
+                    //             'branchId' => session('branchId') ? session('branchId') : 1,
+                    //             'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //             'agentId' => $post->agentId,
+                    //             'updatedBy' => $post->user()->id,
+                    //             'is_delete' => 'No',
+                    //         ]);
+                    //     }
+
+                    //     $loan_application_charges = $post->loan_app_fee;
+
+                    //     if ($loan_application_charges > 0) {
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $acdetails->id,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   => 'LO05',
+                    //             'groupCode' => 'INCM001',
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "Loan Applicaton Fee",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Cr',
+                    //             'transactionAmount' => $loan_application_charges,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+
+                    //         DB::table('member_savings')->insert([
+                    //             'secheme_id' => $account_opening->sch_id,
+                    //             'serialNo' => $generalLedgers,
+                    //             'accountId' => $account_nos,
+                    //             'accountNo' => $post->accountNumber,
+                    //             'memberType' => $post->memberType,
+                    //             'groupCode' => $savingss['groupCode'],
+                    //             'ledgerCode' => $savingss['ledgerCode'],
+                    //             'savingNo' => '',
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'toloan',
+                    //             'depositAmount' => 0,
+                    //             'withdrawAmount' => $loan_application_charges,
+                    //             'paymentType' => '',
+                    //             'bank' => '',
+                    //             'chequeNo' => 'trfdFromLoan',
+                    //             'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
+                    //             'branchId' => session('branchId') ? session('branchId') : 1,
+                    //             'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //             'agentId' => $post->agentId,
+                    //             'updatedBy' => $post->user()->id,
+                    //             'is_delete' => 'No',
+                    //         ]);
+
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $acdetails->id,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   =>  $savingss['ledgerCode'],
+                    //             'groupCode' => $savingss['groupCode'],
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "LoanDisbursed",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Dr',
+                    //             'transactionAmount' => $loan_application_charges,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+
+                    //     }
+
+                    //     if ($loancode->loantypess === 'FD') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $fdid) {
+                    //                 MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+
+                    //     if ($loancode->loantypess === 'RD') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $fdid) {
+                    //                 ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+
+                    //     if ($loancode->loantypess === 'DailyDeposit') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $dailyId) {
+                    //                 DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+                    // } else {
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $acdetails->id,
+                    //     'memberType' => $post->memberType,
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   => 'PRO01',
+                    //     'groupCode' => 'INCM001',
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName"        => "Processing Fee",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Cr',
+                    //     'transactionAmount' => $processingFee,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
+
+                    // DB::table('member_savings')->insert([
+                    //     'secheme_id' => $account_opening->sch_id,
+                    //     'serialNo' => $generalLedgers,
+                    //     'accountId' => $account_nos,
+                    //     'accountNo' => $post->accountNumber,
+                    //     'memberType' => $post->memberType,
+                    //     'groupCode' => $savingss['groupCode'],
+                    //     'ledgerCode' => $savingss['ledgerCode'],
+                    //     'savingNo' => '',
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'toloan',
+                    //     'depositAmount' => 0,
+                    //     'withdrawAmount' => $processingFee,
+                    //     'paymentType' => '',
+                    //     'bank' => '',
+                    //     'chequeNo' => 'trfdFromLoan',
+                    //     'narration' => 'Saving A/c- ' . $account_nos . ' - Processing Fee of Loan ' . $post->accountNumber,
+                    //     'branchId' => session('branchId') ? session('branchId') : 1,
+                    //     'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //     'agentId' => $post->agentId,
+                    //     'updatedBy' => $post->user()->id,
+                    //     'is_delete' => 'No',
+                    // ]);
+
+                    // DB::table('general_ledgers')->insert([
+                    //     "serialNo" => $generalLedgers,
+                    //     'accountNo' => $acdetails->accountNo,
+                    //     "accountId"  =>  $account_opening->id,
+                    //     'memberType' => $post->memberType,
+                    //     'agentId' => $post->agentId,
+                    //     "ledgerCode"   => $savingss['ledgerCode'],
+                    //     'groupCode' => $savingss['groupCode'],
+                    //     'referenceNo' => $lastInsertedId,
+                    //     'entryMode' => "automatic",
+                    //     "formName"        => "Processing Fee",
+                    //     'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //     'transactionType' => 'Dr',
+                    //     'transactionAmount' => $processingFee,
+                    //     'narration' => $post->naration,
+                    //     'branchId' =>  session('branchid') ?? 1,
+                    //     'sessionId' => session('sessionId') ?? 1,
+                    //     'created_at' => date('Y-m-d H:i:s'),
+                    //     'updatedBy' => $post->user()->id,
+                    // ]);
+
+
+                    DB::table('general_ledgers')->insert([
+                        "serialNo" => $generalLedgers,
+                        'accountNo' => $acdetails->accountNo,
+                        "accountId"  =>  $acdetails->id,
+                        'memberType' => $post->memberType,
+                        'agentId' => $post->agentId,
+                        "ledgerCode"   =>  $ledgerMasterCR['ledgerCode'],
+                        'groupCode' => $ledgerMasterCR['groupCode'],
+                        'referenceNo' => $lastInsertedId,
+                        'entryMode' => "automatic",
+                        "formName"        => "LoanDisbursed",
+                        'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                        'transactionType' => 'Cr',
+                        'transactionAmount' => $post->amount,
+                        'narration' => $post->naration,
+                        'branchId' =>  session('branchid') ?? 1,
+                        'sessionId' => session('sessionId') ?? 1,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updatedBy' => $post->user()->id,
+                    ]);
+
+                    DB::table('general_ledgers')->insert([
+                        "serialNo" => $generalLedgers,
+                        'accountNo' => $acdetails->accountNo,
+                        "accountId"  =>  $acdetails->id,
+                        'memberType' => 'Member',
+                        'agentId' => $post->agentId,
+                        "ledgerCode"   => $loancode->ledgerCode,
+                        'groupCode' =>  $loancode->groupCode,
+                        'referenceNo' => $lastInsertedId,
+                        'entryMode' => "automatic",
+                        "formName" => "LoanDisbursed",
+                        'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                        'transactionType' => 'Dr',
+                        'transactionAmount' => $post->amount,
+                        'narration' => $post->naration,
+                        'branchId' =>  session('branchid') ?? 1,
+                        'sessionId' => session('sessionId') ?? 1,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updatedBy' => $post->user()->id,
+                    ]);
+
+
+
+                    //     $loan_application_charges = $post->loan_app_fee;
+
+                    //     if ($loan_application_charges > 0) {
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $acdetails->id,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   => 'LO05',
+                    //             'groupCode' => 'INCM001',
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "Loan Applicaton Fee",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Cr',
+                    //             'transactionAmount' => $loan_application_charges,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+
+                    //         DB::table('member_savings')->insert([
+                    //             'secheme_id' => $account_opening->sch_id,
+                    //             'serialNo' => $generalLedgers,
+                    //             'accountId' => $account_nos,
+                    //             'accountNo' => $post->accountNumber,
+                    //             'memberType' => $post->memberType,
+                    //             'groupCode' => $savingss['groupCode'],
+                    //             'ledgerCode' => $savingss['ledgerCode'],
+                    //             'savingNo' => '',
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'toloan',
+                    //             'depositAmount' => 0,
+                    //             'withdrawAmount' => $loan_application_charges,
+                    //             'paymentType' => '',
+                    //             'bank' => '',
+                    //             'chequeNo' => 'trfdFromLoan',
+                    //             'narration' => 'Saving A/c- ' . $account_nos . ' - Loan App. Charges Loan ' . $post->accountNumber,
+                    //             'branchId' => session('branchId') ? session('branchId') : 1,
+                    //             'sessionId' => session('sessionId') ? session('sessionId') : 1,
+                    //             'agentId' => $post->agentId,
+                    //             'updatedBy' => $post->user()->id,
+                    //             'is_delete' => 'No',
+                    //         ]);
+
+                    //         DB::table('general_ledgers')->insert([
+                    //             "serialNo" => $generalLedgers,
+                    //             'accountNo' => $acdetails->accountNo,
+                    //             "accountId"  =>  $acdetails->id,
+                    //             'memberType' => $post->memberType,
+                    //             'agentId' => $post->agentId,
+                    //             "ledgerCode"   =>  $savingss['ledgerCode'],
+                    //             'groupCode' => $savingss['groupCode'],
+                    //             'referenceNo' => $lastInsertedId,
+                    //             'entryMode' => "automatic",
+                    //             "formName"        => "LoanDisbursed",
+                    //             'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                    //             'transactionType' => 'Dr',
+                    //             'transactionAmount' => $loan_application_charges,
+                    //             'narration' => $post->naration,
+                    //             'branchId' =>  session('branchid') ?? 1,
+                    //             'sessionId' => session('sessionId') ?? 1,
+                    //             'created_at' => date('Y-m-d H:i:s'),
+                    //             'updatedBy' => $post->user()->id,
+                    //         ]);
+                    //     }
+
+                    //     $loancode = DB::table('loan_masters')
+                    //         ->select(
+                    //             'loan_masters.*',
+                    //             'ledger_masters.id as ledgerid',
+                    //             'ledger_masters.*'
+                    //         )
+                    //         ->where('loan_masters.id', $post->loanType)
+                    //         ->join('ledger_masters', 'ledger_masters.id', '=', 'loan_masters.ledger_master_id')
+                    //         ->first();
+
+
+
+                    //     if ($loancode->loantypess === 'FD') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $fdid) {
+                    //                 MemberFdScheme::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+
+                    //     if ($loancode->loantypess === 'RD') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $fdid) {
+                    //                 ReCurringRd::where('id', $fdid)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+
+                    //     if ($loancode->loantypess === 'DailyDeposit') {
+
+                    //         if (!empty($post->schemenames)) {
+                    //             foreach ($post->schemenames as $dailyId) {
+                    //                 DB::table('daily_collections')->where('id', $dailyId)->update(['status' => "Pluge"]);
+                    //             }
+                    //         }
+                    //     }
+                    // }
+                    // }
 
                     DB::commit();
                     return response()->json([
@@ -1976,8 +2004,16 @@ class LoanController extends Controller
 
                 break;
             case 'getInstallmets':
-                $datas['installments'] = $this->getinstallmetslist($post);
-                return response()->json(view('transaction.loan.installments')->with($datas)->render());
+                $loanid = $post->id;
+                // dd($loanid);
+                if (!empty($loanid)) {
+                    $loan = DB::table('member_loans')->where('id', $loanid)->first();
+                    $datas = DB::table('loan_installments')->where('LoanId', $loanid)->get();
+                    return response()->json(['status' => 'success', 'installments' => $datas, 'loan' => $loan]);
+                } else {
+                    $datas['installments'] = $this->getinstallmetslist($post);
+                    return response()->json(view('transaction.loan.installments')->with($datas)->render());
+                }
                 break;
             case 'guarantor':
 
@@ -1990,6 +2026,7 @@ class LoanController extends Controller
                 return response()->json(["status" => "success", "data" => $loanaccount], 200);
                 break;
             case 'paidinstallments':
+                // dd($post->all());
 
                 $loanaccount =  MemberLoan::where('id', $post->id)->first();
 
@@ -2089,11 +2126,12 @@ class LoanController extends Controller
 
 
                             if (($paidAmount - $installment->interest) > 0) {
-                                LoanInstallment::where('id', $installment->id)->update([
-                                    "status" => "Partial",
-                                    "paid_date" => date('Y-m-d', strtotime($post->loanDate)),
-                                    "re_amount" => ($installment->principal + $installment->interest) - $paidAmount,
-                                ]);
+                                LoanInstallment::where('id', $installment->id)
+                                    ->update([
+                                        "status" => "Partial",
+                                        "paid_date" => date('Y-m-d', strtotime($post->loanDate)),
+                                        "re_amount" => ($installment->principal + $installment->interest) - $paidAmount,
+                                    ]);
                                 $InstallmentIds[$key]  =  $installment->id;
                             }
                             break;
@@ -2232,7 +2270,47 @@ class LoanController extends Controller
 
                 break;
             case 'getloandetails':
+
                 $loanFetch = MemberLoan::where("id", $post->id)->first();
+
+                $loanAmount = $loanFetch->loanAmount;
+                $loanDate = \Carbon\Carbon::parse($loanFetch->loanDate);
+                $transactionDate = \Carbon\Carbon::parse($post->transactiondate);
+
+                // Elapsed days
+                $diffDays = $loanDate->diffInDays($transactionDate);
+
+                // Total loan term in days
+                $years = (int)$loanFetch->loanYear;
+                $months = (int)$loanFetch->loanMonth;
+                $totalLoanDays = ($years * 365) + ($months * 30);
+
+                if ($totalLoanDays === 0) {
+                    throw new \Exception("Total loan duration cannot be zero.");
+                }
+
+                // Annual interest in percent (e.g., 9.5 for 9.5%)
+                $annualInterestRate = $loanFetch->loanInterest;
+
+                // Accrued principal: linear increase
+                $accruedPrincipal = ($loanAmount / $totalLoanDays) * $diffDays;
+
+                // Accrued interest: simple interest on full loan amount
+                $accruedInterest = ($loanAmount * $annualInterestRate * $diffDays) / 36500;
+
+                // Round results
+                // $accruedPrincipal = round($accruedPrincipal, 2);
+                // $accruedInterest = round($accruedInterest, 2);
+
+                // dd([
+                //     'Loan Amount' => round($loanAmount, 2),
+                //     'Elapsed Days' => $diffDays,
+                //     'Total Loan Days' => $totalLoanDays,
+                //     'Annual Interest Rate (%)' => $annualInterestRate,
+                //     'Accrued Principal' => $accruedPrincipal,
+                //     'Accrued Interest' => $accruedInterest,
+                // ]);
+
                 if (!$loanFetch) {
                     return response()->json(['status' => "Invlid account number"]);
                 }
@@ -2242,12 +2320,13 @@ class LoanController extends Controller
                     ->first();
 
                 $installmentlist = DB::table('loan_installments')->where('LoanId', $post->id)->get();
+
                 $loanDate = $loanFetch->loanDate;
                 $loanInterest = $loanFetch->loanInterest;
                 $loanPanelty = $loanFetch->loanPanelty;
                 $loanStatus = $loanFetch->status;
 
-                $todayDate  = date('Y-m-d', strtotime($post->transactiondate));;
+                $todayDate  = date('Y-m-d', strtotime($post->transactiondate));
 
                 if ($todayDate < $loanDate && $todayDate != $loanDate) {
                     return response()->json(['status' => 'Date is Not Correct, It Should Be ' . date("d-m-Y", strtotime($loanDate)) . ' or Above.']);
@@ -2256,18 +2335,24 @@ class LoanController extends Controller
                 $receiptTillDate = LoanRecovery::where('LoanId', $post->id)
                     ->where('is_delete', 'No')
                     ->sum('Principal');
+
                 $receiptMaster = LoanRecovery::where('LoanId', $post->id)
                     ->where('is_delete', 'No')
                     ->max('ReceiptDate');
+
                 $countReceipt = LoanRecovery::where('LoanId', $post->id)
                     ->where('is_delete', 'No')
                     ->count();
+
                 $pendingInterest = LoanRecovery::where('LoanId', $post->id)
                     ->where('ReceiptDate', $receiptMaster)
                     ->where('is_delete', 'No')
                     ->first();
 
-                $allrecovery =  LoanRecovery::where('loanId', $post->id)->where('is_delete', 'No')->get();
+                $allrecovery =  LoanRecovery::where('loanId', $post->id)
+                    ->where('is_delete', 'No')
+                    ->get();
+
                 $loanReceipt = LoanRecovery::where('LoanId', $post->id)
                     ->where('is_delete', 'No')
                     ->count();
@@ -2290,7 +2375,7 @@ class LoanController extends Controller
                 $panelty = 0;
                 $principalTillDate = 0;
                 $finterest = 0;
-                $balInstallment =   $loanFetch->loanAmount - $receiptTillDate;
+                $balInstallment = $loanFetch->loanAmount - $receiptTillDate;
                 $overdues = 0;
 
                 foreach ($installmentsTillDate as $key => $installment) {
@@ -2311,17 +2396,16 @@ class LoanController extends Controller
 
                     //  $interest += ($balInstallment * $days * $loanInterest) / 36500;
                 }
-                // dd($interest, $overdes,  $principalTillDate);
 
                 $receiptSum = LoanRecovery::where('LoanId', $post->id)->where('is_delete', 'No')->sum('principal');
 
                 $principal = round($loanFetch->loanAmount - $receiptSum);
+
                 $total = round($pintr + $principal + $interest + $panelty);
                 $totalinterest = round(($principal * $countDays * $loanInterest) / 36500);
                 $paneltyInterest = round(($pintr * $countDays * $loanPanelty) / 36500, 0);
-                // dd($interest, $principal, $countDays, $loanInterest);
-                //dd($paneltyInterest, $installmentSum, $receiptSum, $principal, $total, $interest);
-                //dd($principal, $countDays, $loanPanelty, $paneltyInterest);
+
+
                 if ($principalTillDate < 1) {
                     // $pintr = 0;
                     // $principalTillDate = 0;
@@ -2336,6 +2420,7 @@ class LoanController extends Controller
                 //dd($interest, $finterest);
                 $data['totalprincple'] =   $principal;
                 $data['principal']  =  $principalTillDate;
+                // $data['principal']  =  round($accruedPrincipal, 2);
                 $data['currentintrest'] =  $interest;
                 // $data['overdueintrest'] =  round($overdues, 0);
                 $data['pendingintrest'] = $pintr;
@@ -2541,26 +2626,55 @@ class LoanController extends Controller
 
 
         // Generate and return the installments
-        return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
+        return $installments = $this->generateInstallments($loanAmount, $post->loanInterest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
     }
 
 
     public function getinstallmetslist($post)
     {
+        // dd($post->all());
         // Fetch loan type from database
         $loanType = LoanMaster::find($post->loanType);
         $loanDay = date('d', strtotime($post->loandate));
 
         // Determine EMI day based on loan date or loanType setting
-        if ($loanType->emiDate == "0") {
+        // Determine EMI day
+        if ($loanType->emiDate == 0) {
             $emiDay = date('d', strtotime($post->loandate));
+            // dd($emiDay);
         } else {
             $emiDay = $loanType->emiDate;
         }
 
-        // Set start date and final EMI date
-        $startDate = date('Y-m-' . $emiDay, strtotime($post->loandate . '+1 month'));
-        $finalemidate = date('Y-m-' . $emiDay, strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : '')));
+
+        // Validate emiDay
+        // if (!is_numeric($emiDay) || $emiDay < 1 || $emiDay > 31) {
+        //     throw new Exception("Invalid EMI day: $emiDay");
+        // }
+
+        // Pad emiDay with leading zero if needed
+        $emiDay = str_pad($emiDay, 2, '0', STR_PAD_LEFT);
+
+        // Get loanDay from loandate
+        $loanDay = date('d', strtotime($post->loandate));
+
+        // Calculate start date (EMI starts from next month)
+        $startDate = date('Y-m-' . $emiDay, strtotime($post->loanDate . ' +1 month'));
+        // dd($startDate);
+
+        // Calculate final EMI date
+        $finalemidate = date(
+            'Y-m-' . $emiDay,
+            strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : ''))
+        );
+
+        // dd([
+        //     'emiDay' => $emiDay,
+        //     'startDate' => $startDate,
+        //     'finalemidate' => $finalemidate,
+        // ]);
+
+
         $startDateTime = new DateTime($startDate);
         $emiDateTime = new DateTime($finalemidate);
 
@@ -2574,91 +2688,103 @@ class LoanController extends Controller
         // Calculate the advancement days and day interest
         $advancementDay = $diffInDays;
         $dayintrest  = 0;
+        $interestRate = $post->intrest ? $post->intrest : $post->loanInterest;
+        $loanYear = $post->loanYear ? $post->loanYear : $post->year;
+        $loanMonth = $post->loanMonth ? $post->loanMonth : $post->month;
+        $loanAmount = 0;
 
         if ($loanType->advancementDate == "Not Applicable") {
             $emiDateTime = new DateTime($finalemidate);
         } else if ($loanType->advancementDate == "Loan Date") {
             $emiDateTime = new DateTime($startDate);
         } else {
-            $loanAmount = intval($post->loanAmount);
-            $dayintrest = ($loanAmount * $advancementDay * $post->intrest) / 36500;
+            $loanAmount = intval($post->amount) ? intval($post->amount) : intval($post->loanAmount);
+            // dd($post->all());
+            $dayintrest = ($loanAmount * $advancementDay * $interestRate) / 36500;
         }
 
         // Initialize installment data
         $data['Installments'] = 0;
-
+        // dd($loanType->insType);
         // Handle installment type logic for "Monthly" and "Daily"
         if ($loanType->insType == "Monthly") {
             $installmentsPerYear = 12;
-            $data['Installments'] = ($post->year * 12) + $post->month;
+            $data['Installments'] = ($loanYear * 12) + $loanMonth;
         } elseif ($loanType->insType == "Daily") {
             $installmentsPerYear = 365;
-            $data['Installments'] = ($post->year * 365) + ($post->month * 30) + ($loanType->days); // Roughly convert months to days
+            $data['Installments'] = ($loanYear * 365) + ($loanMonth * 30) + ($loanType->days);
+
+
+            // Roughly convert months to days
+            // dd($post->loanYear,$post->loanMonth,$loanType->days);
+
         } else {
             throw new \Exception("Invalid installment type.");
         }
 
-        if ($data['Installments'] == 0) {
-            throw new \Exception("Number of installments cannot be zero.");
-        }
+
+        // if ($data['Installments'] == 0) {
+        //     throw new \Exception("Number of installments cannot be zero.");
+        // }
+
 
         $data['InstallmentAmount'] = round($loanAmount / $data['Installments'], 2);
-        $data['RateofInterest'] = ($post->intrest / $installmentsPerYear) / 100;
+        $data['RateofInterest'] = ($post->loanInterest / $installmentsPerYear) / 100;
 
         $totalInstallments = $data['Installments'];
 
-        if ($loanType->emiDate == "0") {
+        if ($loanType->emiDate == 0) {
             $emiDateTime = new DateTime($post->loandate);
         }
 
         // Generate and return the installments
-        return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
+        return $installments = $this->generateInstallments($loanAmount, $interestRate, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
     }
 
 
     // public function getinstallmetslist($post)
-    // {
-    //     $loanType = LoanMaster::find($post->loanType);
-    //     $loanDay =  date('d', strtotime($post->loandate));
-    //     if($loanType->emiDate == "0"){
-    //          $emiDay =  date('d', strtotime($post->loandate));
-    //     }else{
-    //        $emiDay = $loanType->emiDate;
-    //     }
+        // {
+        //     $loanType = LoanMaster::find($post->loanType);
+        //     $loanDay =  date('d', strtotime($post->loandate));
+        //     if($loanType->emiDate == "0"){
+        //          $emiDay =  date('d', strtotime($post->loandate));
+        //     }else{
+        //        $emiDay = $loanType->emiDate;
+        //     }
 
-    //     $startDate = date('Y-m-' . $emiDay, strtotime($post->loandate . '+1 month'));
-    //     $finalemidate = date('Y-m-' . $emiDay, strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : '')));
-    //     $startDateTime = new DateTime($startDate);
-    //     $emiDateTime = new DateTime($finalemidate);
+        //     $startDate = date('Y-m-' . $emiDay, strtotime($post->loandate . '+1 month'));
+        //     $finalemidate = date('Y-m-' . $emiDay, strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : '')));
+        //     $startDateTime = new DateTime($startDate);
+        //     $emiDateTime = new DateTime($finalemidate);
 
-    //     $interval = $startDateTime->diff($emiDateTime);
-    //     $diffInDays = $interval->days;
+        //     $interval = $startDateTime->diff($emiDateTime);
+        //     $diffInDays = $interval->days;
 
-    //     $daydiff = ($loanType && $loanType->advancementDate == "Yes" && $loanType->recoveryDate == "Yes") ? 1 : (($loanType && $loanType->advancementDate == "No" && $loanType->recoveryDate == "No") ? -1 : 0);
+        //     $daydiff = ($loanType && $loanType->advancementDate == "Yes" && $loanType->recoveryDate == "Yes") ? 1 : (($loanType && $loanType->advancementDate == "No" && $loanType->recoveryDate == "No") ? -1 : 0);
 
-    //     $advancementDay = $diffInDays; //+ $daydiff;
-    //     $dayintrest  = 0;
-    //     if ($loanType->advancementDate == "Not Applicable") {
-    //         $emiDateTime = new DateTime($finalemidate);
-    //     } else if ($loanType->advancementDate == "Loan Date") {
-    //         $emiDateTime = new DateTime($startDate);
-    //     } else {
+        //     $advancementDay = $diffInDays; //+ $daydiff;
+        //     $dayintrest  = 0;
+        //     if ($loanType->advancementDate == "Not Applicable") {
+        //         $emiDateTime = new DateTime($finalemidate);
+        //     } else if ($loanType->advancementDate == "Loan Date") {
+        //         $emiDateTime = new DateTime($startDate);
+        //     } else {
 
 
-    //         $dayintrest = ($loanAmount = intval($post->loanAmount)) * $advancementDay * $post->intrest / 36500;
-    //     }
-    //     $data['Installments'] = 0;
-    //     $installmentsPerYear = ($loanType->insType == "Monthly") ? 12 : 2;
-    //     $data['Installments'] = ($loanType->insType == "Monthly") ? ($post->year * 12) + $post->month : (($loanType->insType == "Half Yearly") ? ($post->year * 2) + $post->month / 6 : 0);
-    //     $data['InstallmentAmount'] = round($loanAmount / $data['Installments'], 2); //1045
-    //     $data['RateofInterest'] = ($post->intrest / $installmentsPerYear) / 100;
+        //         $dayintrest = ($loanAmount = intval($post->loanAmount)) * $advancementDay * $post->intrest / 36500;
+        //     }
+        //     $data['Installments'] = 0;
+        //     $installmentsPerYear = ($loanType->insType == "Monthly") ? 12 : 2;
+        //     $data['Installments'] = ($loanType->insType == "Monthly") ? ($post->year * 12) + $post->month : (($loanType->insType == "Half Yearly") ? ($post->year * 2) + $post->month / 6 : 0);
+        //     $data['InstallmentAmount'] = round($loanAmount / $data['Installments'], 2); //1045
+        //     $data['RateofInterest'] = ($post->intrest / $installmentsPerYear) / 100;
 
-    //     $totalInstallments = $data['Installments'];
+        //     $totalInstallments = $data['Installments'];
 
-    //     if($loanType->emiDate == "0"){
-    //         $emiDateTime = new DateTime($post->loandate);
-    //     }
-    //     return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
+        //     if($loanType->emiDate == "0"){
+        //         $emiDateTime = new DateTime($post->loandate);
+        //     }
+        //     return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
     // }
 
     public function calculateReducingInterest($principal, $annualInterestRate, $installmentsPerYear, $monthsSinceLastInstallment)
@@ -2674,65 +2800,66 @@ class LoanController extends Controller
 
     function generateInstallments($loanAmount, $annualInterestRate, $installmentsPerYear, $totalInstallments, $startDate, $advancementDate, $dayintrest)
     {
+        // dd($advancementDate);
+        $installments = [];
+
+        // If there's accrued daily interest before the first installment, add it
         if ($dayintrest != 0) {
             $installments[] = [
                 'installment' => 0,
-                'installment_date' => $advancementDate,
-                'opening_balance' => $loanAmount,
+                'installment_date' => Carbon::parse($advancementDate)->format('d-m-Y'),
+                'opening_balance' => round($loanAmount),
                 'principal' => 0,
                 'interest' => round($dayintrest),
                 'total' => round($dayintrest),
-                'remaining_balance' =>  $loanAmount,
+                'remaining_balance' => round($loanAmount),
             ];
-        } else {
-            $installments = [];
         }
 
-        // Calculate monthly installment amount
-        $gaps = ($installmentsPerYear == "2") ? 6  : 1;
+        // Calculate installment settings
+        $gaps = ($installmentsPerYear == 2) ? 6 : 1;
         $monthlyInterestRate = $annualInterestRate / $installmentsPerYear / 100;
-        $monthlyInstallment = $loanAmount * ($monthlyInterestRate + ($monthlyInterestRate / (pow(1 + $monthlyInterestRate, $totalInstallments) - 1)));
 
-        // Generate installments
-        $currentDate = new DateTime($startDate);
+        // EMI formula (standard amortized loan formula)
+        $monthlyInstallment = $loanAmount * (
+            $monthlyInterestRate * pow(1 + $monthlyInterestRate, $totalInstallments)
+        ) / (
+            pow(1 + $monthlyInterestRate, $totalInstallments) - 1
+        );
+
+        // Start generating reducing balance installments
+        $currentDate = Carbon::parse($advancementDate);
+        $remainingLoan = $loanAmount;
+
         for ($i = 1; $i <= $totalInstallments; $i++) {
+            $dueDate = $currentDate->copy()->addMonths(($i - 1) * $gaps);
 
-            $dueDate = (clone $currentDate)->modify("last day of +" . ($i) . " month");
-
-            $interest = $this->calculateReducingInterest($loanAmount, $annualInterestRate, $installmentsPerYear, $i);
+            $interest = $remainingLoan * $monthlyInterestRate;
             $principal = $monthlyInstallment - $interest;
-            // Update the remaining balance after deducting the principal
-            $loanAmount -= $principal;
-            // Ensure the remaining balance does not go below zero
-            $loanAmount = max($loanAmount, 0);
-            // Calculate opening balance
 
-            if (count($installments) > 0) {
-
-                $openingBalance = $loanAmount + $principal;
-            } else {
-                $openingBalance = $i === 1 ? $loanAmount + $principal : $installments[$i]['remaining_balance'];
-            };
             $installments[] = [
                 'installment' => $i,
                 'installment_date' => $dueDate->format('d-m-Y'),
-                'opening_balance' => round($openingBalance),
+                'opening_balance' => round($remainingLoan),
                 'principal' => round($principal),
                 'interest' => round($interest),
                 'total' => round($monthlyInstallment),
-                'remaining_balance' => round($loanAmount),
+                'remaining_balance' => round(max($remainingLoan - $principal, 0)),
             ];
-            // Move to the next installment date
-            // $currentDate->add(new DateInterval("P" . $gaps . "M"));
+
+            $remainingLoan -= $principal;
         }
 
         return $installments;
     }
     public function insertInstallments($installments, $loanId)
     {
+        dd($installments);
         $check =  DB::table('loan_installments')->where('LoanId', $loanId)->first();
+        // dd($installments);
         if (!$check) {
             foreach ($installments as $installment) {
+                // dd(date('Y-m-d', strtotime($installment['installment_date'])));
                 DB::table('loan_installments')->insert([
                     "LoanId" => $loanId,
                     "installmentDate" => date('Y-m-d', strtotime($installment['installment_date'])),
@@ -2761,7 +2888,8 @@ class LoanController extends Controller
     public function loanstatus($loanid)
     {
         $allrecovery =  LoanRecovery::where('loanId', $loanid)->where('is_delete', 'No')->sum('principal');
-        $memberloan = MemberLoan::where(['id' => $loanid, 'is_delete' => "No"])->first();
+        $memberloan = MemberLoan::where(['id' => $loanid])->first();
+        // dd($memberloan);
         if ($allrecovery >= $memberloan->loanAmount) {
             $memberloan->status = "Closed";
             $memberloan->save();
@@ -2916,7 +3044,7 @@ class LoanController extends Controller
                 'success' => true,
                 'message' => 'Loan details updated successfully.'
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
@@ -3133,6 +3261,42 @@ class LoanController extends Controller
             return response()->json(['success' => true, 'message' => $dailyrcoverydata]);
         } else {
             return response()->json(['success' => false, 'message' => 'Amount is greater  the expected']);
+        }
+    }
+    public function checkLoanNo(Request $request)
+    {
+        $loanAcNo = $request->input('loanAcNo');
+
+        $loan = MemberLoan::where('loanAcNo', $loanAcNo)->first();
+
+        if ($loan) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Loan account number already exists.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Loan account number is available.'
+            ]);
+        }
+    }
+    public function checkPernoteNo(Request $request)
+    {
+        $PernoteNo = $request->PernoteNo;
+
+        $pernote = MemberLoan::where('pernote', $PernoteNo)->first();
+        // dd($pernote);
+        if ($pernote) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Pernote number already exists.'
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pernote number is available.'
+            ]);
         }
     }
 }

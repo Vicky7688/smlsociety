@@ -1,6 +1,6 @@
 @extends('layouts.app')
-@section('title', " District")
-@section('pagetitle', "District")
+@section('title', " Loan")
+@section('pagetitle', "Loan")
 
 @php
 $table = "no";
@@ -53,7 +53,7 @@ $table = "no";
 
                  {{--  <div class="col-lg-3">
                  </div>  --}}
-                 <div class="col-lg-6">
+                 {{-- <div class="col-lg-6">
                     <div class="card bg-label-danger h-100">
                         <div class="card-body d-flex justify-content-between flex-wrap-reverse">
                             <div class="mb-0 w-100 app-academy-sm-60 d-flex flex-column justify-content-between text-center text-sm-start">
@@ -70,11 +70,11 @@ $table = "no";
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
 
 
-                <div class="col-lg-6">
+                {{-- <div class="col-lg-6">
                     <div class="card bg-label-primary h-100" style="background-color: !important">
                         <div class="card-body d-flex justify-content-between flex-wrap-reverse">
                             <div class="mb-0 w-100 app-academy-sm-60 d-flex flex-column justify-content-between text-center text-sm-start">
@@ -91,7 +91,7 @@ $table = "no";
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
 
 

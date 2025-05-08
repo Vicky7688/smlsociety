@@ -41,6 +41,7 @@ use App\Http\Controllers\WebControllers\Transactions\RDController;
 use App\Http\Controllers\WebControllers\Transactions\DailyLoanController;
 use App\Http\Controllers\WebControllers\Transactions\MISConrtoller;
 use App\Http\Controllers\WebControllers\Transactions\CashCreditLimitController;
+use App\Http\Controllers\WebControllers\LoanTransactionController;
 use App\Http\Controllers\WebControllers\UserController;
 use App\Http\Controllers\WebControllers\HomeController;
 use App\Http\Controllers\WebControllers\StatementController;
@@ -225,11 +226,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/fdtrfddailyupdate', [SavingController::class, 'fdtrfddailyupdate'])->name('fdtrfddailyupdate');
 
     //___________Saving Trfd To CCL
-    Route::post('/getcclaccountdetails',[SavingController::class, 'getcclaccountdetails'])->name('getcclaccountdetails');
-    Route::post('/getcheckinterestdatewiseccl',[SavingController::class, 'getcheckinterestdatewiseccl'])->name('getcheckinterestdatewiseccl');
-    Route::post('/savingtrfdtocclrecovery',[SavingController::class, 'savingtrfdtocclrecovery'])->name('savingtrfdtocclrecovery');
-    Route::post('/editsavingtrdfccl',[SavingController::class, 'editsavingtrdfccl'])->name('editsavingtrdfccl');
-    Route::post('/savingtrfdtocclrecoveryupdate',[SavingController::class, 'savingtrfdtocclrecoveryupdate'])->name('savingtrfdtocclrecoveryupdate');
+    Route::post('/getcclaccountdetails', [SavingController::class, 'getcclaccountdetails'])->name('getcclaccountdetails');
+    Route::post('/getcheckinterestdatewiseccl', [SavingController::class, 'getcheckinterestdatewiseccl'])->name('getcheckinterestdatewiseccl');
+    Route::post('/savingtrfdtocclrecovery', [SavingController::class, 'savingtrfdtocclrecovery'])->name('savingtrfdtocclrecovery');
+    Route::post('/editsavingtrdfccl', [SavingController::class, 'editsavingtrdfccl'])->name('editsavingtrdfccl');
+    Route::post('/savingtrfdtocclrecoveryupdate', [SavingController::class, 'savingtrfdtocclrecoveryupdate'])->name('savingtrfdtocclrecoveryupdate');
 
 
 
@@ -314,25 +315,25 @@ Route::group(['middleware' => ['auth']], function () {
 
 //___________Receipt && Disbursement Routes
 Route::group(['middleware' => ['auth']], function () {
-    Route::get('/receiptanddisbursementIndex',[ReceiptAndDisbursementController::class,'receiptanddisbursementIndex'])->name('receiptanddisbursementIndex');
-    Route::post('/getdatareceiptanddisbursement',[ReceiptAndDisbursementController::class,'getdatareceiptanddisbursement'])->name('getdatareceiptanddisbursement');
-    Route::any('/disbursementreceiptPrint',[ReceiptAndDisbursementController::class, 'printRecept'])->name('printRecept');
+    Route::get('/receiptanddisbursementIndex', [ReceiptAndDisbursementController::class, 'receiptanddisbursementIndex'])->name('receiptanddisbursementIndex');
+    Route::post('/getdatareceiptanddisbursement', [ReceiptAndDisbursementController::class, 'getdatareceiptanddisbursement'])->name('getdatareceiptanddisbursement');
+    Route::any('/disbursementreceiptPrint', [ReceiptAndDisbursementController::class, 'printRecept'])->name('printRecept');
 });
 
 
 
 //___________General Ledger Routes
-// Route::group(['middleware' => ['auth']], function () {
-//     Route::get('/generalLegderIndex',[GeneralLedgerController::class,'generalLegderIndex'])->name('generalLegderIndex');
-//     Route::post('/getledgercodesss',[GeneralLedgerController::class,'getledgercodesss'])->name('getledgercodesss');
-//     Route::post('/getgerenalLedgerdata',[GeneralLedgerController::class,'getgerenalLedgerdata'])->name('getgerenalLedgerdata');
-//     Route::get('/generalPrint',[GeneralLedgerController::class,'print'])->name('generalPrint.print');
-// });
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/generalLegderIndex', [GeneralLedgerController::class, 'generalLegderIndex'])->name('generalLegderIndex');
+    Route::post('/getledgercodesss', [GeneralLedgerController::class, 'getledgercodesss'])->name('getledgercodesss');
+    Route::post('/getgerenalLedgerdata', [GeneralLedgerController::class, 'getgerenalLedgerdata'])->name('getgerenalLedgerdata');
+    Route::get('/generalPrint', [GeneralLedgerController::class, 'print'])->name('generalPrint.print');
+});
 
 //___________DayBook Routes
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/daybookindex', [DayBookController::class, 'daybookindex'])->name('daybookindex');
-    Route::post('/getdaybookdata',[DayBookController::class, 'getdaybookdata'])->name('getdaybookdata');
+    Route::post('/getdaybookdata', [DayBookController::class, 'getdaybookdata'])->name('getdaybookdata');
 });
 
 
@@ -390,21 +391,36 @@ Route::prefix('report/shareLisr')->middleware('auth')->controller(ShareListContr
 
 
 //____________Issue Loan List Routes
-// Route::prefix('report')->middleware('auth')->controller(IssueLoanReportController::class)->group(function () {
-//     Route::get('/issueLoanReport', 'index')->name('issueLoanReport.index');
-//     Route::get('/issueLoanReport/getData', 'getData')->name('issueLoanReport.getData');
-//     Route::get('/issueLoanPrint/print', 'print')->name('issueLoanPrint.print');
-// });
+Route::prefix('report')->middleware('auth')->controller(IssueLoanReportController::class)->group(function () {
+    Route::get('/issueLoanReport', 'index')->name('issueLoanReport.index');
+    Route::get('/issueLoanReport/getData', 'getData')->name('issueLoanReport.getData');
+    Route::get('/issueLoanPrint/print', 'print')->name('issueLoanPrint.print');
+});
 
 
 
 //___________Cash Book Route's
-// Route::group(['middleware' => ['auth']], function () {
-//     Route::get('/cashbookindex', [CashBookController::class, 'cashbookindex'])->name('cashbookindex');
-//     Route::post('/getcashdata', [CashBookController::class, 'getcashdata'])->name('getcashdata');
-// });
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/cashbookindex', [CashBookController::class, 'cashbookindex'])->name('cashbookindex');
+    Route::post('/getcashdata', [CashBookController::class, 'getcashdata'])->name('getcashdata');
+});
 
-
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/loan', [LoanTransactionController::class, 'index'])->name('loan');
+    Route::get('{type}/', [LoanTransactionController::class, 'loan'])->name('loantype');
+    Route::post('checkLoanNo', [LoanTransactionController::class, 'checkLoanNo'])->name('checkLoanNo');
+    Route::post('checkPernoteNo', [LoanTransactionController::class, 'checkPernoteNo'])->name('checkPernoteNo');
+    Route::post('getloanDetail', [LoanTransactionController::class, 'getloanDetail'])->name('getloanDetail');
+    Route::post('updateloanadvancement', [LoanTransactionController::class, 'updateloanadvancement'])->name('updateloanadvancement');
+    Route::post('insertloanadvancement', [LoanTransactionController::class, 'insertloanadvancement'])->name('insertloanadvancement');
+    Route::post('getLoanType', [LoanTransactionController::class, 'getLoanType'])->name('getLoanType');
+    Route::post('grantordetails', [LoanTransactionController::class, 'grantordetails'])->name('grantordetails');
+    Route::post('deleteloan', [LoanTransactionController::class, 'deleteloan'])->name('deleteloan');
+    Route::post('loandata', [LoanTransactionController::class, 'loandata'])->name('loandata');
+    Route::post('getInstallmets', [LoanTransactionController::class, 'getInstallmets'])->name('getInstallmets');
+    Route::post('getLoanAc', [LoanTransactionController::class, 'getLoanAc'])->name('getLoanAc');
+    Route::post('getloandetails', [LoanTransactionController::class, 'getloandetails'])->name('getloandetails');
+});
 //___________Recurring Deposit
 // Route::prefix('transactions/RD_recurring_new')->middleware('auth')->controller(RDController::class)->group(function () {
 //     Route::get('/', 'index')->name('rd.recurring.index');
@@ -492,25 +508,27 @@ Route::prefix('report/shareLisr')->middleware('auth')->controller(ShareListContr
 
 
 
-Route::group(['prefix' => 'transaction/loan', 'middleware' => ['auth']], function () {
+// Route::group(['prefix' => 'transaction/loan', 'middleware' => ['auth']], function () {
 
 
-    Route::get('/', [LoanController::class, 'index'])->name('loan');
-    Route::get('{type}/', [LoanController::class, 'loan'])->name('loantype');
-    Route::post('/getdailyloanaccount', [LoanController::class, 'getdailyloanaccount'])->name('getdailyloanaccount')->middleware('checksession');
-    Route::post('/getdailyloanperday', [LoanController::class, 'getdailyloanperday'])->name('getdailyloanperday')->middleware('checksession');
-    Route::post('/getdailyloanaccountreceived', [LoanController::class, 'getdailyloanaccountreceived'])->name('getdailyloanaccountreceived')->middleware('checksession');
-    Route::post('/transferloanaccountreceived', [LoanController::class, 'transferloanaccountreceived'])->name('transferloanaccountreceived')->middleware('checksession');
-    Route::post('/getdailytransfer', [LoanController::class, 'getdailytransfer'])->name('getdailytransfer')->middleware('checksession');
-    Route::post('/deleteItemtransfered', [LoanController::class, 'deleteItemtransfered'])->name('deleteItemtransfered')->middleware('checksession');
-    Route::post('/update', [LoanController::class, 'transaction'])->name('loanupdate')->middleware('checksession');
-    Route::post('getfdschemesloan', [LoanController::class, 'getfdschemesloan'])->name('getfdschemesloan');
-    Route::post('getrdschemesloan', [LoanController::class, 'getrdschemesloan'])->name('getrdschemesloan');
-    Route::post('getCheckedSchemes', [LoanController::class, 'getCheckedSchemes'])->name('getCheckedSchemes');
-    Route::post('/get-saving-account', [LoanController::class, 'getsavingaccount'])->name('get-saving-account');
+//     Route::get('/', [LoanController::class, 'index'])->name('loan');
+//     Route::get('{type}/', [LoanController::class, 'loan'])->name('loantype');
+//     Route::post('/getdailyloanaccount', [LoanController::class, 'getdailyloanaccount'])->name('getdailyloanaccount')->middleware('checksession');
+//     Route::post('/getdailyloanperday', [LoanController::class, 'getdailyloanperday'])->name('getdailyloanperday')->middleware('checksession');
+//     Route::post('/getdailyloanaccountreceived', [LoanController::class, 'getdailyloanaccountreceived'])->name('getdailyloanaccountreceived')->middleware('checksession');
+//     Route::post('/transferloanaccountreceived', [LoanController::class, 'transferloanaccountreceived'])->name('transferloanaccountreceived')->middleware('checksession');
+//     Route::post('/getdailytransfer', [LoanController::class, 'getdailytransfer'])->name('getdailytransfer')->middleware('checksession');
+//     Route::post('/deleteItemtransfered', [LoanController::class, 'deleteItemtransfered'])->name('deleteItemtransfered')->middleware('checksession');
+//     Route::post('/update', [LoanController::class, 'transaction'])->name('loanupdate')->middleware('checksession');
+//     Route::post('getfdschemesloan', [LoanController::class, 'getfdschemesloan'])->name('getfdschemesloan');
+//     Route::post('getrdschemesloan', [LoanController::class, 'getrdschemesloan'])->name('getrdschemesloan');
+//     Route::post('getCheckedSchemes', [LoanController::class, 'getCheckedSchemes'])->name('getCheckedSchemes');
+//     Route::post('/get-saving-account', [LoanController::class, 'getsavingaccount'])->name('get-saving-account');
+//     Route::post('/checkLoanNo', [LoanController::class, 'checkLoanNo'])->name('checkLoanNo');
+//     Route::post('/checkPernoteNo', [LoanController::class, 'checkPernoteNo'])->name('checkPernoteNo');
 
 
-});
+// });
 
 
 
@@ -590,7 +608,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/ccladvancementupdate', [CashCreditLimitController::class, 'ccladvancementupdate'])->name('ccladvancementupdate');
 
 
-//     //_____________________Recoery Route's
+    //     //_____________________Recoery Route's
     Route::get('/cclrecoveryIndex', [CashCreditLimitController::class, 'cclrecoveryIndex'])->name('cclrecoveryIndex');
     Route::post('/getcclaccountlist', [CashCreditLimitController::class, 'getcclaccountlist'])->name('getcclaccountlist');
     Route::post('/getcclaccount', [CashCreditLimitController::class, 'getcclaccount'])->name('getcclaccount');
@@ -618,7 +636,6 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::post('/closedsodaccount', [CashCreditLimitController::class, 'closedsodaccount'])->name('closedsodaccount');
     Route::post('/unclosedsodaccount', [CashCreditLimitController::class, 'unclosedsodaccount'])->name('unclosedsodaccount');
-
 });
 
 
@@ -790,11 +807,11 @@ Route::prefix('transactions/saving')->middleware('auth')->controller(SavingContr
 // });
 
 //______
-// Route::group(['middleware' => ['auth']], function () {
-//     Route::get('/profitlossindex', [ProfitLossController::class, 'profitlossindex'])->name('profitlossindex');
-//     Route::post('/getprofitlossdetails', [ProfitLossController::class, 'getprofitlossdetails'])->name('getprofitlossdetails');
-//     Route::post('/updateExpenseIncomeProfitLosses',[ProfitLossController::class, 'updateExpenseIncomeProfitLosses'])->name('updateExpenseIncomeProfitLosses');
-// });
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/profitlossindex', [ProfitLossController::class, 'profitlossindex'])->name('profitlossindex');
+    Route::post('/getprofitlossdetails', [ProfitLossController::class, 'getprofitlossdetails'])->name('getprofitlossdetails');
+    Route::post('/updateExpenseIncomeProfitLosses', [ProfitLossController::class, 'updateExpenseIncomeProfitLosses'])->name('updateExpenseIncomeProfitLosses');
+});
 
 
 // Route::group(['middleware' => ['auth']], function () {
@@ -822,7 +839,7 @@ Route::prefix('transactions/saving')->middleware('auth')->controller(SavingContr
 // Route::post('storeDeductionData', [AllListController::class, 'storeData'])->name('storeDeductionData');
 // Route::get('deductionData', [AllListController::class, 'autoDeduction'])->name('autoDeduction');
 
-// Route::any('report/daybook', [DayBookController::class, 'printPdf'])->name('printPdf');
+Route::any('report/daybook', [DayBookController::class, 'printPdf'])->name('printPdf');
 
 // Route::prefix('/npaList')->middleware('auth')->controller(ReportsNPAListController::class)->group(function () {
 //     Route::get('/index', 'index')->name('npaList.index');

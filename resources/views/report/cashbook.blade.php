@@ -175,8 +175,7 @@
 
             let header = `
             <div style="text-align: center; margin-bottom: 10px;">
-                <h4>{{ $branch->name }}</h4>
-                <h6>{{ $branch->address }}</h6>
+
                 <h6>Day Book from ${startDate} to ${endDate}</h6>
             </div>`;
 
