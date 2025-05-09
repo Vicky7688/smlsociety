@@ -420,6 +420,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('getInstallmets', [LoanTransactionController::class, 'getInstallmets'])->name('getInstallmets');
     Route::post('getLoanAc', [LoanTransactionController::class, 'getLoanAc'])->name('getLoanAc');
     Route::post('getloandetails', [LoanTransactionController::class, 'getloandetails'])->name('getloandetails');
+    Route::post('saverecovery', [LoanTransactionController::class, 'saverecovery'])->name('saverecovery');
+    Route::post('deleteRecovery', [LoanTransactionController::class, 'deleteRecovery'])->name('deleteRecovery');
 });
 //___________Recurring Deposit
 // Route::prefix('transactions/RD_recurring_new')->middleware('auth')->controller(RDController::class)->group(function () {

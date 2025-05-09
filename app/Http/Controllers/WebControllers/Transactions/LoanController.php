@@ -245,26 +245,26 @@ class LoanController extends Controller
 
 
     // public function getrdschemesloan(Request $post)
-        // {
+    // {
 
-        //     $data = DB::table('re_curring_rds')
-        //     ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
-        //     ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-        //     ->select(
-        //         're_curring_rds.id',
-        //         're_curring_rds.rd_account_no',
-        //         'scheme_masters.name as schemname',
-        //         DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
-        //     )
-        //     ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
-        //     ->where('re_curring_rds.status', '=', 'Active')
-        //     ->groupBy('re_curring_rds.id','re_curring_rds.rd_account_no','scheme_masters.name') // Group by the necessary columns
-        //     ->get();
+    //     $data = DB::table('re_curring_rds')
+    //     ->join('scheme_masters', 're_curring_rds.secheme_id', '=', 'scheme_masters.id')
+    //     ->leftJoin('rd_receiptdetails', 'rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //     ->select(
+    //         're_curring_rds.id',
+    //         're_curring_rds.rd_account_no',
+    //         'scheme_masters.name as schemname',
+    //         DB::raw('SUM(rd_receiptdetails.amount) as fetchamount')
+    //     )
+    //     ->where('re_curring_rds.accountNo', '=', $post->accountNumber)
+    //     ->where('re_curring_rds.status', '=', 'Active')
+    //     ->groupBy('re_curring_rds.id','re_curring_rds.rd_account_no','scheme_masters.name') // Group by the necessary columns
+    //     ->get();
 
-        // if (sizeof($data)<=0) {
-        //     return response()->json(['status' => "fail", "data" => $data]);
-        // }
-        //     return response()->json(['status' => "success", "data" => $data]);
+    // if (sizeof($data)<=0) {
+    //     return response()->json(['status' => "fail", "data" => $data]);
+    // }
+    //     return response()->json(['status' => "success", "data" => $data]);
     // }
 
 
@@ -2743,48 +2743,48 @@ class LoanController extends Controller
 
 
     // public function getinstallmetslist($post)
-        // {
-        //     $loanType = LoanMaster::find($post->loanType);
-        //     $loanDay =  date('d', strtotime($post->loandate));
-        //     if($loanType->emiDate == "0"){
-        //          $emiDay =  date('d', strtotime($post->loandate));
-        //     }else{
-        //        $emiDay = $loanType->emiDate;
-        //     }
+    // {
+    //     $loanType = LoanMaster::find($post->loanType);
+    //     $loanDay =  date('d', strtotime($post->loandate));
+    //     if($loanType->emiDate == "0"){
+    //          $emiDay =  date('d', strtotime($post->loandate));
+    //     }else{
+    //        $emiDay = $loanType->emiDate;
+    //     }
 
-        //     $startDate = date('Y-m-' . $emiDay, strtotime($post->loandate . '+1 month'));
-        //     $finalemidate = date('Y-m-' . $emiDay, strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : '')));
-        //     $startDateTime = new DateTime($startDate);
-        //     $emiDateTime = new DateTime($finalemidate);
+    //     $startDate = date('Y-m-' . $emiDay, strtotime($post->loandate . '+1 month'));
+    //     $finalemidate = date('Y-m-' . $emiDay, strtotime($startDate . ($loanDay > $emiDay ? ' +1 month' : '')));
+    //     $startDateTime = new DateTime($startDate);
+    //     $emiDateTime = new DateTime($finalemidate);
 
-        //     $interval = $startDateTime->diff($emiDateTime);
-        //     $diffInDays = $interval->days;
+    //     $interval = $startDateTime->diff($emiDateTime);
+    //     $diffInDays = $interval->days;
 
-        //     $daydiff = ($loanType && $loanType->advancementDate == "Yes" && $loanType->recoveryDate == "Yes") ? 1 : (($loanType && $loanType->advancementDate == "No" && $loanType->recoveryDate == "No") ? -1 : 0);
+    //     $daydiff = ($loanType && $loanType->advancementDate == "Yes" && $loanType->recoveryDate == "Yes") ? 1 : (($loanType && $loanType->advancementDate == "No" && $loanType->recoveryDate == "No") ? -1 : 0);
 
-        //     $advancementDay = $diffInDays; //+ $daydiff;
-        //     $dayintrest  = 0;
-        //     if ($loanType->advancementDate == "Not Applicable") {
-        //         $emiDateTime = new DateTime($finalemidate);
-        //     } else if ($loanType->advancementDate == "Loan Date") {
-        //         $emiDateTime = new DateTime($startDate);
-        //     } else {
+    //     $advancementDay = $diffInDays; //+ $daydiff;
+    //     $dayintrest  = 0;
+    //     if ($loanType->advancementDate == "Not Applicable") {
+    //         $emiDateTime = new DateTime($finalemidate);
+    //     } else if ($loanType->advancementDate == "Loan Date") {
+    //         $emiDateTime = new DateTime($startDate);
+    //     } else {
 
 
-        //         $dayintrest = ($loanAmount = intval($post->loanAmount)) * $advancementDay * $post->intrest / 36500;
-        //     }
-        //     $data['Installments'] = 0;
-        //     $installmentsPerYear = ($loanType->insType == "Monthly") ? 12 : 2;
-        //     $data['Installments'] = ($loanType->insType == "Monthly") ? ($post->year * 12) + $post->month : (($loanType->insType == "Half Yearly") ? ($post->year * 2) + $post->month / 6 : 0);
-        //     $data['InstallmentAmount'] = round($loanAmount / $data['Installments'], 2); //1045
-        //     $data['RateofInterest'] = ($post->intrest / $installmentsPerYear) / 100;
+    //         $dayintrest = ($loanAmount = intval($post->loanAmount)) * $advancementDay * $post->intrest / 36500;
+    //     }
+    //     $data['Installments'] = 0;
+    //     $installmentsPerYear = ($loanType->insType == "Monthly") ? 12 : 2;
+    //     $data['Installments'] = ($loanType->insType == "Monthly") ? ($post->year * 12) + $post->month : (($loanType->insType == "Half Yearly") ? ($post->year * 2) + $post->month / 6 : 0);
+    //     $data['InstallmentAmount'] = round($loanAmount / $data['Installments'], 2); //1045
+    //     $data['RateofInterest'] = ($post->intrest / $installmentsPerYear) / 100;
 
-        //     $totalInstallments = $data['Installments'];
+    //     $totalInstallments = $data['Installments'];
 
-        //     if($loanType->emiDate == "0"){
-        //         $emiDateTime = new DateTime($post->loandate);
-        //     }
-        //     return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
+    //     if($loanType->emiDate == "0"){
+    //         $emiDateTime = new DateTime($post->loandate);
+    //     }
+    //     return $installments = $this->generateInstallments($loanAmount, $post->intrest, $installmentsPerYear, $totalInstallments, $emiDateTime->format('Y-m-d'), $startDateTime->format('d-m-Y'), $dayintrest);
     // }
 
     public function calculateReducingInterest($principal, $annualInterestRate, $installmentsPerYear, $monthsSinceLastInstallment)

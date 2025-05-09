@@ -29,8 +29,8 @@
                                         <select name="memberType" id="memberType" class=" form-select form-select-sm"
                                             data-placeholder="Select Member">
                                             <option value="Member">Member</option>
-                                            <option value="Nominal Member">Nominal Member</option>
-                                            <option value="Staff">Staff</option>
+                                            {{-- <option value="Nominal Member">Nominal Member</option>
+                                            <option value="Staff">Staff</option> --}}
                                         </select>
                                     </div>
                                     <div class="col-md-3 col-sm-6 mb-3">
@@ -39,13 +39,13 @@
                                             class="form-control form-control-sm" placeholder="Enter value" required />
                                     </div>
                                     <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                                    <label class="form-label mb-1" for="loanid">Loan </label>
-                                                    <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                            <label class="form-label mb-1" for="loanid">Loan </label>
+                                            <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
 
-                                                    </select>
-                                                </div> -->
+                                            </select>
+                                        </div> -->
                                     <div class="col-md-3 col-sm-6 mb-3">
-                                        <label for="name" class="form-label">Princple</label>
+                                        <label for="name" class="form-label">Princple Inatsallment</label>
                                         <input type="text" name="PrincipalTillDate" id="TPrincipal" value="0"
                                             class="form-control form-control-sm" autocomplete="off">
                                     </div>
@@ -164,6 +164,10 @@
                             </caption>
                             <tbody>
                                 <tr>
+                                    <th>Customer Name</th>
+                                    <td class="loanname"></td>
+                                </tr>
+                                <tr>
                                     <th>Loan Amount</th>
                                     <td class="loanAmount"></td>
                                 </tr>
@@ -174,12 +178,12 @@
 
                                 <tr>
                                     <th>Loan Type</th>
-                                    <td class="loanname"></td>
+                                    <td class="loanType"></td>
                                 </tr>
                                 <!-- <tr>
-                                                <th>Purpose</th>
-                                                <td class="purpose"></td>
-                                            </tr> -->
+                                    <th>Purpose</th>
+                                    <td class="purpose"></td>
+                                </tr> -->
                                 <tr>
                                     <th>Loan By</th>
                                     <td class="loanBy"></td>
@@ -265,11 +269,11 @@
                             <!--    <input type="text" id="loanAcNo" name="loanAcNo" class="form-control form-control-sm" placeholder="Enter value" required />-->
                             <!--</div>-->
                             <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                                    <label class="form-label mb-1" for="loanid">Loan </label>
-                                                    <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                                                                                <label class="form-label mb-1" for="loanid">Loan </label>
+                                                                                                <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
 
-                                                    </select>
-                                                </div> -->
+                                                                                                </select>
+                                                                                            </div> -->
                             <div class="col-md-4 col-sm-6 mb-3">
                                 <label for="name" class="form-label">Princple</label>
                                 <input type="text" name="PrincipalTillDate" id="TPrincipal" readonly=""
@@ -480,7 +484,7 @@
                         text: 'We are fetching loan details.',
                         allowOutsideClick: () => !swal.isLoading(),
                         onOpen: () => {
-                            swal.showLoading()
+                            swal.showLoading();
                         }
                     });
                 },
@@ -492,34 +496,42 @@
                 success: function(data) {
                     swal.close();
                     $('.installmentsdata').html('');
-                    if (data.status == "success") {
+                    if (data.status === "success") {
                         $("#issubmit").css("display", "block");
-                        setReciverydate(data.recovery);
-                        $.each(data.data, function(index, values) {
-                            $("." + index).text(values);
+
+                        // ✅ Ensure this function exists and target element is present
+                        setRecoveryDate(data.recoveryData);
+
+                        $.each(data.data, function(index, value) {
+                            $("." + index).text(value);
                         });
-                        $.each(data.loandetails, function(index, values) {
-                            $("." + index).text(values);
+
+                        $.each(data.loandetails, function(index, value) {
+                            $("." + index).text(value);
                         });
+
+                        $('.loanAmount').text(data.data.LoanAmount);
+                        $('.loanDate').text(data.data.LoanDate);
+                        $('.loanDate').text(data.data.LoanDate);
+                        $('.loanType').text(data.data.LoanType);
+                        $('.loanname').text(data.data.LoanName);
+                        $('.pernote').text(data.data.PernoteNo);
+                        $('.totalprincple').text(data.data.Amount);
+
+
+
                         $('#installmentsPaid').find('input[name="PrincipalTillDate"]').val(data.loandetails
                             .principal);
-                        // $('#installmentsPaid').find('input[name="PrincipalTillDate"]').val(data.loandetails.totalprincple);
-
                         $('#installmentsPaid').find('input[name="id"]').val(id);
-                        $('#installmentsPaid').find('input[name="InterestTillDate"]').val(data.loandetails
-                            .currentintrest);
-
+                        $('#installmentsPaid').find('input[name="InterestTillDate"]').val(data.loandetails.currentintrest).prop('readonly', true);
                         $('#installmentsPaid').find('input[name="TotalTillDate"]').val(data.loandetails
-                            .netintrest);
-
+                            .netintrest).prop('readonly', true);
                         $('#installmentsPaid').find('input[name="PendingIntrTillDate"]').val(data.loandetails
-                            .pendingintrest);
+                            .pendingintrest).prop('readonly', true);
 
-                        {{--  $('#installmentsPaid').find('input[name="overdue"]').val(data.loandetails.overdueintrest);  --}}
-
-                        var tbody;
-                        if (data.installmet.length === 0) {} else {
+                        if (data.installmet.length > 0) {
                             var srno = 1;
+                            var tbody = '';
                             $.each(data.installmet, function(index, val) {
                                 tbody += "<tr>" +
                                     "<td>" + srno++ + "</td>" +
@@ -538,5 +550,194 @@
                 }
             });
         }
+
+        function setRecoveryDate(recoveryData) {
+            // ✅ Safeguard against null/undefined
+            if (!Array.isArray(recoveryData)) {
+                console.warn("Expected recovery to be an array, got:", recoveryData);
+                $(".recoveryData").html("<tr><td colspan='7'>No recovery data available</td></tr>");
+                return;
+            }
+
+            $(".recovery").css("display", "block");
+            $(".recoveryData").html("");
+            var tbody = '';
+            var i = 1;
+
+            if (recoveryData.length === 0) {
+                tbody = "<tr><td colspan='7'>No recovery data available</td></tr>";
+            } else {
+                $.each(recoveryData, function(index, val) {
+                    tbody += "<tr>" +
+                        "<td>" + i++ + "</td>" +
+                        "<td>" + formatDate(val.receiptDate) + "</td>" +
+                        "<td>" + (val.principal || 0) + "</td>" +
+                        "<td>" + (val.interest || 0) + "</td>" +
+                        "<td>" + (val.penalInterest || 0) + "</td>" +
+                        "<td>" + (val.receivedAmount || 0) + "</td>" +
+                        "<td>" +
+                        "<a onclick=\"deleteItem('" + val.id +
+                        "', 'deleteDistrict')\" href='javascript:void(0);'>" +
+                        "<i class='ti ti-trash me-1'></i></a>" +
+                        "</td>" +
+                        "</tr>";
+                });
+            }
+
+            $('.recoveryData').html(tbody);
+        }
+
+
+        function formatDate(date) {
+            return moment(date).format('DD-MM-YYYY');
+        }
+        $(function() {
+            $('#TPrincipal, #TPendingInterest, #TInterest,#TPenalty,#TTotal,#FPrincipal,#FPendingInterest,#FInterest,#FPenalty,#FTotal')
+                .keyup(function() {
+                    var TPrincipal = parseFloat($('#TPrincipal').val()) || 0;
+                    var TPendingInterest = parseFloat($('#TPendingInterest').val()) || 0;
+                    var TInterest = parseFloat($('#TInterest').val()) || 0;
+                    var TPenalty = parseFloat($('#TPenalty').val()) || 0;
+                    var TTotal = parseFloat($('#TTotal').val()) || 0;
+                    var FPrincipal = parseFloat($('#FPrincipal').val()) || 0;
+                    var FPendingInterest = parseFloat($('#FPendingInterest').val()) || 0;
+                    var FInterest = parseFloat($('#FInterest').val()) || 0;
+                    var FPenalty = parseFloat($('#FPenalty').val()) || 0;
+                    var FTotal = parseFloat($('#FTotal').val()) || 0;
+
+                    FianlInterest = Math.round(TInterest);
+                    $('#FianlInterest').val(FianlInterest);
+
+                    FianlPenalty = Math.round(TPenalty);
+                    $('#FianlPenalty').val(FianlPenalty);
+
+                    TillDateTotal = Math.round(TPrincipal + TPendingInterest + TInterest + TPenalty);
+                    $('#TillDateTotal').val(TillDateTotal);
+
+                    FianlTotal = Math.round(FPrincipal + TPendingInterest + TInterest + TPenalty);
+                    $('#FianlTotal').val(FianlTotal);
+                });
+        });
+        $("#installmentsPaid").validate({
+            rules: {
+                loanDate: {
+                    required: true,
+                    customDate: true,
+                },
+                memberType: {
+                    required: true,
+                },
+                accountNumber: {
+                    required: true,
+                    number: true,
+                }
+            },
+            messages: {
+                loanDate: {
+                    required: "Please enter Loan Date",
+                    customDate: "Please enter a valid date in the format dd-mm-yyyy",
+                },
+                amount: {
+                    required: "Please enter amount",
+                    number: "Amount number should be numeric",
+                },
+                pernote: {
+                    required: "Please enter pernote",
+                    number: "Pernote number should be numeric",
+                },
+                installmentType: {
+                    required: "Please select installment Type",
+                }
+            },
+            errorElement: "p",
+            errorPlacement: function(error, element) {
+                if (element.prop("tagName").toLowerCase() === "select") {
+                    error.insertAfter(element.closest(".form-group").find(".select2"));
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            submitHandler: function(form) {
+                var $form = $(form);
+                var formData = $form.serialize(); // serialize form data
+
+                var submitBtn = $form.find('button[type="submit"]');
+                submitBtn.html(
+                    '<span class="spinner-border me-1" role="status" aria-hidden="true"></span> Loading...'
+                ).attr('disabled', true).addClass('btn-secondary');
+
+                $.ajax({
+                    url: "{{ route('saverecovery') }}", // ⚠️ Update this to your correct route
+                    type: "POST",
+                    data: formData,
+                    dataType: "json",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(data) {
+                        submitBtn.html('Submit').attr('disabled', false).removeClass(
+                            'btn-secondary');
+                        if (data.status === "success") {
+                            $form[0].reset();
+                            $("#transactionDate").val(moment().format('DD-MM-YYYY'));
+                            setRecoveryDate(data.recovery);
+                            notify("Task Successfully Completed", 'success');
+                        } else {
+                            notify(data.status, 'warning');
+                        }
+                    },
+                    error: function(errors) {
+                        submitBtn.html('Submit').attr('disabled', false).removeClass(
+                            'btn-secondary');
+                        showError(errors, $form);
+                    }
+                });
+            }
+        });
+        function deleteItem(id){
+         swal({
+                title: 'Are you sure ?',
+                text: "You want to delete a transaction. It cannot be recovered",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: "Yes Delete",
+                showLoaderOnConfirm: true,
+                allowOutsideClick: () => !swal.isLoading(),
+                preConfirm: () => {
+                    return new Promise((resolve) => {
+                        $.ajax({
+                            url: "{{route('deleteRecovery')}}",
+                            type: "POST",
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
+                                    'content')
+                            },
+                            data: {
+                                'actiontype': "deleteinstallmets",
+                                'id': id,
+                            },
+                            success: function(data) {
+                                    swal.close();
+                                if (data.status == "success") {
+                                     setReciverydate(data.recovery);
+                                 swal(
+                                    'Deleted',
+                                    "Transaction deleted successfully",
+                                    'success'
+                                );
+                                } else {
+
+                                     swal('Oops!', data.status, 'error');
+                                }
+                            },
+                            error: function(errors) {
+                                swal.close();
+                               showError(errors, 'withoutform');
+                            }
+                        });
+                    });
+                },
+            });
+    }
     </script>
 @endpush
