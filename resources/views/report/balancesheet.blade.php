@@ -627,7 +627,7 @@
 
                                 // Incomes Section
                                 if (i < incomes.length) {
-                                    let income = parseFloat(incomes[i].total_income) || 0;
+                                    let income = parseFl.oat(incomes[i].total_income) || 0;
                                     let income_debit = parseFloat(incomes[i]
                                         .total_income_debit) || 0;
                                     let incomebalancesss = income - income_debit;
@@ -637,10 +637,6 @@
                             }
 
                             //_____________End Income && Expenses
-
-
-
-
 
 
                             //_______________________ LBS Payables && Recoverable ______________________________

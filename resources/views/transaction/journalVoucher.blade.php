@@ -454,17 +454,20 @@
                             </tr>
                         </thead>
                         <tbody id="journalTableBody">
-                            @if(!empty($allvouchars))
+                            @if (!empty($allvouchars))
                                 @foreach ($allvouchars as $row)
                                     <tr>
                                         <td>{{ $loop->index + 1 }}</td>
                                         <td>{{ date('d-m-Y', strtotime($row->voucherDate)) }}</td>
                                         <td>{{ $row->id }}</td>
-                                        <td>{{ ucwords($row->narration) ? ucwords($row->narration) : 'Journal Voucher' }}</td>
+                                        <td>{{ ucwords($row->narration) ? ucwords($row->narration) : 'Journal Voucher' }}
+                                        </td>
                                         <td>{{ $row->drAmount ? $row->drAmount : $row->crAmount }}</td>
                                         <td style="width:85px;">
-                                            <i class="fa-solid fa-pen-to-square border-0 iconsColorCustom voucharedit" data-id="{{ $row->id }}"></i>
-                                            <i class="fa-solid fa-trash iconsColorCustom deletebtn" data-id="{{ $row->id }}"></i>
+                                            <i class="fa-solid fa-pen-to-square border-0 iconsColorCustom voucharedit"
+                                                data-id="{{ $row->id }}"></i>
+                                            <i class="fa-solid fa-trash iconsColorCustom deletebtn"
+                                                data-id="{{ $row->id }}"></i>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -521,22 +524,21 @@
 @endsection
 
 @push('script')
-
-<script>
-    $(document).ready(function() {
-        $('#datatable').DataTable({
-            "paging": true,         // Enables pagination
-            "searching": true,      // Enables search box
-            "ordering": true,       // Enables column sorting
-            "info": true,           // Shows "Showing X of Y entries"
-            "lengthMenu": [10, 25, 50, 100], // Dropdown for entries per page
-            "language": {
-                "search": "Search:",  // Customizing search label
-                "lengthMenu": "Show _MENU_ entries"
-            }
+    <script>
+        $(document).ready(function() {
+            $('#datatable').DataTable({
+                "paging": true, // Enables pagination
+                "searching": true, // Enables search box
+                "ordering": true, // Enables column sorting
+                "info": true, // Shows "Showing X of Y entries"
+                "lengthMenu": [10, 25, 50, 100], // Dropdown for entries per page
+                "language": {
+                    "search": "Search:", // Customizing search label
+                    "lengthMenu": "Show _MENU_ entries"
+                }
+            });
         });
-    });
-</script>
+    </script>
     {{--  <script>
 $(document).ready(function() {
     $('#groupCode').change(function() {
@@ -1048,7 +1050,6 @@ if (document.readyState == "complete") {
             $('#debitgrandTotal').text(total);
         });
 
-
         $(document).on('blur', '[name="cramount[]"]', function() {
             let total = 0;
             $('[name="cramount[]"]').each(function() {
@@ -1057,7 +1058,6 @@ if (document.readyState == "complete") {
             });
             $('#creditgrandTotal').text(total);
         });
-
 
         $(document).on('keypress', 'input[name="dramount[]"]', function(event) {
             if (event.which === 13) {
@@ -1076,8 +1076,6 @@ if (document.readyState == "complete") {
                 }
             }
         });
-
-
 
         $(document).on('keypress', 'input[name="cramount[]"]', function(event) {
             if (event.which === 13) {
@@ -1144,13 +1142,29 @@ if (document.readyState == "complete") {
                     // Append a new row
                     let newRow = `
                     <tr>
-                        <td class="col-sm-1"><input class="form-control tble-imp" name="drcr[]" id="drcr${nextval}" type="text"></td>
-                        <td class="col-sm-1"><input class="form-control tble-imp" name="code[]" id="code${nextval}" type="text"></td>
-                        <td class="col-sm-3"><input class="form-control tble-imp" readonly name="description[]" id="description${nextval}" type="text"></td>
-                        <td class="col-sm-1"><input class="form-control tble-imp" name="dramount[]" id="dramount${nextval}" type="text"></td>
-                        <td class="col-sm-1"><input class="form-control tble-imp" name="cramount[]" id="cramount${nextval}" type="text"></td>
-                        <td class="col-sm-4"><input class="form-control tble-imp" name="narration[]" id="narration${nextval}" type="text"></td>
-                        <td class="col-sm-1"><a class="deleteRow"><i class="fa-sharp fa-solid fa-trash"></i></a></td>
+                        <td class="col-sm-1">
+                            <input class="form-control tble-imp" name="drcr[]" id="drcr${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-1">
+                            <input class="form-control tble-imp" name="code[]" id="code${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-3">
+                            <input class="form-control tble-imp" readonly name="description[]" id="description${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-1">
+                            <input class="form-control tble-imp" name="dramount[]" id="dramount${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-1">
+                            <input class="form-control tble-imp" name="cramount[]" id="cramount${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-4">
+                            <input class="form-control tble-imp" name="narration[]" id="narration${nextval}" type="text">
+                        </td>
+                        <td class="col-sm-1">
+                            <a class="deleteRow">
+                                <i class="fa-sharp fa-solid fa-trash"></i>
+                            </a>
+                        </td>
                     </tr>
                 `;
                     $('#tbody').append(newRow);
@@ -1219,7 +1233,7 @@ if (document.readyState == "complete") {
                     success: function(res) {
                         if (res.status === 'success') {
                             $("#myTable tbody tr").remove();
-                            $('#inputform')[0].reset(); 
+                            $('#inputform')[0].reset();
                             $("#type-success").trigger("click");
                             setTimeout(function() {
                                 notify(res.messages, 'success');
@@ -1353,7 +1367,9 @@ if (document.readyState == "complete") {
                                         <input class="form-control tble-imp formInputs" name="narration[]" id="narration${index}" type="text" value="${voucharId.narration}">
                                     </td>
                                     <td class="col-sm-1" style="text-align:center;">
-                                        <a class="delete-row"><i class="fa-sharp fa-solid fa-trash"></i></a>
+                                        <a class="delete-row">
+                                            <i class="fa-sharp fa-solid fa-trash"></i>
+                                        </a>
                                     </td>
                                 </tr>
                             `);

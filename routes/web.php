@@ -354,6 +354,141 @@ Route::prefix('report/shareLisr')->middleware('auth')->controller(ShareListContr
 });
 
 
+Route::group(['prefix' => 'transaction', 'middleware' => ['auth']], function () {
+    Route::get('/account', [AccountController::class, 'index'])->name('accountopen.page');
+    Route::post('/account/store', [AccountController::class, 'store'])->name('account.store')->middleware('checksession');
+    Route::post('/account/search', [AccountController::class, 'accountsearch'])->name('account.search');
+    Route::post('/account/find', [AccountController::class, 'accountsearchfind'])->name('account.search.find');
+    Route::post('/account/data', [AccountController::class, 'update'])->name('accountupdate');
+    Route::post('/account/address', [AccountController::class, 'storeaddresspagedata'])->name('account.address.page');
+    Route::post('/account/nomenee', [AccountController::class, 'storenomeneepagedata'])->name('account.nomenee.page');
+    Route::get('/share', [ShareController::class, 'index'])->name('share');
+    Route::post('/share/update', [ShareController::class, 'transaction'])->middleware('checksession')->name('shareupdate');
+    Route::post('/deleteaccount', [AccountController::class, 'deleteaccount'])->name('deleteaccount');
+});
+Route::prefix('report')->middleware('auth')->controller(IssueLoanReportController::class)->group(function () {
+    Route::get('/issueLoanReport', 'index')->name('issueLoanReport.index');
+    Route::get('/issueLoanReport/getData', 'getData')->name('issueLoanReport.getData');
+    Route::get('/issueLoanPrint/print', 'print')->name('issueLoanPrint.print');
+});
+
+
+
+//___________Cash Book Route's
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/cashbookindex', [CashBookController::class, 'cashbookindex'])->name('cashbookindex');
+    Route::post('/getcashdata', [CashBookController::class, 'getcashdata'])->name('getcashdata');
+});
+Route::prefix('transactions/saving')->middleware('auth')->controller(SavingController::class)->group(function () {
+    Route::get('/', 'index')->name('saving.index');
+    Route::post('/store', 'store')->name('saving.store')->middleware('checksession');
+    Route::get('/edit/{modifyId}', 'edit')->name('saving.edit');
+    Route::put('/update', 'update')->name('saving.update')->middleware('checksession');
+    Route::delete('/delete', 'destroy')->name('saving.delete')->middleware('checksession');
+    Route::get('/pagination', 'pagination')->name('saving.pagination');
+    Route::get('/getData', 'getData')->name('saving.getData');
+    Route::get('/fetchData', 'fetchData')->name('saving.fetchData');
+    Route::post('/getsavingaccountsdata', 'getsavingaccountsdata')->name('saving.getsavingaccountsdata');
+});
+//______CCL Loan Calculation routes
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('cclIndex', [CashCreditLimitController::class, 'cclIndex'])->name('cclIndex');
+    Route::post('/getcclmebershipnumber', [CashCreditLimitController::class, 'getcclmebershipnumber'])->name('getcclmebershipnumber');
+    Route::post('/getmemberccl', [CashCreditLimitController::class, 'getmemberccl'])->name('getmemberccl');
+    Route::post('/getdepositlist', [CashCreditLimitController::class, 'getdepositlist'])->name('getdepositlist');
+    Route::post('/getdepositamount', [CashCreditLimitController::class, 'getdepositamount'])->name('getdepositamount');
+    Route::post('/ccladvancementinsert', [CashCreditLimitController::class, 'ccladvancementinsert'])->name('ccladvancementinsert');
+    Route::post('/checkalreadyaccount', [CashCreditLimitController::class, 'checkalreadyaccount'])->name('checkalreadyaccount');
+    Route::post('/editccldetails', [CashCreditLimitController::class, 'editccldetails'])->name('editccldetails');
+    Route::post('/deletecclaccount', [CashCreditLimitController::class, 'deletecclaccount'])->name('deletecclaccount');
+    Route::post('/ccladvancementupdate', [CashCreditLimitController::class, 'ccladvancementupdate'])->name('ccladvancementupdate');
+
+
+    //     //_____________________Recoery Route's
+    Route::get('/cclrecoveryIndex', [CashCreditLimitController::class, 'cclrecoveryIndex'])->name('cclrecoveryIndex');
+    Route::post('/getcclaccountlist', [CashCreditLimitController::class, 'getcclaccountlist'])->name('getcclaccountlist');
+    Route::post('/getcclaccount', [CashCreditLimitController::class, 'getcclaccount'])->name('getcclaccount');
+    Route::post('/cclamounttrfdsaving', [CashCreditLimitController::class, 'cclamounttrfdsaving'])->name('cclamounttrfdsaving');
+    Route::post('/ccltrfdtosavingaccount', [CashCreditLimitController::class, 'ccltrfdtosavingaccount'])->name('ccltrfdtosavingaccount');
+    Route::post('/viewcclledgers', [CashCreditLimitController::class, 'viewcclledgers'])->name('viewcclledgers');
+    Route::post('/deleteccltrfdpayment', [CashCreditLimitController::class, 'deleteccltrfdpayment'])->name('deleteccltrfdpayment');
+    Route::post('/recieptcclamount', [CashCreditLimitController::class, 'recieptcclamount'])->name('recieptcclamount');
+    Route::post('/checkinterestdatewise', [CashCreditLimitController::class, 'checkinterestdatewise'])->name('checkinterestdatewise');
+    Route::post('/cclrecoverInsert', [CashCreditLimitController::class, 'cclrecoverInsert'])->name('cclrecoverInsert');
+    Route::post('/checktrfdinterestdatewise', [CashCreditLimitController::class, 'checktrfdinterestdatewise'])->name('checktrfdinterestdatewise');
+    Route::post('/cclreceivedgetledgers', [CashCreditLimitController::class, 'cclreceivedgetledgers'])->name('cclreceivedgetledgers');
+    Route::post('/checkExceedBalanceCcl', [CashCreditLimitController::class, 'checkExceedBalanceCcl'])->name('checkExceedBalanceCcl');
+    Route::post('/editcheckExceedBalanceCcl', [CashCreditLimitController::class, 'editcheckExceedBalanceCcl'])->name('editcheckExceedBalanceCcl');
+    Route::post('/editcclrecoverypayments', [CashCreditLimitController::class, 'editcclrecoverypayments'])->name('editcclrecoverypayments');
+    Route::post('/updateccltrfdtosavingaccount', [CashCreditLimitController::class, 'updateccltrfdtosavingaccount'])->name('updateccltrfdtosavingaccount');
+    Route::post('/cclrecoverUpdate', [CashCreditLimitController::class, 'cclrecoverUpdate'])->name('cclrecoverUpdate');
+    Route::post('/checkRecoveryNoExceed', [CashCreditLimitController::class, 'checkRecoveryNoExceed'])->name('checkRecoveryNoExceed');
+    Route::post('/getcashbankledgercodes', [CashCreditLimitController::class, 'getcashbankledgercodes'])->name('getcashbankledgercodes');
+
+    Route::get('/sodledgerindexlist', [CashCreditLimitController::class, 'sodledgerindexlist'])->name('sodledgerindexlist');
+    Route::post('/getsodaccountlist', [CashCreditLimitController::class, 'getsodaccountlist'])->name('getsodaccountlist');
+    Route::post('/getsodacc', [CashCreditLimitController::class, 'getsodacc'])->name('getsodacc');
+
+
+    Route::post('/closedsodaccount', [CashCreditLimitController::class, 'closedsodaccount'])->name('closedsodaccount');
+    Route::post('/unclosedsodaccount', [CashCreditLimitController::class, 'unclosedsodaccount'])->name('unclosedsodaccount');
+});
+Route::middleware('auth')->controller(DynamicController::class)->group(function () {
+    Route::get('/getLedger', 'getLedger')->name('getLedger');
+    // Route::get('resetAccountLedger', 'resetAccountLedger')->name('resetAccountLedger');
+    // Route::get('resetCdsLedger', 'resetCDSLedger')->name('resetCDSLedger');
+    // Route::get('resetShareLedger', 'resetShareLedger')->name('resetShareLedger');
+    // Route::get('resetFdLedger', 'resetFDLedger')->name('resetFDLedger');
+    // Route::get('resetMatureFdLedger', 'resetMatureFdLedger')->name('resetMatureFDLedger');
+    // Route::get('resetLoanLedger', 'resetLoanLedger')->name('resetLoanLedger');
+    // Route::get('resetLoanReceptLedger', 'resetLoanReceptLedger')->name('resetLoanReceptLedger');
+
+});
+//______
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/profitlossindex', [ProfitLossController::class, 'profitlossindex'])->name('profitlossindex');
+    Route::post('/getprofitlossdetails', [ProfitLossController::class, 'getprofitlossdetails'])->name('getprofitlossdetails');
+    Route::post('/updateExpenseIncomeProfitLosses', [ProfitLossController::class, 'updateExpenseIncomeProfitLosses'])->name('updateExpenseIncomeProfitLosses');
+});
+
+
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/balancesheetindex', [BalanceSheetController::class, 'balancesheetindex'])->name('balancesheetindex');
+    Route::post('/getbalancesheetdate', [BalanceSheetController::class, 'getbalancesheetdate'])->name('getbalancesheetdate');
+});
+Route::any('report/daybook', [DayBookController::class, 'printPdf'])->name('printPdf');
+
+Route::prefix('transactions/journalVoucher')->middleware('auth')->group(function () {
+    Route::get('/', [JournalVoucherController::class, 'index'])->name('journalVoucher.index');
+    // Route::post('/store', [JournalVoucherController::class, 'store'])->name('journalVoucher.store')->middleware('checksession');
+    Route::post('/getledgercodes', [JournalVoucherController::class, 'getledgercodes'])->name('getledgercodes');
+    Route::post('/getled', [JournalVoucherController::class, 'getled'])->name('getled');
+    Route::post('/getdatadat', [JournalVoucherController::class, 'getdatadat'])->name('getdatadat');
+    Route::post('/submitvoucher', [JournalVoucherController::class, 'submitvoucher'])->name('submitvoucher');
+    Route::post('/deletevouchares', [JournalVoucherController::class, 'deletevouchares'])->name('deletevouchares');
+    Route::post('/editvouchars', [JournalVoucherController::class, 'editvouchars'])->name('editvouchars');
+    Route::post('/updatevouchar', [JournalVoucherController::class, 'updatevouchar'])->name('updatevouchar');
+});
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/loan', [LoanTransactionController::class, 'index'])->name('loan');
+    Route::get('{type}/', [LoanTransactionController::class, 'loan'])->name('loantype');
+    Route::post('checkLoanNo', [LoanTransactionController::class, 'checkLoanNo'])->name('checkLoanNo');
+    Route::post('checkPernoteNo', [LoanTransactionController::class, 'checkPernoteNo'])->name('checkPernoteNo');
+    Route::post('getloanDetail', [LoanTransactionController::class, 'getloanDetail'])->name('getloanDetail');
+    Route::post('updateloanadvancement', [LoanTransactionController::class, 'updateloanadvancement'])->name('updateloanadvancement');
+    Route::post('insertloanadvancement', [LoanTransactionController::class, 'insertloanadvancement'])->name('insertloanadvancement');
+    Route::post('getLoanType', [LoanTransactionController::class, 'getLoanType'])->name('getLoanType');
+    Route::post('grantordetails', [LoanTransactionController::class, 'grantordetails'])->name('grantordetails');
+    Route::post('deleteloan', [LoanTransactionController::class, 'deleteloan'])->name('deleteloan');
+    Route::post('loandata', [LoanTransactionController::class, 'loandata'])->name('loandata');
+    Route::post('getInstallmets', [LoanTransactionController::class, 'getInstallmets'])->name('getInstallmets');
+    Route::post('getLoanAc', [LoanTransactionController::class, 'getLoanAc'])->name('getLoanAc');
+    Route::post('getloandetails', [LoanTransactionController::class, 'getloandetails'])->name('getloandetails');
+    Route::post('saverecovery', [LoanTransactionController::class, 'saverecovery'])->name('saverecovery');
+    Route::post('deleteRecovery', [LoanTransactionController::class, 'deleteRecovery'])->name('deleteRecovery');
+    Route::post('editRecovery', [LoanTransactionController::class, 'editRecovery'])->name('editRecovery');
+    Route::post('updaterecovery', [LoanTransactionController::class, 'updaterecovery'])->name('updaterecovery');
+});
 //____________Bank FD Routes
 // Route::group(['middleware' => ['auth']], function () {
 //     Route::get('/bankfdindex', [BankFdController::class, 'bankfdindex'])->name('bankfdindex');
@@ -391,38 +526,9 @@ Route::prefix('report/shareLisr')->middleware('auth')->controller(ShareListContr
 
 
 //____________Issue Loan List Routes
-Route::prefix('report')->middleware('auth')->controller(IssueLoanReportController::class)->group(function () {
-    Route::get('/issueLoanReport', 'index')->name('issueLoanReport.index');
-    Route::get('/issueLoanReport/getData', 'getData')->name('issueLoanReport.getData');
-    Route::get('/issueLoanPrint/print', 'print')->name('issueLoanPrint.print');
-});
 
 
 
-//___________Cash Book Route's
-Route::group(['middleware' => ['auth']], function () {
-    Route::get('/cashbookindex', [CashBookController::class, 'cashbookindex'])->name('cashbookindex');
-    Route::post('/getcashdata', [CashBookController::class, 'getcashdata'])->name('getcashdata');
-});
-
-Route::group(['middleware' => ['auth']], function () {
-    Route::get('/loan', [LoanTransactionController::class, 'index'])->name('loan');
-    Route::get('{type}/', [LoanTransactionController::class, 'loan'])->name('loantype');
-    Route::post('checkLoanNo', [LoanTransactionController::class, 'checkLoanNo'])->name('checkLoanNo');
-    Route::post('checkPernoteNo', [LoanTransactionController::class, 'checkPernoteNo'])->name('checkPernoteNo');
-    Route::post('getloanDetail', [LoanTransactionController::class, 'getloanDetail'])->name('getloanDetail');
-    Route::post('updateloanadvancement', [LoanTransactionController::class, 'updateloanadvancement'])->name('updateloanadvancement');
-    Route::post('insertloanadvancement', [LoanTransactionController::class, 'insertloanadvancement'])->name('insertloanadvancement');
-    Route::post('getLoanType', [LoanTransactionController::class, 'getLoanType'])->name('getLoanType');
-    Route::post('grantordetails', [LoanTransactionController::class, 'grantordetails'])->name('grantordetails');
-    Route::post('deleteloan', [LoanTransactionController::class, 'deleteloan'])->name('deleteloan');
-    Route::post('loandata', [LoanTransactionController::class, 'loandata'])->name('loandata');
-    Route::post('getInstallmets', [LoanTransactionController::class, 'getInstallmets'])->name('getInstallmets');
-    Route::post('getLoanAc', [LoanTransactionController::class, 'getLoanAc'])->name('getLoanAc');
-    Route::post('getloandetails', [LoanTransactionController::class, 'getloandetails'])->name('getloandetails');
-    Route::post('saverecovery', [LoanTransactionController::class, 'saverecovery'])->name('saverecovery');
-    Route::post('deleteRecovery', [LoanTransactionController::class, 'deleteRecovery'])->name('deleteRecovery');
-});
 //___________Recurring Deposit
 // Route::prefix('transactions/RD_recurring_new')->middleware('auth')->controller(RDController::class)->group(function () {
 //     Route::get('/', 'index')->name('rd.recurring.index');
@@ -496,17 +602,7 @@ Route::group(['middleware' => ['auth']], function () {
 // });
 
 
-// Route::prefix('transactions/journalVoucher')->middleware('auth')->group(function () {
-//     Route::get('/', [JournalVoucherController::class, 'index'])->name('journalVoucher.index');
-//     // Route::post('/store', [JournalVoucherController::class, 'store'])->name('journalVoucher.store')->middleware('checksession');
-//     Route::post('/getledgercodes', [JournalVoucherController::class, 'getledgercodes'])->name('getledgercodes');
-//     Route::post('/getled', [JournalVoucherController::class, 'getled'])->name('getled');
-//     Route::post('/getdatadat', [JournalVoucherController::class, 'getdatadat'])->name('getdatadat');
-//     Route::post('/submitvoucher', [JournalVoucherController::class, 'submitvoucher'])->name('submitvoucher');
-//     Route::post('/deletevouchares',[JournalVoucherController::class, 'deletevouchares'])->name('deletevouchares');
-//     Route::post('/editvouchars',[JournalVoucherController::class, 'editvouchars'])->name('editvouchars');
-//     Route::post('/updatevouchar',[JournalVoucherController::class, 'updatevouchar'])->name('updatevouchar');
-// });
+
 
 
 
@@ -531,9 +627,6 @@ Route::group(['middleware' => ['auth']], function () {
 
 
 // });
-
-
-
 
 
 
@@ -596,49 +689,7 @@ Route::group(['middleware' => ['auth']], function () {
 
 
 
-//______CCL Loan Calculation routes
-Route::group(['middleware' => ['auth']], function () {
-    Route::get('cclIndex', [CashCreditLimitController::class, 'cclIndex'])->name('cclIndex');
-    Route::post('/getcclmebershipnumber', [CashCreditLimitController::class, 'getcclmebershipnumber'])->name('getcclmebershipnumber');
-    Route::post('/getmemberccl', [CashCreditLimitController::class, 'getmemberccl'])->name('getmemberccl');
-    Route::post('/getdepositlist', [CashCreditLimitController::class, 'getdepositlist'])->name('getdepositlist');
-    Route::post('/getdepositamount', [CashCreditLimitController::class, 'getdepositamount'])->name('getdepositamount');
-    Route::post('/ccladvancementinsert', [CashCreditLimitController::class, 'ccladvancementinsert'])->name('ccladvancementinsert');
-    Route::post('/checkalreadyaccount', [CashCreditLimitController::class, 'checkalreadyaccount'])->name('checkalreadyaccount');
-    Route::post('/editccldetails', [CashCreditLimitController::class, 'editccldetails'])->name('editccldetails');
-    Route::post('/deletecclaccount', [CashCreditLimitController::class, 'deletecclaccount'])->name('deletecclaccount');
-    Route::post('/ccladvancementupdate', [CashCreditLimitController::class, 'ccladvancementupdate'])->name('ccladvancementupdate');
 
-
-    //     //_____________________Recoery Route's
-    Route::get('/cclrecoveryIndex', [CashCreditLimitController::class, 'cclrecoveryIndex'])->name('cclrecoveryIndex');
-    Route::post('/getcclaccountlist', [CashCreditLimitController::class, 'getcclaccountlist'])->name('getcclaccountlist');
-    Route::post('/getcclaccount', [CashCreditLimitController::class, 'getcclaccount'])->name('getcclaccount');
-    Route::post('/cclamounttrfdsaving', [CashCreditLimitController::class, 'cclamounttrfdsaving'])->name('cclamounttrfdsaving');
-    Route::post('/ccltrfdtosavingaccount', [CashCreditLimitController::class, 'ccltrfdtosavingaccount'])->name('ccltrfdtosavingaccount');
-    Route::post('/viewcclledgers', [CashCreditLimitController::class, 'viewcclledgers'])->name('viewcclledgers');
-    Route::post('/deleteccltrfdpayment', [CashCreditLimitController::class, 'deleteccltrfdpayment'])->name('deleteccltrfdpayment');
-    Route::post('/recieptcclamount', [CashCreditLimitController::class, 'recieptcclamount'])->name('recieptcclamount');
-    Route::post('/checkinterestdatewise', [CashCreditLimitController::class, 'checkinterestdatewise'])->name('checkinterestdatewise');
-    Route::post('/cclrecoverInsert', [CashCreditLimitController::class, 'cclrecoverInsert'])->name('cclrecoverInsert');
-    Route::post('/checktrfdinterestdatewise', [CashCreditLimitController::class, 'checktrfdinterestdatewise'])->name('checktrfdinterestdatewise');
-    Route::post('/cclreceivedgetledgers', [CashCreditLimitController::class, 'cclreceivedgetledgers'])->name('cclreceivedgetledgers');
-    Route::post('/checkExceedBalanceCcl', [CashCreditLimitController::class, 'checkExceedBalanceCcl'])->name('checkExceedBalanceCcl');
-    Route::post('/editcheckExceedBalanceCcl', [CashCreditLimitController::class, 'editcheckExceedBalanceCcl'])->name('editcheckExceedBalanceCcl');
-    Route::post('/editcclrecoverypayments', [CashCreditLimitController::class, 'editcclrecoverypayments'])->name('editcclrecoverypayments');
-    Route::post('/updateccltrfdtosavingaccount', [CashCreditLimitController::class, 'updateccltrfdtosavingaccount'])->name('updateccltrfdtosavingaccount');
-    Route::post('/cclrecoverUpdate', [CashCreditLimitController::class, 'cclrecoverUpdate'])->name('cclrecoverUpdate');
-    Route::post('/checkRecoveryNoExceed', [CashCreditLimitController::class, 'checkRecoveryNoExceed'])->name('checkRecoveryNoExceed');
-    Route::post('/getcashbankledgercodes', [CashCreditLimitController::class, 'getcashbankledgercodes'])->name('getcashbankledgercodes');
-
-    Route::get('/sodledgerindexlist', [CashCreditLimitController::class, 'sodledgerindexlist'])->name('sodledgerindexlist');
-    Route::post('/getsodaccountlist', [CashCreditLimitController::class, 'getsodaccountlist'])->name('getsodaccountlist');
-    Route::post('/getsodacc', [CashCreditLimitController::class, 'getsodacc'])->name('getsodacc');
-
-
-    Route::post('/closedsodaccount', [CashCreditLimitController::class, 'closedsodaccount'])->name('closedsodaccount');
-    Route::post('/unclosedsodaccount', [CashCreditLimitController::class, 'unclosedsodaccount'])->name('unclosedsodaccount');
-});
 
 
 //________________Bank Fd Report Routes
@@ -681,25 +732,12 @@ Route::group(['middleware' => ['auth']], function () {
 
 
 
-
-
-
 // Route::get('comingsoon', [HomeController::class, 'comingsoon'])->name('comingsoon');
 
 // Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
 
-Route::middleware('auth')->controller(DynamicController::class)->group(function () {
-    Route::get('/getLedger', 'getLedger')->name('getLedger');
-    // Route::get('resetAccountLedger', 'resetAccountLedger')->name('resetAccountLedger');
-    // Route::get('resetCdsLedger', 'resetCDSLedger')->name('resetCDSLedger');
-    // Route::get('resetShareLedger', 'resetShareLedger')->name('resetShareLedger');
-    // Route::get('resetFdLedger', 'resetFDLedger')->name('resetFDLedger');
-    // Route::get('resetMatureFdLedger', 'resetMatureFdLedger')->name('resetMatureFDLedger');
-    // Route::get('resetLoanLedger', 'resetLoanLedger')->name('resetLoanLedger');
-    // Route::get('resetLoanReceptLedger', 'resetLoanReceptLedger')->name('resetLoanReceptLedger');
 
-});
 
 // Route::prefix('reports/cds')->middleware('auth')->controller(CdsController::class)->group(function () {
 //     Route::get('/', 'index')->name('cds.index.report');
@@ -715,30 +753,7 @@ Route::middleware('auth')->controller(DynamicController::class)->group(function 
 // });
 
 
-Route::group(['prefix' => 'transaction', 'middleware' => ['auth']], function () {
-    Route::get('/account', [AccountController::class, 'index'])->name('accountopen.page');
-    Route::post('/account/store', [AccountController::class, 'store'])->name('account.store')->middleware('checksession');
-    Route::post('/account/search', [AccountController::class, 'accountsearch'])->name('account.search');
-    Route::post('/account/find', [AccountController::class, 'accountsearchfind'])->name('account.search.find');
-    Route::post('/account/data', [AccountController::class, 'update'])->name('accountupdate');
-    Route::post('/account/address', [AccountController::class, 'storeaddresspagedata'])->name('account.address.page');
-    Route::post('/account/nomenee', [AccountController::class, 'storenomeneepagedata'])->name('account.nomenee.page');
-    Route::get('/share', [ShareController::class, 'index'])->name('share');
-    Route::post('/share/update', [ShareController::class, 'transaction'])->middleware('checksession')->name('shareupdate');
-    Route::post('/deleteaccount', [AccountController::class, 'deleteaccount'])->name('deleteaccount');
-});
 
-Route::prefix('transactions/saving')->middleware('auth')->controller(SavingController::class)->group(function () {
-    Route::get('/', 'index')->name('saving.index');
-    Route::post('/store', 'store')->name('saving.store')->middleware('checksession');
-    Route::get('/edit/{modifyId}', 'edit')->name('saving.edit');
-    Route::put('/update', 'update')->name('saving.update')->middleware('checksession');
-    Route::delete('/delete', 'destroy')->name('saving.delete')->middleware('checksession');
-    Route::get('/pagination', 'pagination')->name('saving.pagination');
-    Route::get('/getData', 'getData')->name('saving.getData');
-    Route::get('/fetchData', 'fetchData')->name('saving.fetchData');
-    Route::post('/getsavingaccountsdata', 'getsavingaccountsdata')->name('saving.getsavingaccountsdata');
-});
 
 
 
@@ -808,18 +823,7 @@ Route::prefix('transactions/saving')->middleware('auth')->controller(SavingContr
 //     Route::post('/modify/dailycollection', 'updatemodification')->name('update.dailyloan.collection')->middleware('checksession');
 // });
 
-//______
-Route::group(['middleware' => ['auth']], function () {
-    Route::get('/profitlossindex', [ProfitLossController::class, 'profitlossindex'])->name('profitlossindex');
-    Route::post('/getprofitlossdetails', [ProfitLossController::class, 'getprofitlossdetails'])->name('getprofitlossdetails');
-    Route::post('/updateExpenseIncomeProfitLosses', [ProfitLossController::class, 'updateExpenseIncomeProfitLosses'])->name('updateExpenseIncomeProfitLosses');
-});
 
-
-// Route::group(['middleware' => ['auth']], function () {
-//     Route::get('/balancesheetindex', [BalanceSheetController::class, 'balancesheetindex'])->name('balancesheetindex');
-//     Route::post('/getbalancesheetdate', [BalanceSheetController::class, 'getbalancesheetdate'])->name('getbalancesheetdate');
-// });
 
 
 // Route::prefix('/report/personal/ledger')->middleware('auth')->controller(PersonalLedgerController::class)->group(function () {
@@ -841,7 +845,7 @@ Route::group(['middleware' => ['auth']], function () {
 // Route::post('storeDeductionData', [AllListController::class, 'storeData'])->name('storeDeductionData');
 // Route::get('deductionData', [AllListController::class, 'autoDeduction'])->name('autoDeduction');
 
-Route::any('report/daybook', [DayBookController::class, 'printPdf'])->name('printPdf');
+
 
 // Route::prefix('/npaList')->middleware('auth')->controller(ReportsNPAListController::class)->group(function () {
 //     Route::get('/index', 'index')->name('npaList.index');

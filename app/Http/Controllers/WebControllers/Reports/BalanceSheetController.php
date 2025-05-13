@@ -31,43 +31,8 @@ class BalanceSheetController extends Controller
 
     public function getbalancesheetdate(Request $post)
     {
-
-
-
-        //     // Fetch ccl_payments where serialNo not in general_ledgers
-        // $cclPayments = DB::table('ccl_payments')
-        //     ->whereNotIn(
-        //         DB::raw('CONVERT(`serialNo` USING utf8mb4) COLLATE utf8mb4_unicode_ci'),
-        //         function ($query) {
-        //             $query->select(DB::raw('CONVERT(`serialNo` USING utf8mb4) COLLATE utf8mb4_unicode_ci'))
-        //                 ->from('general_ledgers')
-        //                 ->where('transactionDate', '<=', '2026-04-30')
-        //                 ->where('groupCode', 'MEM01');
-        //         }
-        //     )
-        //     ->get();
-        // dd($cclPayments);
-
-        // foreach($cclPayments as $row){
-        //     $gerenalLedger = DB::table('general_ledgers')
-        //         ->where('serialNo',$row->serialNo)
-        //         ->where('referenceNo',$row->id)
-        //         ->where('transactionAmount',$row->recovey_amount)
-        //         ->where('transactionType','Cr')
-        //         ->update([
-        //             'groupCode' => 'MEM01',
-        //             'ledgerCode' => 'MEM178'
-        //         ]);
-
-        // }
-        //     return response()->json(['status' => 'success','messages' => 'Record Updated successfully']);
-
-
-
         $start_date = date('Y-m-d', strtotime($post->start_date));
         $end_date = date('Y-m-d', strtotime($post->end_date));
-
-
 
         //_________Get Current Financial Year
         $session_master = SessionMaster::find(Session::get('sessionId'));
@@ -83,6 +48,7 @@ class BalanceSheetController extends Controller
 
         //_______Get Current Year Liabilities Data
         $liablity_group = DB::table('group_masters')->where('type', 'Liability')->pluck('groupCode');
+        // dd($liablity_group);
         $liabilties = $this->CurrentLiabilities($liablity_group, $start_date, $end_date);
 
 
@@ -98,40 +64,46 @@ class BalanceSheetController extends Controller
         $sessionId = Session::get('sessionId');
         // dd($sessionId);
 
-        $opening_losses = DB::table('profit_losses')
-            ->where('sessionId', '<', $sessionId)
-            ->where('name', 'Opening Losses')
-            ->sum('amount');
+        // $opening_losses = DB::table('profit_losses')
+        //     ->where('sessionId', '<', $sessionId)
+        //     ->where('name', 'Opening Losses')
+        //     ->sum('amount');
 
-        $opening_profit = DB::table('profit_losses')
-            ->where('sessionId', '<', $sessionId)
-            ->where('name', 'Opening profit')
-            ->sum('amount');
+        // $opening_profit = DB::table('profit_losses')
+        //     ->where('sessionId', '<', $sessionId)
+        //     ->where('name', 'Opening profit')
+        //     ->sum('amount');
 
-        $net_profit = DB::table('profit_losses')
-            ->where('sessionId', '<', $sessionId)
-            ->where('name', 'Net Profit')
-            ->sum('amount');
+        // $net_profit = DB::table('profit_losses')
+        //     ->where('sessionId', '<', $sessionId)
+        //     ->where('name', 'Net Profit')
+        //     ->sum('amount');
 
-        $net_losses = DB::table('profit_losses')
-            ->where('sessionId', '<', $sessionId)
-            ->where('name', 'Net Loss')
-            ->sum('amount');
+        // $net_losses = DB::table('profit_losses')
+        //     ->where('sessionId', '<', $sessionId)
+        //     ->where('name', 'Net Loss')
+        //     ->sum('amount');
 
 
-        $current_losses = DB::table('profit_losses')
-            ->where('sessionId', $sessionId)
-            ->where('name', 'Net Loss')
-            ->sum('amount');
+        // $current_losses = DB::table('profit_losses')
+        //     ->where('sessionId', $sessionId)
+        //     ->where('name', 'Net Loss')
+        //     ->sum('amount');
 
-        $current_profit = DB::table('profit_losses')
-            ->where('sessionId', $sessionId)
-            ->where('name', 'Net Profit')
-            ->sum('amount');
+        // $current_profit = DB::table('profit_losses')
+        //     ->where('sessionId', $sessionId)
+        //     ->where('name', 'Net Profit')
+        //     ->sum('amount');
 
         $opening_p = 0;
         $opening_l = 0;
         $opening_sss = 0;
+        $opening_losses = 0;
+        $opening_profit = 0;
+        $net_profit = 0;
+        $net_losses = 0;
+        $current_losses = 0;
+        $current_profit = 0;
 
 
         $opening_sss = $opening_losses - $opening_profit - $net_profit + $net_losses;
@@ -145,8 +117,6 @@ class BalanceSheetController extends Controller
         } else {
             $opening_p += abs($opening_sss);
         }
-
-
 
 
 
@@ -183,8 +153,8 @@ class BalanceSheetController extends Controller
                     $custom_2022_2023_pay_recoverables = array();
                 } elseif ($currentsession->id === 1) {
 
-                    $custom_2023_2024_pay_recoverable = DB::table('old_payables_recoverables')->where('sessionId', $currentsession->id)->get();
-                    $custom_2022_2023_pay_recoverables = DB::table('old_payables_recoverables')->where('sessionId', 5)->get();
+                    // $custom_2023_2024_pay_recoverable = DB::table('old_payables_recoverables')->where('sessionId', $currentsession->id)->get();
+                    // $custom_2022_2023_pay_recoverables = DB::table('old_payables_recoverables')->where('sessionId', 5)->get();
 
 
 
@@ -253,7 +223,7 @@ class BalanceSheetController extends Controller
                         $customPayableRecoverbles = array();
                     } elseif ($lastSession->id === 1) {
                         // Only fetch manually saved values
-                        $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
+                        // $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
                     } else {
                         // Perform normal calculations
                         $lastYearStartDate = $lastSession->startDate;
@@ -266,13 +236,10 @@ class BalanceSheetController extends Controller
                         $LbscurrentRdInterestPayable   = $this->LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate);
 
                         // Fetch any custom overrides
-                        $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
+                        // $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
                     }
                 } else {
-                    // No session found, maybe default to current logic?
-                    // Log::warning("No previous session found with sort number: $previousSort");
 
-                    // You could skip calculations or assign fallbacks here
                 }
             }
         }
@@ -393,6 +360,7 @@ class BalanceSheetController extends Controller
             ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
             ->groupBy('ledger_masters.name', 'ledger_masters.ledgerCode')
             ->get();
+            // dd($incomes);
         return $incomes;
     }
 
@@ -448,21 +416,17 @@ class BalanceSheetController extends Controller
     }
 
 
-
-
-
-
     //________Current Year Bank Fd Interest Recoverables
     private function bankfdInterestRecoverable($end_date){
 
-        $bankInterestRecoverable = DB::table('bank_fd_deposit')
-            ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
-            ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
-            ->whereDate('bank_fd_deposit.fd_date', '<=', $end_date)
-            ->where('bank_fd_deposit.status', 'Active')
-            ->get();
+        // $bankInterestRecoverable = DB::table('bank_fd_deposit')
+        //     ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
+        //     ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
+        //     ->whereDate('bank_fd_deposit.fd_date', '<=', $end_date)
+        //     ->where('bank_fd_deposit.status', 'Active')
+        //     ->get();
 
-        return $bankInterestRecoverable;
+        // return $bankInterestRecoverable;
     }
 
     //________Current Year Bank Fd Interest Payables
@@ -1496,13 +1460,13 @@ class BalanceSheetController extends Controller
 
     //________Current Year Bank Fd Interest Recoverables
     private function LbsbankfdInterestRecoverable($lastYearEndDate){
-        $bankInterestRecoverable = DB::table('bank_fd_deposit')
-            ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
-            ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
-            ->whereDate('bank_fd_deposit.fd_date', '<=', $lastYearEndDate)
-            ->where('bank_fd_deposit.status', 'Active')
-            ->get();
+        // $bankInterestRecoverable = DB::table('bank_fd_deposit')
+        //     ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
+        //     ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
+        //     ->whereDate('bank_fd_deposit.fd_date', '<=', $lastYearEndDate)
+        //     ->where('bank_fd_deposit.status', 'Active')
+        //     ->get();
 
-        return $bankInterestRecoverable;
+        // return $bankInterestRecoverable;
     }
 }

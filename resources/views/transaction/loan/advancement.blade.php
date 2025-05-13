@@ -182,10 +182,10 @@
                                     </div>
 
                                     <!-- <div class="col-md-3 mb-3 col-sm-12">
-                                                                                                                        <label for="txndate" class="form-label">Fee</label>
-                                                                                                                        <input type="text" name="fee" class="form-control form-control-sm"
-                                                                                                                            placeholder="Enter value" required />
-                                                                                                                    </div> -->
+                                                                                                                                <label for="txndate" class="form-label">Fee</label>
+                                                                                                                                <input type="text" name="fee" class="form-control form-control-sm"
+                                                                                                                                    placeholder="Enter value" required />
+                                                                                                                            </div> -->
                                     <div class="col-md-3 mb-3 col-sm-12">
                                         <label for="txndate" class="form-label">Year</label>
                                         <input type="text" name="loanYear" readonly
@@ -1089,6 +1089,7 @@
                 }
             });
         });
+
         function rowClicked(id) {
             blockForm('#loanmember');
 
@@ -1217,6 +1218,7 @@
                 if (input.files[0]) reader.readAsDataURL(input.files[0]);
             });
         }
+
         function deleteloan(id, loanType) {
 
             swal({
@@ -1267,6 +1269,7 @@
                 },
             });
         }
+
         function resetforms() {
 
             var form = $('#loanmember');
@@ -1275,6 +1278,7 @@
             $("#transactionDate").val(currentDate);
 
         }
+
         function getinstallments() {
             var loanAmount = $('#loanmember').find('[name="amount"]').val();
             var intrest = $('#loanmember').find('[name="loanInterest"]').val();

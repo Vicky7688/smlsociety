@@ -114,6 +114,7 @@ class ReceiptAndDisbursementController extends Controller
                 ->orderBy('ledger_masters.id','ASC')
                 ->get();
         }
+        // dd($openingCash,$closingCash);
 
         return response()->json([
             'status' => 'success',

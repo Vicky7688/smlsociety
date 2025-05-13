@@ -50,6 +50,25 @@
                                         {{-- <option value="transfer">Transfer</option> --}}
                                     </select>
                                 </div>
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
+                                    <label for="memberType" class="form-label">Member Type</label>
+                                    <select class="form-select formInputsSelect" id="memberType" name="memberType">
+                                        <option value="Member">Member</option>
+                                        <!-- <option value="NonMember">Non Member</option>
+                                                    <option value="Staff">Staff</option> -->
+                                    </select>
+                                    <p class="error"></p>
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
+                                    <label for="txndate" class="form-label">Ac number</label>
+                                    <input type="text" id="account" name="account" class="form-control formInputs"
+                                        placeholder="Enter value" required />
+                                </div>
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
+                                    <label for="txndate" class="form-label">Amount</label>
+                                    <input type="text" name="amount" class="form-control formInputs"
+                                        placeholder="Enter value" required />
+                                </div>
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-2 saving_column inputesPadding"
                                     id="groupdiv">
                                     <label for="paymentType" class="form-label">Payment Type</label>
@@ -62,39 +81,18 @@
                                                 <option value="{{ $row->groupCode }}">{{ $row->name }}</option>
                                             @endforeach
                                         @endif
-
                                     </select>
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 saving_column inputesPadding"
-                                id="ledgerdiv">
-                                <label for="bank" class="form-label">Bank</label>
-                                <select class="form-select formInputsSelect" id="bank" name="bank">
-                                    <option value="">Select Group</option>
-                                </select>
-                                <p class="error"></p>
-                            </div>
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
-                                    <label for="memberType" class="form-label">Member Type</label>
-                                    <select class="form-select formInputsSelect" id="memberType" name="memberType">
-                                        <option value="Member">Member</option>
-                                        <!-- <option value="NonMember">Non Member</option>
-                                            <option value="Staff">Staff</option> -->
+                                    id="ledgerdiv">
+                                    <label for="bank" class="form-label">Bank</label>
+                                    <select class="form-select formInputsSelect" id="bank" name="bank">
+                                        <option value="">Select Group</option>
                                     </select>
                                     <p class="error"></p>
                                 </div>
-
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
-                                    <label for="txndate" class="form-label">Ac number</label>
-                                    <input type="text" id="account" name="account" class="form-control formInputs"
-                                        placeholder="Enter value" required />
-                                </div>
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
-                                    <label for="txndate" class="form-label">Amount</label>
-                                    <input type="text" name="amount" class="form-control formInputs"
-                                        placeholder="Enter value" required />
-                                </div>
                                 <!-- </div>
-                                <div class="row"> -->
+                                            <div class="row"> -->
 
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding" id="accountdiv">
                                     <label for="txndate" class="form-label">Saving No</label>
@@ -115,13 +113,13 @@
                                     <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding accountdetails" style="display: none;">
                                         <label for="saving" class="form-label">Balance Share</label>
                                         <input id="saving" type="text" name="saving" class="form-control" placeholder="Enter value" required />
-                                    </div> -->
+                                </div> -->
                             </div>
 
                             <!-- <div class="modal-footer">
-                                    <button id="submitButton" class="btn btn-primary waves-effect waves-light reportSmallBtnCustom" type="submit" data-loading-text=" <span class='spinner-border me-1' role='status' aria-hidden='true'></span>
+                                                <button id="submitButton" class="btn btn-primary waves-effect waves-light reportSmallBtnCustom" type="submit" data-loading-text=" <span class='spinner-border me-1' role='status' aria-hidden='true'></span>
                         Loading...">Save</button>
-                                </div> -->
+                                            </div> -->
                             <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 inputesPadding savingColumnButton">
                                 <div class="d-flex h-100 justify-content-end text-end">
                                     <button id="submitButton"
@@ -159,12 +157,12 @@
                     <!-- </div> -->
                 </div>
                 <!-- <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="card">
-                            <h5 class="card-header">Striped rows</h5>
+                                    <div class="card">
+                                        <h5 class="card-header">Striped rows</h5>
 
 
-                        </div>
-                    </div> -->
+                                    </div>
+                                </div> -->
             </div>
 
         </div>
@@ -200,7 +198,7 @@
                                 </select>
                             </div>
                             <!-- </div>
-                            <div class="row"> -->
+                                        <div class="row"> -->
                             <div class="col-lg-6 col-sm-6">
                                 <label for="txndate" class="form-label">Amount</label>
                                 <input type="text" name="amount" class="form-control formInputs"

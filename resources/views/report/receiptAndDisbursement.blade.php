@@ -234,7 +234,7 @@
                             $('#tableBody').empty();
 
                             // Display Opening and Closing Cash
-                            if (openingCash > 0 || closingCash > 0) {
+                            // if (openingCash > 0 || closingCash > 0) {
                                 $('#openingCash').append(`
                                     <tr><td></td><td><strong>Opening Cash</strong></td><td>0.00</td><td>${openingCash.toFixed(2)}</td></tr>
                                 `);
@@ -243,14 +243,14 @@
                                 `);
                                 grandTotalDebit += closingCash;
                                 grandTotalCredit += openingCash;
-                            } else {
-                                $('#openingCash').append(
-                                    `<tr><td colspan="4">No Opening Cash Available</td></tr>`
-                                );
-                                $('#closingCash').append(
-                                    `<tr><td colspan="4">No Closing Cash Available</td></tr>`
-                                );
-                            }
+                            // } else {
+                            //     $('#openingCash').append(
+                            //         `<tr><td colspan="4">No Opening Cash Available</td></tr>`
+                            //     );
+                            //     $('#closingCash').append(
+                            //         `<tr><td colspan="4">No Closing Cash Available</td></tr>`
+                            //     );
+                            // }
 
                             if (Array.isArray(type) && type.length > 0) {
                                 type.forEach((data, index) => {

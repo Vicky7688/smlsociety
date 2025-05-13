@@ -16,6 +16,8 @@
                         <form id="installmentsPaid" method="post">
                             <input type="hidden" name="actiontype" value="paidinstallments" />
                             <input type="hidden" name="id" value="" />
+                            <input type="hidden" name="edit_id" id="edit_id" value="" />
+                            <input type="hidden" name="loan_id" id="loan_id" value="" />
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-3 col-sm-6 mb-3">
@@ -39,11 +41,11 @@
                                             class="form-control form-control-sm" placeholder="Enter value" required />
                                     </div>
                                     <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                            <label class="form-label mb-1" for="loanid">Loan </label>
-                                            <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                                                                <label class="form-label mb-1" for="loanid">Loan </label>
+                                                                                <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
 
-                                            </select>
-                                        </div> -->
+                                                                                </select>
+                                                                            </div> -->
                                     <div class="col-md-3 col-sm-6 mb-3">
                                         <label for="name" class="form-label">Princple Inatsallment</label>
                                         <input type="text" name="PrincipalTillDate" id="TPrincipal" value="0"
@@ -76,7 +78,7 @@
                                     <div class="col-md-3 col-sm-6 mb-3">
                                         <label for="name" class="form-label">PAYMENT RECEIVED</label>
                                         <div id="receiveamount">
-                                            <input type="text" required="" autocomplete="off"
+                                            <input type="text" required="" autocomplete="off" id="ReceivedAmount"
                                                 onkeyup="Validate_number(this)" name="ReceivedAmount"
                                                 class="form-control form-control-sm">
                                         </div>
@@ -86,7 +88,7 @@
                                         <select name="loanBy" id="loanBy" class="form-select form-select-sm"
                                             onchange="loanby(this)">
                                             <option value="Cash">Cash</option>
-                                            <option value="Transfer">Transfer</option>
+                                            {{-- <option value="Transfer">Transfer</option> --}}
                                         </select>
                                     </div>
                                     <div class="col-md-3 mb-3 col-sm-12 bank" style="display: none;">
@@ -149,6 +151,10 @@
                                     <th>Net</th>
                                     <td class="netintrest">0</td>
                                 </tr>
+                                <tr>
+                                    <th>Annual Interest</th>
+                                    <td class="anualintrest">0</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -181,9 +187,9 @@
                                     <td class="loanType"></td>
                                 </tr>
                                 <!-- <tr>
-                                    <th>Purpose</th>
-                                    <td class="purpose"></td>
-                                </tr> -->
+                                                                        <th>Purpose</th>
+                                                                        <td class="purpose"></td>
+                                                                    </tr> -->
                                 <tr>
                                     <th>Loan By</th>
                                     <td class="loanBy"></td>
@@ -269,11 +275,11 @@
                             <!--    <input type="text" id="loanAcNo" name="loanAcNo" class="form-control form-control-sm" placeholder="Enter value" required />-->
                             <!--</div>-->
                             <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                                                                                <label class="form-label mb-1" for="loanid">Loan </label>
-                                                                                                <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                                                                                                                    <label class="form-label mb-1" for="loanid">Loan </label>
+                                                                                                                                    <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
 
-                                                                                                </select>
-                                                                                            </div> -->
+                                                                                                                                    </select>
+                                                                                                                                </div> -->
                             <div class="col-md-4 col-sm-6 mb-3">
                                 <label for="name" class="form-label">Princple</label>
                                 <input type="text" name="PrincipalTillDate" id="TPrincipal" readonly=""
@@ -517,13 +523,15 @@
                         $('.loanname').text(data.data.LoanName);
                         $('.pernote').text(data.data.PernoteNo);
                         $('.totalprincple').text(data.data.Amount);
+                        $('.anualintrest').text(data.data.AnualInterest);
 
 
 
                         $('#installmentsPaid').find('input[name="PrincipalTillDate"]').val(data.loandetails
                             .principal);
                         $('#installmentsPaid').find('input[name="id"]').val(id);
-                        $('#installmentsPaid').find('input[name="InterestTillDate"]').val(data.loandetails.currentintrest).prop('readonly', true);
+                        $('#installmentsPaid').find('input[name="InterestTillDate"]').val(data.loandetails
+                            .currentintrest).prop('readonly', true);
                         $('#installmentsPaid').find('input[name="TotalTillDate"]').val(data.loandetails
                             .netintrest).prop('readonly', true);
                         $('#installmentsPaid').find('input[name="PendingIntrTillDate"]').val(data.loandetails
@@ -579,6 +587,9 @@
                         "<a onclick=\"deleteItem('" + val.id +
                         "', 'deleteDistrict')\" href='javascript:void(0);'>" +
                         "<i class='ti ti-trash me-1'></i></a>" +
+                        "<a onclick=\"editItem('" + val.id +
+                        "', 'editDistrict')\" href='javascript:void(0);'>" +
+                        "<i class='ti ti-pencil me-1'></i></a>" +
                         "</td>" +
                         "</tr>";
                 });
@@ -661,13 +672,20 @@
                 var $form = $(form);
                 var formData = $form.serialize(); // serialize form data
 
+                var recoveryId = $('#edit_id').val(); // Check if editing
+                if (recoveryId) {
+                    formData += '&id=' + recoveryId;
+                }
+
+                var ajaxUrl = recoveryId ? "{{ route('updaterecovery') }}" : "{{ route('saverecovery') }}";
+
                 var submitBtn = $form.find('button[type="submit"]');
                 submitBtn.html(
                     '<span class="spinner-border me-1" role="status" aria-hidden="true"></span> Loading...'
                 ).attr('disabled', true).addClass('btn-secondary');
 
                 $.ajax({
-                    url: "{{ route('saverecovery') }}", // ⚠️ Update this to your correct route
+                    url: ajaxUrl,
                     type: "POST",
                     data: formData,
                     dataType: "json",
@@ -681,6 +699,7 @@
                             $form[0].reset();
                             $("#transactionDate").val(moment().format('DD-MM-YYYY'));
                             setRecoveryDate(data.recovery);
+                            $('#edit_id').val(''); // reset edit ID after update
                             notify("Task Successfully Completed", 'success');
                         } else {
                             notify(data.status, 'warning');
@@ -693,9 +712,51 @@
                     }
                 });
             }
+
+
         });
-        function deleteItem(id){
-         swal({
+
+        function editItem(id) {
+            $.ajax({
+                url: "{{ route('editRecovery') }}",
+                type: "POST",
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'actiontype': "editRecovery",
+                    'id': id,
+                },
+                success: function(res) {
+                    if (res.status === 'success') {
+                        let data = res.data;
+                        if (data) {
+                            $('#edit_id').val(data.id);
+                            $('#loan_id').val(data.loanId);
+                            $('#TPrincipal').val(data.loanAmount).prop('readonly', true);
+                            $('#InterestTillDate').val(data.interest);
+                            $('#ReceivedAmount').val(data.receivedAmount);
+                            $('#transactionDate').datepicker('setDate', DateFormat(data.receiptDate));
+                        } else {
+                            $('#id').val('');
+                            $('#PrincipalTillDate').val('').prop('readonly', false);
+                            $('#PrincipalTillDate').val('');
+                            $('#ReceivedAmount').val('');
+                            $('#transactionDate').val('');
+                        }
+
+                    } else {
+                        $('#hsn_number').val('').prop('disabled', false);
+
+                        toastr.error(res.messages);
+                    }
+                }
+            });
+        }
+
+        function deleteItem(id) {
+            swal({
                 title: 'Are you sure ?',
                 text: "You want to delete a transaction. It cannot be recovered",
                 type: 'warning',
@@ -706,7 +767,7 @@
                 preConfirm: () => {
                     return new Promise((resolve) => {
                         $.ajax({
-                            url: "{{route('deleteRecovery')}}",
+                            url: "{{ route('deleteRecovery') }}",
                             type: "POST",
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
@@ -717,27 +778,33 @@
                                 'id': id,
                             },
                             success: function(data) {
-                                    swal.close();
+                                swal.close();
                                 if (data.status == "success") {
-                                     setReciverydate(data.recovery);
-                                 swal(
-                                    'Deleted',
-                                    "Transaction deleted successfully",
-                                    'success'
-                                );
+                                    setReciverydate(data.recovery);
+                                    swal(
+                                        'Deleted',
+                                        "Transaction deleted successfully",
+                                        'success'
+                                    );
                                 } else {
 
-                                     swal('Oops!', data.status, 'error');
+                                    swal('Oops!', data.status, 'error');
                                 }
                             },
                             error: function(errors) {
                                 swal.close();
-                               showError(errors, 'withoutform');
+                                showError(errors, 'withoutform');
                             }
                         });
                     });
                 },
             });
-    }
+        }
+
+        function DateFormat(dateStr) {
+            // Assuming dateStr is in format yyyy-mm-dd
+            const parts = dateStr.split('-');
+            return `${parts[2]}-${parts[1]}-${parts[0]}`; // returns dd-mm-yyyy
+        }
     </script>
 @endpush

@@ -3,10 +3,16 @@
         <a href="{{ route('/') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
                 <svg width="32" height="22" viewBox="0 0 32 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z" fill="#7367F0" />
-                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
-                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd" d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
-                    <path fill-rule="evenodd" clip-rule="evenodd" d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z" fill="#7367F0" />
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M0.00172773 0V6.85398C0.00172773 6.85398 -0.133178 9.01207 1.98092 10.8388L13.6912 21.9964L19.7809 21.9181L18.8042 9.88248L16.4951 7.17289L9.23799 0H0.00172773Z"
+                        fill="#7367F0" />
+                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7.69824 16.4364L12.5199 3.23696L16.5541 7.25596L7.69824 16.4364Z" fill="#161616" />
+                    <path opacity="0.06" fill-rule="evenodd" clip-rule="evenodd"
+                        d="M8.07751 15.9175L13.9419 4.63989L16.5849 7.28475L8.07751 15.9175Z" fill="#161616" />
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M7.77295 16.3566L23.6563 0H32V6.88383C32 6.88383 31.8262 9.17836 30.6591 10.4057L19.7824 22H13.6938L7.77295 16.3566Z"
+                        fill="#7367F0" />
                 </svg>
                 <img src="{{ asset('/assets/img/branding/logo.png') }}" alt="">
             </span>
@@ -34,16 +40,17 @@
             </a>
 
             <ul class="menu-sub">
-                   <li class="menu-item">
-                        {{-- <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
-                            <div data-i18n="Head Office">Head Office</div>
-                        </a>
-                   </li>
+                <li class="menu-item">
                 <li class="menu-item">
                     <a href="{{ route('sessionindex') }}" class="menu-link">
                         <div data-i18n="Session">Session</div>
                     </a>
                 </li>
+                {{-- <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
+                            <div data-i18n="Head Office">Head Office</div>
+                        </a>
+                   </li>
+
                 <li class="menu-item">
                     <a href="{{ route('master', ['type' => 'borrowing']) }}" class="menu-link">
                         <div data-i18n="Borrowing Limit">Borrowing Limit</div>
@@ -153,7 +160,7 @@
                                 <div data-i18n="Create Loan Type Master">Create Loan Type Master</div>
                             </a>
                         </li>
-                          <li class="menu-item">
+                        <li class="menu-item">
                             <a href="{{ route('master', ['type' => 'loanMaster']) }}" class="menu-link">
                                 <div data-i18n="Create Loan Master">Create Loan Master</div>
                             </a>
@@ -216,7 +223,7 @@
 
 
                 <li class="menu-item">
-                    <a href="{{route('share')}}" class="menu-link">
+                    <a href="{{ route('share') }}" class="menu-link">
                         <div data-i18n="Share">Share</div>
                     </a>
                 </li>
@@ -250,16 +257,16 @@
                 </li> --}}
 
                 <li class="menu-item">
-                    <a href="{{route('loan')}}" class="menu-link">
+                    <a href="{{ route('loan') }}" class="menu-link">
                         <div data-i18n="Loan">Loan</div>
                     </a>
                 </li>
 
-                {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{route('journalVoucher.index')}}" class="menu-link">
                         <div data-i18n="Journal Voucher">Journal Voucher</div>
                     </a>
-                </li> --}}
+                </li>
                 {{-- <li class="menu-item">
                     <a href="{{route('dividend.index')}}" class="menu-link">
                         <div data-i18n="Dividend">Dividend</div>
@@ -336,7 +343,7 @@
 
 
                 <li class="menu-item">
-                    <a href="{{route('shareList.index')}}" class="menu-link">
+                    <a href="{{ route('shareList.index') }}" class="menu-link">
                         <div data-i18n="Share List">Share List</div>
                     </a>
                 </li>
@@ -374,7 +381,7 @@
 
 
                 <li class="menu-item">
-                    <a href="{{route('issueLoanReport.index')}}" class="menu-link">
+                    <a href="{{ route('issueLoanReport.index') }}" class="menu-link">
                         <div data-i18n="Issue Loan List">Issue Loan Report</div>
                     </a>
                 </li>
@@ -409,17 +416,17 @@
                     </a>
                 </li> --}}
 
-                {{-- <li class="menu-item">
-                    <a href="{{route('profitlossindex')}}" class="menu-link">
+                <li class="menu-item">
+                    <a href="{{ route('profitlossindex') }}" class="menu-link">
                         <div data-i18n="Profit&Loss Report">Profit&Loss Report</div>
                     </a>
-                </li> --}}
+                </li>
 
-                 {{-- <li class="menu-item">
+                <li class="menu-item">
                     <a href="{{ route('balancesheetindex') }}" class="menu-link">
                         <div data-i18n="Balance Sheet">Balance Sheet</div>
                     </a>
-                </li> --}}
+                </li>
 
             </ul>
         </li>

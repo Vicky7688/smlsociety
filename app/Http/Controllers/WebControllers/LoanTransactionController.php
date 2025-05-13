@@ -51,7 +51,6 @@ class LoanTransactionController extends Controller
                 $data['loantypes'] = LoanMaster::where('status', "active")->get();
                 $data['banktypes'] = LedgerMaster::where('groupCode', "BANK001")->get();
         }
-
         return view('transaction.loan.' . $type)->with($data);
     }
     public function checkLoanNo(Request $request)
@@ -143,14 +142,11 @@ class LoanTransactionController extends Controller
         if (!$loanmaster) {
             return response()->json(['status' => "Invalid Loan Type"]);
         }
-
         $endDate =  date('Y-m-d', strtotime($post->loanDate));
 
         if (date('Y-m-d', strtotime($post->loanDate)) < $acdetails->openingDate) {
             return response()->json(['status' => "Date should not greator " . $acdetails->openingDate]);
         }
-
-
         $result = $this->isDateBetween(date('Y-m-d', strtotime($post->loanDate)));
 
         if (!$result) {
@@ -741,66 +737,60 @@ class LoanTransactionController extends Controller
         $txnDate = date('Y-m-d', strtotime($post->transactiondate));
 
         // Fetch the loan details
-        // $loanDetail = MemberLoan::where('id', $loanId)->first();
         $loanDetail = DB::table('member_loans')
             ->select(
                 'member_loans.*',
                 'loan_masters.memberType as memberType',
                 'member_accounts.name as memberName'
-                )
+            )
             ->leftJoin('loan_masters', 'loan_masters.id', '=', 'member_loans.loanType')
             ->leftJoin('member_accounts', 'member_accounts.id', '=', 'member_loans.accountId')
             ->where('member_loans.id', $loanId)
             ->first();
-        // dd($loanDetail);
+
         if (!$loanDetail) {
             return response()->json(['status' => 'error', 'message' => 'Loan not found'], 404);
         }
 
-        $loan_recoveries = DB::table('loan_recoveries')
-            ->where('LoanId', $loanDetail->id)
-            ->first();
         $recoveryData = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
             ->orderBy('receiptDate', 'desc')
             ->get();
-        // dd($loan_recoveries);
-        $princiapal_recoveries = DB::table('loan_recoveries')
+
+        $principal_recoveries = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
             ->whereDate('receiptDate', '<=', $txnDate)
             ->sum('principal');
 
         $interest_recoveries = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
-            ->where('receiptDate', '<=', $txnDate)
+            ->whereDate('receiptDate', '<=', $txnDate)
             ->sum('interest');
 
         $overdue_recoveries = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
-            ->where('receiptDate', '<=', $txnDate)
+            ->whereDate('receiptDate', '<=', $txnDate)
             ->sum('overDueInterest');
 
         $pending_recoveries = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
-            ->where('receiptDate', '<=', $txnDate)
+            ->whereDate('receiptDate', '<=', $txnDate)
             ->sum('pendingInterest');
 
         $penality_recoveries = DB::table('loan_recoveries')
             ->where('LoanId', $loanDetail->id)
-            ->where('receiptDate', '<=', $txnDate)
+            ->whereDate('receiptDate', '<=', $txnDate)
             ->sum('penalInterest');
 
-
-        $Amount = $loanDetail->loanAmount - $princiapal_recoveries;
+        $Amount = $loanDetail->loanAmount - $principal_recoveries;
         $LoanAmount = $loanDetail->loanAmount;
+        $AnualInterest = $loanDetail->loanInterest;
         $InterestRate = $loanDetail->loanInterest;
-        // $InterestRate = $loanDetail->loanInterest - $interest_recoveries;
         $LoanDate = Carbon::parse($loanDetail->loanDate);
         $TransactionDate = Carbon::parse($txnDate);
         $LoanType = $loanDetail->memberType;
         $LoanName = $loanDetail->memberName;
         $pernote = $loanDetail->pernote;
-
 
         // Ensure the transaction date is after the loan date
         if ($TransactionDate->lessThan($LoanDate)) {
@@ -809,24 +799,27 @@ class LoanTransactionController extends Controller
                 'message' => 'Transaction date must be after loan date'
             ], 400);
         }
-        if (!empty($loan_recoveries)) {
-            $recoveryDate = Carbon::parse($loan_recoveries->receiptDate);
 
-            $totalDays = $recoveryDate->diffInDays($TransactionDate);
-        } else {
-            $totalDays = $LoanDate->diffInDays($TransactionDate);
-        }
+        // Get last recovery date before or equal to transaction date
+        $lastRecoveryDate = DB::table('loan_recoveries')
+            ->where('LoanId', $loanDetail->id)
+            ->whereDate('receiptDate', '<=', $txnDate)
+            ->orderBy('receiptDate', 'desc')
+            ->value('receiptDate');
 
-        $monthlyInterest = $Amount * ($InterestRate / 100) / 12;
-        $perDayInterest = $monthlyInterest / 30;
-        $totalInterest = $perDayInterest * $totalDays;
+        $fromDate = $lastRecoveryDate ? Carbon::parse($lastRecoveryDate) : $LoanDate;
+        $totalDays = $fromDate->diffInDays($TransactionDate);
+
+        // Accurate per-day interest calculation
+        $dailyInterestRate = ($InterestRate / 100) / 365;
+        $totalInterest = $Amount * $dailyInterestRate * $totalDays;
 
         // Fetch Installments
         $installments = DB::table('loan_installments')
             ->where('LoanId', $loanId)
             ->get();
 
-        // Map the data to a proper format
+        // Map the installment data
         $installments = $installments->map(function ($item) {
             $installmentDate = isset($item->installmentdate) && !empty($item->installmentdate)
                 ? Carbon::parse($item->installmentdate)->format('Y-m-d') : null;
@@ -839,21 +832,22 @@ class LoanTransactionController extends Controller
             ];
         });
 
-        // Fetch the latest installment date (optional)
+        // Fetch the latest installment date
         $latestInstallment = $installments->first();
         $recoveryDate = $latestInstallment && $latestInstallment['installmentDate']
             ? $latestInstallment['installmentDate']
             : null;
+        $pending_interest = 0 + $pending_recoveries;
 
         return response()->json([
             'status' => 'success',
             'recoveryData' => $recoveryData,
-            'recovery' => $recoveryDate,  // Here you need to return proper recovery data, not just the date
+            'recovery' => $recoveryDate,
             'data' => [
                 'Amount' => $Amount,
                 'LoanAmount' => $LoanAmount,
                 'LoanType' => $LoanType,
-                'LoanName' => $LoanName,
+                'AnualInterest' => $AnualInterest,
                 'PernoteNo' => $pernote,
                 'InterestRate' => $InterestRate,
                 'LoanDate' => $LoanDate->toDateString(),
@@ -861,22 +855,364 @@ class LoanTransactionController extends Controller
                 'TotalDays' => $totalDays
             ],
             'loandetails' => [
-                'MonthlyInterest' => round($monthlyInterest, 2),
-                'PerDayInterest' => round($perDayInterest, 4),
-                'TotalInterest' => round($totalInterest, 2),
+                'MonthlyInterest' => round($Amount * ($InterestRate / 100) / 12),
+                'PerDayInterest' => round($Amount * $dailyInterestRate),
+                'TotalInterest' => round($totalInterest),
                 'principal' => $Amount,
-                'currentintrest' => round($totalInterest, 2),
-                'netintrest' => round($totalInterest, 2),
-                'pendingintrest' => 0
+                'currentintrest' => round($totalInterest),
+                'netintrest' => round($totalInterest),
+                'pendingintrest' => $pending_interest,
             ],
             'installmet' => $installments
         ]);
     }
+
+
     public function saverecovery(Request $post)
     {
-        $loanaccount =  MemberLoan::where('id', $post->id)->first();
+        $loanaccount = MemberLoan::find($post->id);
         if (!$loanaccount) {
             return response()->json(["status" => "Some Technical issue occurred"], 200);
+        }
+
+        $this->loanstatus($loanaccount->id);
+
+        $existingPendingInterest = LoanRecovery::where('loanId', $post->id)
+            ->where('is_delete', 'No')
+            ->sum('pendingInterest');
+
+        $receivedAmount = $post->ReceivedAmount;
+        $pendingInterest = 0;
+        $interest = 0;
+        $penalty = 0;
+        $principal = 0;
+        $clearedPendingInterest = 0;
+
+        // Clear existing pending interest first
+        if ($existingPendingInterest > 0) {
+            if ($receivedAmount >= $existingPendingInterest) {
+                $clearedPendingInterest = $existingPendingInterest;
+                $receivedAmount -= $existingPendingInterest;
+            } else {
+                $clearedPendingInterest = $receivedAmount;
+                $pendingInterest = $existingPendingInterest - $receivedAmount;
+                $receivedAmount = 0;
+            }
+        }
+
+        // Then clear current interest
+        if ($receivedAmount > 0) {
+            if ($receivedAmount >= $post->InterestTillDate) {
+                $interest = $post->InterestTillDate;
+                $receivedAmount -= $post->InterestTillDate;
+            } else {
+                $interest = $receivedAmount;
+                $pendingInterest += $post->InterestTillDate - $receivedAmount;
+                $receivedAmount = 0;
+            }
+        }
+
+        // Then clear penalty
+        if ($receivedAmount > 0) {
+            if ($receivedAmount >= $post->PenaltyTillDate) {
+                $penalty = $post->PenaltyTillDate;
+                $receivedAmount -= $post->PenaltyTillDate;
+            } else {
+                $penalty = $receivedAmount;
+                $receivedAmount = 0;
+            }
+        }
+
+        // Remainder goes to principal
+        $principal = $receivedAmount;
+
+        if ($loanaccount->status == "Closed") {
+            return response()->json(["status" => "Loan account has been closed"], 200);
+        }
+
+        if (!$this->isDateBetween(date('Y-m-d', strtotime($post->loanDate)))) {
+            return response()->json(['statuscode' => 'ERR', 'status' => 'Access denied for this session'], 400);
+        }
+
+        $installmentsTillDate = LoanInstallment::where('LoanId', $post->id)
+            ->whereDate('installmentDate', "<=", date('Y-m-d', strtotime($post->loanDate)))
+            ->whereIn('status', ['False', 'Partial'])
+            ->get();
+
+        // Ledger master details
+        if ($post->loanBy == "Transfer") {
+            $ledgerMasterCR = LedgerMaster::find($post->ledgerId, ['groupCode', 'ledgerCode']);
+            if (!$ledgerMasterCR) {
+                return response()->json(['status' => "Invalid Bank or Type"]);
+            }
+        } else {
+            $ledgerMasterCR = LedgerMaster::where('ledgerCode', "C002")->first(['groupCode', 'ledgerCode']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $paidAmount = $post->ReceivedAmount - $clearedPendingInterest - $penalty - $interest - $post->overdue;
+            $installmentIds = [];
+
+            foreach ($installmentsTillDate as $installment) {
+                $amountDue = $installment->principal + $installment->interest;
+                $paidDate = date('Y-m-d', strtotime($post->loanDate));
+
+                if ($paidAmount >= $amountDue) {
+                    $installment->update([
+                        "status" => "True",
+                        "paid_date" => $paidDate,
+                        "re_amount" => $amountDue
+                    ]);
+                    $paidAmount -= $amountDue;
+                    $installmentIds[] = $installment->id;
+                } else {
+                    if ($paidAmount > 0) {
+                        $installment->update([
+                            "status" => "Partial",
+                            "paid_date" => $paidDate,
+                            "re_amount" => $amountDue - $paidAmount
+                        ]);
+                        $installmentIds[] = $installment->id;
+                    }
+                    break;
+                }
+            }
+
+            // Clear pending interest if it was covered
+            if ($clearedPendingInterest > 0) {
+                LoanRecovery::where('loanId', $post->id)
+                    ->where('is_delete', 'No')
+                    ->update(['pendingInterest' => 0]);
+            }
+
+            // Save loan recovery entry
+            $loan = LoanRecovery::create([
+                'loanId' => $post->id,
+                'receiptDate' => date('Y-m-d', strtotime($post->loanDate)),
+                'principal' => $principal,
+                'interest' => $interest,
+                'pendingInterest' => $pendingInterest,
+                'penalInterest' => $penalty,
+                'total' => $post->TotalTillDate,
+                'receivedAmount' => $post->ReceivedAmount,
+                'overDueInterest' => $post->overdue,
+                'status' => "True",
+                'receivedBy' => $post->loanBy,
+                'branchId' => session('branchid') ?? 1,
+                'sessionId' => session('sessionId') ?? 1,
+                'instaId' => implode(',', $installmentIds),
+                'updatedBy' => $post->user()->id,
+                'accountId' => $loanaccount->accountId,
+                'accountNo' => $loanaccount->accountNo,
+                // 'agentId' => $loanaccount->agentId,
+            ]);
+
+            // Ledger codes based on member type
+            $curentintCode = $penalCode = $pendingCode = '';
+             $LoanCode = DB::table('ledger_masters')
+                ->select('ledger_masters.ledgerCode', 'group_masters.groupCode as group_code')
+                ->leftJoin('group_masters', 'group_masters.groupCode', '=', 'ledger_masters.groupCode')
+                ->where('ledger_masters.name', 'Loan Member')
+                ->first();
+            switch ($post->memberType) {
+                case "Member":
+                    $curentintCode = 'LONM002';
+                    $penalCode = "LONM003";
+                    $pendingCode = "LONM004";
+                    break;
+                case "NonMember":
+                    $curentintCode = 'LONN002';
+                    $penalCode = "LONN003";
+                    $pendingCode = "LONN004";
+                    break;
+                case "Staff":
+                    $curentintCode = 'LONS002';
+                    $penalCode = "LONS003";
+                    $pendingCode = "LONS004";
+                    break;
+            }
+
+            $serialNo = "loan" . rand(1111111, 9999999);
+            $baseInsert = [
+                "serialNo" => $serialNo,
+                "accountId" => $loanaccount->accountId,
+                'accountNo' => $loanaccount->accountNo,
+                'memberType' => $post->memberType,
+                'agentId' => $post->agentId,
+                'referenceNo' => $loan->id,
+                'entryMode' => "manual",
+                'transactionDate' => date('Y-m-d', strtotime($post->loanDate)),
+                'formName' => "LoanReceipt",
+                'branchId' => session('branchid') ?? 1,
+                'sessionId' => session('sessionId') ?? 1,
+                'updatedBy' => $post->user()->id,
+            ];
+
+            // Debit main account
+            DB::table('general_ledgers')->insert(array_merge($baseInsert, [
+                "ledgerCode" => $ledgerMasterCR->ledgerCode,
+                "groupCode" => $ledgerMasterCR->groupCode,
+                "transactionType" => 'Dr',
+                "transactionAmount" => $post->ReceivedAmount,
+                "narration" => $post->naration,
+            ]));
+
+            // Credit entries
+            $creditEntries = [];
+
+            if ($penalty > 0) {
+                $creditEntries[] = array_merge($baseInsert, [
+                    "ledgerCode" => $penalCode,
+                    "groupCode" => 'INCM001',
+                    "transactionType" => 'Cr',
+                    "transactionAmount" => $penalty,
+                    "narration" => $post->naration,
+                ]);
+            }
+
+            if ($post->PendingIntrTillDate > 0) {
+                $creditEntries[] = array_merge($baseInsert, [
+                    "ledgerCode" => $curentintCode,
+                    "groupCode" => 'INCM001',
+                    "transactionType" => 'Cr',
+                    "transactionAmount" => $post->PendingIntrTillDate,
+                    "narration" => $post->naration,
+                ]);
+            }
+
+            if ($interest > 0) {
+                $creditEntries[] = array_merge($baseInsert, [
+                    "ledgerCode" => $curentintCode,
+                    "groupCode" => 'INCM001',
+                    "transactionType" => 'Cr',
+                    "transactionAmount" => $interest,
+                    "narration" => $post->naration,
+                ]);
+            }
+
+            if ($principal > 0) {
+                $creditEntries[] = array_merge($baseInsert, [
+                    "ledgerCode" => $LoanCode->ledgerCode,
+                    "groupCode" => $LoanCode->group_code,
+                    "transactionType" => 'Cr',
+                    "transactionAmount" => $principal,
+                    "narration" => $post->naration,
+                ]);
+            }
+
+            if ($post->overdue > 0) {
+                $creditEntries[] = array_merge($baseInsert, [
+                    "ledgerCode" => $curentintCode,
+                    "groupCode" => 'INCM001',
+                    "transactionType" => 'Cr',
+                    "transactionAmount" => $post->overdue,
+                    "narration" => $post->naration,
+                ]);
+            }
+
+            DB::table('general_ledgers')->insert($creditEntries);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'recovery' => LoanRecovery::where('loanId', $post->id)->where('is_delete', 'No')->get(),
+                'message' => 'Loan updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => "failed",
+                "message" => "Technical error: " . $e->getMessage()
+            ], 200);
+        }
+    }
+
+
+
+
+
+    public function loanstatus($loanid)
+    {
+        $allrecovery =  LoanRecovery::where('loanId', $loanid)->where('is_delete', 'No')->sum('principal');
+        $memberloan = MemberLoan::where(['id' => $loanid])->first();
+        // dd($memberloan);
+        if ($allrecovery >= $memberloan->loanAmount) {
+            $memberloan->status = "Closed";
+            $memberloan->save();
+        } else if ($allrecovery < $memberloan->loanAmount) {
+            $memberloan->status = "Disbursed";
+            $memberloan->save();
+        }
+    }
+    public function deleteRecovery(Request $post)
+    {
+        $loanRecept = LoanRecovery::where('id', $post->id)->first();
+        if (!$loanRecept) {
+            return response()->json(["status" => "Some Technical issue occurred "], 200);
+        }
+        $installmetsIds = explode(",", $loanRecept->instaId);
+        $installmets = LoanInstallment::whereIn('id', $installmetsIds)->get();
+        $precheck =  DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->get();
+        $result = $this->isDateBetween(date('Y-m-d', strtotime($loanRecept->receiptDate)));
+        if (!$result) {
+            return response()->json(['statuscode' => 'ERR', 'status' => 'Please Check your session', 'message' => "Please Check your session"], 400);
+        }
+        if (count($precheck) < 2) {
+            return response()->json(["status" => "Some Technical issue occurred hii"], 200);
+        }
+        try {
+            DB::beginTransaction();
+            if (count($installmets) > 0) {
+                foreach ($installmets as $installmet) {
+                    LoanInstallment::where('id', $installmet->id)->update([
+                        "status" => "False",
+                    ]);
+                }
+            }
+            LoanRecovery::where('id', $post->id)->delete();
+            DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->delete();
+            DB::commit();
+            $loanrecovery =  LoanRecovery::where('loanId', $loanRecept->loanId)->where('is_delete', 'No')->get();
+            $this->loanstatus($loanRecept->loanId);
+            return response()->json(['status' => "success", 'recovery' => $loanrecovery]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // dd($e->getMessage());
+            return response()->json(['status' => "Some Technical issue occurred", "message" => "Some Technical issue occurred"], 200);
+        }
+    }
+    public function editRecovery(Request $post)
+    {
+        $data = DB::table('loan_recoveries')
+            ->select('loan_recoveries.*', 'member_loans.loanAmount', 'member_loans.id as loanId')
+            ->leftJoin('member_loans', 'member_loans.id', '=', 'loan_recoveries.loanId')
+            ->where('loan_recoveries.id', $post->id)
+            ->first();
+        // dd($data);
+        return response()->json(['status' => 'success', 'data' => $data]);
+    }
+    public function updaterecovery(Request $post)
+    {
+        // dd($post->all());
+        $loanRecept = LoanRecovery::where('id', $post->edit_id)->first();
+        if (!$loanRecept) {
+            return response()->json(["status" => "Some Technical issue occurred haaaa"], 200);
+        }
+        $installmetsIds = explode(",", $loanRecept->instaId);
+        $installmets = LoanInstallment::whereIn('id', $installmetsIds)->get();
+        $precheck =  DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->get();
+        $result = $this->isDateBetween(date('Y-m-d', strtotime($loanRecept->receiptDate)));
+        if (!$result) {
+            return response()->json(['statuscode' => 'ERR', 'status' => 'Please Check your session', 'message' => "Please Check your session"], 400);
+        }
+        if (count($precheck) < 2) {
+            return response()->json(["status" => "Some Technical issue occurred hiii"], 200);
+        }
+        $loanaccount =  MemberLoan::where('id', $post->loan_id)->first();
+        if (!$loanaccount) {
+            return response()->json(["status" => "Some Technical issue occurred huuu"], 200);
         }
 
         $this->loanstatus($loanaccount->id);
@@ -912,15 +1248,21 @@ class LoanTransactionController extends Controller
         } else {
             $ledgerMasterCR = LedgerMaster::where('ledgerCode', "C002")->first(['groupCode', 'ledgerCode']);
         }
-
-        DB::beginTransaction();
         try {
-            // $loaninstallments->status = "True";
-            // $loaninstallments->paid_date = date('Y-m-d', strtotime($post->transactionDate));
-            // $loaninstallments->save();
-            // $intGroupCode = "INCM001";
+            DB::beginTransaction();
+            if (count($installmets) > 0) {
+                foreach ($installmets as $installmet) {
+                    LoanInstallment::where('id', $installmet->id)->update([
+                        "status" => "False",
+                    ]);
+                }
+            }
+            LoanRecovery::where('id', $post->id)->delete();
+            DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->delete();
 
-            $ledger_codes = DB::table('ledger_masters')->where('loanmasterId', $loanaccount->loanType)->get();
+            $ledger_codes = DB::table('ledger_masters')
+                ->where('loanmasterId', $loanaccount->loanType)
+                ->get();
 
             $legders = '';
             foreach ($ledger_codes as $ledger_code) {
@@ -979,7 +1321,7 @@ class LoanTransactionController extends Controller
             }
             $InstallmentId = implode(',', $InstallmentIds);
             $loan =  LoanRecovery::create([
-                'loanId' => $post->id,
+                'loanId' => $post->loan_id,
                 'receiptDate' => date('Y-m-d', strtotime($post->loanDate)),
                 'principal' =>  $princple,
                 'interest' => $post->InterestTillDate,
@@ -1083,66 +1425,15 @@ class LoanTransactionController extends Controller
                 DB::table('general_ledgers')->insert($insert);
             }
 
-            $loanrecovery =  LoanRecovery::where('loanId', $post->id)->where('is_delete', 'No')->get();
-            $this->loanstatus($loanaccount->id);
+
             DB::commit();
-
-
+            $loanrecovery =  LoanRecovery::where('loanId', $loanRecept->loanId)->where('is_delete', 'No')->get();
+            $this->loanstatus($loanRecept->loanId);
             return response()->json([
                 'status' => 'success',
                 'recovery' => $loanrecovery,
                 'message' => 'Loan updated successfully'
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            dd($e->getMessage());
-            return response()->json(['status' => "failed", "message" => "Some Technical issue occurred"], 200);
-        }
-    }
-    public function loanstatus($loanid)
-    {
-        $allrecovery =  LoanRecovery::where('loanId', $loanid)->where('is_delete', 'No')->sum('principal');
-        $memberloan = MemberLoan::where(['id' => $loanid])->first();
-        // dd($memberloan);
-        if ($allrecovery >= $memberloan->loanAmount) {
-            $memberloan->status = "Closed";
-            $memberloan->save();
-        } else if ($allrecovery < $memberloan->loanAmount) {
-            $memberloan->status = "Disbursed";
-            $memberloan->save();
-        }
-    }
-    public function deleteRecovery(Request $post)
-    {
-        $loanRecept = LoanRecovery::where('id', $post->id)->first();
-        if (!$loanRecept) {
-            return response()->json(["status" => "Some Technical issue occurred"], 200);
-        }
-        $installmetsIds = explode(",", $loanRecept->instaId);
-        $installmets = LoanInstallment::whereIn('id', $installmetsIds)->get();
-        $precheck =  DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->get();
-        $result = $this->isDateBetween(date('Y-m-d', strtotime($loanRecept->receiptDate)));
-        if (!$result) {
-            return response()->json(['statuscode' => 'ERR', 'status' => 'Please Check your session', 'message' => "Please Check your session"], 400);
-        }
-        if (count($precheck) < 2) {
-            return response()->json(["status" => "Some Technical issue occurred"], 200);
-        }
-        try {
-            DB::beginTransaction();
-            if (count($installmets) > 0) {
-                foreach ($installmets as $installmet) {
-                    LoanInstallment::where('id', $installmet->id)->update([
-                        "status" => "False",
-                    ]);
-                }
-            }
-            LoanRecovery::where('id', $post->id)->delete();
-            DB::table('general_ledgers')->where('referenceNo', $post->id)->where('formName', 'LoanReceipt')->delete();
-            DB::commit();
-            $loanrecovery =  LoanRecovery::where('loanId', $loanRecept->loanId)->where('is_delete', 'No')->get();
-            $this->loanstatus($loanRecept->loanId);
-            return response()->json(['status' => "success", 'recovery' => $loanrecovery]);
         } catch (\Exception $e) {
             DB::rollBack();
             // dd($e->getMessage());

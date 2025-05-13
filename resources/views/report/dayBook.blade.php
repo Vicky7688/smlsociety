@@ -17,15 +17,20 @@
                     <div class="card-body">
                         <form id="daybookForm" name="daybookForm">
                             <div class="row">
+                                 @php
+                                    $currentDate =
+                                        Session::get('currentdate') ??
+                                        date('d-m-Y', strtotime(session('sessionStart')));
+                                @endphp
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="DATEFROM" class="form-label">DATE FROM</label>
                                     <input type="text" class="form-control formInputs mydatepic" placeholder="YYYY-MM-DD"
-                                        id="startDate" name="startDate" value="{{ Session::get('currentdate') }}" />
+                                        id="startDate" name="startDate" value="{{ date('d-m-Y', strtotime(session('sessionStart'))) }}" />
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="DATETO" class="form-label">DATE TO</label>
                                     <input type="text" class="form-control formInputs mydatepic" placeholder="YYYY-MM-DD"
-                                        id="endDate" name="endDate" value="{{ Session::get('currentdate') }}" />
+                                        id="endDate" name="endDate" value="{{ date('d-m-Y', strtotime(session('sessionEnd'))) }}" />
                                 </div>
                                 <div
                                     class="col-lg-7 col-md-4 col-12  py-2 saving_column inputesPaddingReport reportBtnInput">
@@ -251,7 +256,10 @@
 
             // Add opening cash row
             creditbody.append(
-                `<tr class="openingrow"><td colspan="5">Opening Cash</td><td>${openingcash.toFixed(2)}</td></tr>`);
+                `<tr class="openingrow">
+                    <td colspan="5">Opening Cash</td>
+                    <td>${openingcash.toFixed(2)}</td>
+                </tr>`);
 
             // Populate credit table
             if (creditbalance && creditbalance.length > 0) {
@@ -270,13 +278,20 @@
                     if (ledger_name !== data.ledgerName) {
                         if (ledger_name !== null) {
                             creditbody.append(
-                                `<tr><td colspan="5">Total</td><td>${assetsrouptotal.toFixed(2)}</td></tr>`);
+                                `<tr>
+                                    <td colspan="5">Total</td>
+                                    <td>${assetsrouptotal.toFixed(2)}</td>
+                                </tr>`);
                         }
                         assetsrouptotal = 0;
                         {{--  creditbody.append(`<tr><td colspan="6"><strong></strong></td></tr>`);  --}}
                         creditbody.append(
-                            `<tr class="openingrow"><td colspan="6"><strong>${capitalizeWords(data.ledgerName)}</strong></td></tr>`
-                            );
+                            `<tr class="openingrow">
+                                <td colspan="6">
+                                    <strong>${capitalizeWords(data.ledgerName)}</strong>
+                                </td>
+                            </tr>`
+                        );
                         ledger_name = data.ledgerName;
                     }
 
@@ -296,7 +311,11 @@
                 });
 
                 if (ledger_name !== null) {
-                    creditbody.append(`<tr><td colspan="5">Total</td><td>${assetsrouptotal.toFixed(2)}</td></tr>`);
+                    creditbody.append(`
+                    <tr>
+                        <td colspan="5">Total</td>
+                        <td>${assetsrouptotal.toFixed(2)}</td>
+                    </tr>`);
                 }
             }
 
@@ -320,15 +339,22 @@
                     if (ledger_name !== data.ledgerName) {
                         if (ledger_name !== null && lgtotal > 0) {
                             debitbody.append(
-                                `<tr><td colspan="5">Total</td><td>${lgtotal.toFixed(2)}</td></tr>`
+                                `<tr>
+                                    <td colspan="5">Total</td>
+                                    <td>${lgtotal.toFixed(2)}</td>
+                                </tr>`
                             );
                         }
 
                         lgtotal = 0;
                         debitbody.append(`<tr><td colspan="6"><strong></strong></td></tr>`);
                         debitbody.append(
-                            `<tr class="openingrow"><td colspan="6"><strong>${capitalizeWords(data.ledgerName)}</strong></td></tr>`
-                            );
+                            `<tr class="openingrow">
+                                <td colspan="6">
+                                    <strong>${capitalizeWords(data.ledgerName)}</strong>
+                                </td>
+                            </tr>`
+                        );
                         ledger_name = data.ledgerName;
                     }
 
@@ -361,10 +387,19 @@
             closing_cash = debitgrandTotal - leegrandTotal;
             creditgrandTotal += leegrandTotal + closing_cash;
 
-            creditbody.append(`<tr class=""><td colspan="5" style="color:white;"></td><td style="color:white;"></td></tr>`);
+            creditbody.append(
+                `<tr class="">
+                    <td colspan="5" style="color:white;"></td>
+                    <td style="color:white;"></td>
+                </tr>`);
             debitbody.append(
-                `<tr class="" style="color:red;"><strong><td colspan="5" style="color:red;">Cash-in-Hand</td><td style="color:red;">${closing_cash.toFixed(2)}</td></strong></tr>`
-                );
+                `<tr class="" style="color:red;">
+                    <strong>
+                        <td colspan="5" style="color:red;">Cash-in-Hand</td>
+                        <td style="color:red;">${closing_cash.toFixed(2)}</td>
+                    </strong>
+                </tr>`
+            );
 
 
             let liabilitiesRowCount = debitbody.find('tr').length;
@@ -388,9 +423,9 @@
 
             debitbody.append(
                 `<tr >
-        <td colspan="5">Grand Total</td>
-        <td>${debitgrandTotal.toFixed(2)}</td>
-    </tr>`
+                    <td colspan="5">Grand Total</td>
+                    <td>${debitgrandTotal.toFixed(2)}</td>
+                </tr>`
             );
 
 
@@ -410,8 +445,15 @@
 
         function printReport() {
             // Apply consistent borders to the tables
-            $('.table').css({ 'border': '1px solid #ddd', 'border-collapse': 'collapse' });
-            $('th, td').css({ 'padding': '8px', 'text-align': 'left', 'border': '1px solid #ddd' });
+            $('.table').css({
+                'border': '1px solid #ddd',
+                'border-collapse': 'collapse'
+            });
+            $('th, td').css({
+                'padding': '8px',
+                'text-align': 'left',
+                'border': '1px solid #ddd'
+            });
 
             let printContents = document.getElementById('sharelistprint').innerHTML;
             let startDate = $('#startDate').val();
@@ -443,10 +485,6 @@
             newWindow.print();
             newWindow.close();
         }
-
-
-
-
 
 
 
@@ -483,16 +521,6 @@
                 insertEmptyRows(saleTable, saleRowCount, purchaseRowCount);
             }
         }
-
-
-
-
-
-
-
-
-
-
 
 
 

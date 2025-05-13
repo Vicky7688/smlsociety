@@ -86,8 +86,8 @@ class ProfitLossController extends Controller
                     $currentRdInterestPayable = array();
                 } elseif ($currentsession->id === 1) {
 
-                    $custom_2023_2024_pay_recoverable = DB::table('old_payables_recoverables')->where('sessionId', $currentsession->id)->get();
-                    $custom_2022_2023_pay_recoverables = DB::table('old_payables_recoverables')->where('sessionId', 5)->get();
+                    // $custom_2023_2024_pay_recoverable = DB::table('old_payables_recoverables')->where('sessionId', $currentsession->id)->get();
+                    // $custom_2022_2023_pay_recoverables = DB::table('old_payables_recoverables')->where('sessionId', 5)->get();
 
 
                     $bankInterestRecoverable = array();
@@ -97,7 +97,7 @@ class ProfitLossController extends Controller
                     $currentRdInterestPayable = array();
                 } else {
                     //_______Current Bank FD Interest Recoverable
-                    $bankInterestRecoverable = $this->bankfdInterestRecoverable($end_date);
+                    // $bankInterestRecoverable = $this->bankfdInterestRecoverable($end_date);
 
                     //_______Current Loan Interest Recoverable
                     $currentLoanRecoverable = $this->CurrentYearLoanInttRecoverable($start_date, $end_date);
@@ -152,24 +152,24 @@ class ProfitLossController extends Controller
                         $customPayableRecoverbles = array();
                     } elseif ($lastSession->id === 1) {
                         // Only fetch manually saved values
-                        $customPayableRecoverbles = DB::table('old_payables_recoverables')
-                            ->where('sessionId', $lastSession->id)
-                            ->get();
+                        // $customPayableRecoverbles = DB::table('old_payables_recoverables')
+                        //     ->where('sessionId', $lastSession->id)
+                        //     ->get();
                     } else {
                         // Perform normal calculations
                         $lastYearStartDate = $lastSession->startDate;
                         $lastYearEndDate = $lastSession->endDate;
 
-                        $LbsbankInterestRecoverable     = $this->LbsbankfdInterestRecoverable($lastYearEndDate);
+                        // $LbsbankInterestRecoverable     = $this->LbsbankfdInterestRecoverable($lastYearEndDate);
                         $LbscurrentLoanRecoverable      = $this->LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate);
                         $LbscurrentFdInterestPayable    = $this->LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate);
                         $LbscurrentDailyDepositPayable  = $this->LbsCurrentDailyDepositPayable($lastYearEndDate);
                         $LbscurrentRdInterestPayable    = $this->LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate);
 
                         // Fetch any custom overrides
-                        $customPayableRecoverbles = DB::table('old_payables_recoverables')
-                            ->where('sessionId', $lastSession->id)
-                            ->get();
+                        // $customPayableRecoverbles = DB::table('old_payables_recoverables')
+                        //     ->where('sessionId', $lastSession->id)
+                        //     ->get();
                     }
                 } else {
                     // No session found, maybe default to current logic?
@@ -468,7 +468,6 @@ class ProfitLossController extends Controller
                 'scheme_masters.id',
                 'scheme_masters.name',
                 'scheme_masters.secheme_type',
-
             )
             ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
             ->orderBy('re_curring_rds.date', 'ASC')
@@ -776,17 +775,17 @@ class ProfitLossController extends Controller
     }
 
     //________Current Year Bank Fd Interest Recoverables
-    private function bankfdInterestRecoverable($end_date)
-    {
-        $bankInterestRecoverable = DB::table('bank_fd_deposit')
-            ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
-            ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
-            ->whereDate('bank_fd_deposit.fd_date', '<=', $end_date)
-            ->where('bank_fd_deposit.status', 'Active')
-            ->get();
+    // private function bankfdInterestRecoverable($end_date)
+    // {
+    //     $bankInterestRecoverable = DB::table('bank_fd_deposit')
+    //         ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
+    //         ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
+    //         ->whereDate('bank_fd_deposit.fd_date', '<=', $end_date)
+    //         ->where('bank_fd_deposit.status', 'Active')
+    //         ->get();
 
-        return $bankInterestRecoverable;
-    }
+    //     return $bankInterestRecoverable;
+    // }
 
 
     //______________________________________Last Year LBS Recoverables/Payables Details____________________________________
@@ -949,7 +948,7 @@ class ProfitLossController extends Controller
 
         $data['Staff'] = DB::table('re_curring_rds')
             ->selectRaw("
-                        re_curring_rds.rd_account_no,
+                    re_curring_rds.rd_account_no,
                     re_curring_rds.interest,
                     re_curring_rds.month,
                     re_curring_rds.date,
@@ -988,7 +987,7 @@ class ProfitLossController extends Controller
                 $query->where(function ($q) use ($lastYearEndDate) {
                     $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
                         ->where(function ($q2) use ($lastYearEndDate) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
+                            $q2->whereNull('re_curring_rds. ')
                                 ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
                         })
                         ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
@@ -1323,17 +1322,17 @@ class ProfitLossController extends Controller
     }
 
     //________Current Year Bank Fd Interest Recoverables
-    private function LbsbankfdInterestRecoverable($lastYearEndDate)
-    {
-        $bankInterestRecoverable = DB::table('bank_fd_deposit')
-            ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
-            ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
-            ->whereDate('bank_fd_deposit.fd_date', '<=', $lastYearEndDate)
-            ->where('bank_fd_deposit.status', 'Active')
-            ->get();
+    // private function LbsbankfdInterestRecoverable($lastYearEndDate)
+    // {
+    //     $bankInterestRecoverable = DB::table('bank_fd_deposit')
+    //         ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
+    //         ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')
+    //         ->whereDate('bank_fd_deposit.fd_date', '<=', $lastYearEndDate)
+    //         ->where('bank_fd_deposit.status', 'Active')
+    //         ->get();
 
-        return $bankInterestRecoverable;
-    }
+    //     return $bankInterestRecoverable;
+    // }
 
 
 

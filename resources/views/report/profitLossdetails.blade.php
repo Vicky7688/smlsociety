@@ -52,14 +52,24 @@
                                                 More
                                             </button>
                                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <li> <a class="dropdown-item" href="#" onclick="downloadPDF()"><i
-                                                            class="fa-regular fa-file-pdf"></i> &nbsp; Download as PDF</a>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="downloadPDF()">
+                                                        <i class="fa-regular fa-file-pdf"></i> &nbsp;
+                                                        Download as PDF
+                                                    </a>
                                                 </li>
-                                                <li><a class="dropdown-item" href="#" onclick="downloadWord()"><i
-                                                            class="fa-regular fa-file-word"></i> &nbsp; Download as Word</a>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="downloadWord()">
+                                                        <i class="fa-regular fa-file-word"></i> &nbsp;
+                                                        Download as Word
+                                                    </a>
                                                 </li>
-                                                <li><a class="dropdown-item" href="#" onclick="share()"><i
-                                                            class="fa-solid fa-share-nodes"></i> &nbsp; Share</a></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="share()">
+                                                        <i class="fa-solid fa-share-nodes"></i> &nbsp;
+                                                        Share
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
