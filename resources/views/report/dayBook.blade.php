@@ -373,7 +373,12 @@
                     );
 
                     if (index === debitbalance.length - 1 && lgtotal > 0) {
-                        debitbody.append(`<tr><td colspan="5">Total</td><td>${lgtotal}</td></tr>`);
+                        debitbody.append(
+                            `<tr>
+                                <td colspan="5">Total</td>
+                                <td>${lgtotal}</td>
+                            </tr>`
+                        );
                     }
                 });
 
@@ -436,9 +441,6 @@
                 </tr>`
             );
         }
-
-
-
 
 
 

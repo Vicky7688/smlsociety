@@ -31,8 +31,43 @@ class BalanceSheetController extends Controller
 
     public function getbalancesheetdate(Request $post)
     {
+
+
+
+        //     // Fetch ccl_payments where serialNo not in general_ledgers
+        // $cclPayments = DB::table('ccl_payments')
+        //     ->whereNotIn(
+        //         DB::raw('CONVERT(`serialNo` USING utf8mb4) COLLATE utf8mb4_unicode_ci'),
+        //         function ($query) {
+        //             $query->select(DB::raw('CONVERT(`serialNo` USING utf8mb4) COLLATE utf8mb4_unicode_ci'))
+        //                 ->from('general_ledgers')
+        //                 ->where('transactionDate', '<=', '2026-04-30')
+        //                 ->where('groupCode', 'MEM01');
+        //         }
+        //     )
+        //     ->get();
+        // dd($cclPayments);
+
+        // foreach($cclPayments as $row){
+        //     $gerenalLedger = DB::table('general_ledgers')
+        //         ->where('serialNo',$row->serialNo)
+        //         ->where('referenceNo',$row->id)
+        //         ->where('transactionAmount',$row->recovey_amount)
+        //         ->where('transactionType','Cr')
+        //         ->update([
+        //             'groupCode' => 'MEM01',
+        //             'ledgerCode' => 'MEM178'
+        //         ]);
+
+        // }
+        //     return response()->json(['status' => 'success','messages' => 'Record Updated successfully']);
+
+
+
         $start_date = date('Y-m-d', strtotime($post->start_date));
         $end_date = date('Y-m-d', strtotime($post->end_date));
+
+
 
         //_________Get Current Financial Year
         $session_master = SessionMaster::find(Session::get('sessionId'));
@@ -48,7 +83,6 @@ class BalanceSheetController extends Controller
 
         //_______Get Current Year Liabilities Data
         $liablity_group = DB::table('group_masters')->where('type', 'Liability')->pluck('groupCode');
-        // dd($liablity_group);
         $liabilties = $this->CurrentLiabilities($liablity_group, $start_date, $end_date);
 
 
@@ -120,6 +154,8 @@ class BalanceSheetController extends Controller
 
 
 
+
+
         $bankInterestRecoverable = array();
         $currentLoanRecoverable = array();
         $currentFdInterestPayable = array();
@@ -183,7 +219,7 @@ class BalanceSheetController extends Controller
         }
 
         $financialYear = "";
-        $customPayableRecoverbles = array();
+        // $customPayableRecoverbles = array();
 
         $LbsbankInterestRecoverable = 0;
         $LbscurrentLoanRecoverable = 0;
@@ -220,7 +256,7 @@ class BalanceSheetController extends Controller
                 if ($lastSession) {
                     if (in_array($lastSession->id, [3, 4, 5])) {
                         // Skip calculations for sessions 3, 4, 5
-                        $customPayableRecoverbles = array();
+                        // $customPayableRecoverbles = array();
                     } elseif ($lastSession->id === 1) {
                         // Only fetch manually saved values
                         // $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
@@ -239,7 +275,10 @@ class BalanceSheetController extends Controller
                         // $customPayableRecoverbles = DB::table('old_payables_recoverables')->where('sessionId', $lastSession->id)->get();
                     }
                 } else {
+                    // No session found, maybe default to current logic?
+                    // Log::warning("No previous session found with sort number: $previousSort");
 
+                    // You could skip calculations or assign fallbacks here
                 }
             }
         }
@@ -274,7 +313,8 @@ class BalanceSheetController extends Controller
     }
 
 
-    private function CurrentAssets($assets_groups, $start_date, $end_date){
+    private function CurrentAssets($assets_groups, $start_date, $end_date)
+    {
         $assets = DB::table('ledger_masters')
             ->select(
                 'ledger_masters.groupCode as groups',
@@ -308,7 +348,8 @@ class BalanceSheetController extends Controller
 
         return $assets;
     }
-    private function CurrentLiabilities($liablity_group, $start_date, $end_date){
+    private function CurrentLiabilities($liablity_group, $start_date, $end_date)
+    {
 
         $liabilties = DB::table('ledger_masters')
             ->select(
@@ -340,13 +381,13 @@ class BalanceSheetController extends Controller
                 'ledger_masters.openingType'
             )
             ->get();
-
         return $liabilties;
     }
 
 
     //________Current Year Incomes
-    private function CurrentYearIncomes($income_group, $start_date, $end_date){
+    private function CurrentYearIncomes($income_group, $start_date, $end_date)
+    {
 
         $incomes = GeneralLedger::select(
             'ledger_masters.name as ledger_name',
@@ -360,12 +401,12 @@ class BalanceSheetController extends Controller
             ->whereDate('general_ledgers.transactionDate', '<=', $end_date)
             ->groupBy('ledger_masters.name', 'ledger_masters.ledgerCode')
             ->get();
-            // dd($incomes);
         return $incomes;
     }
 
     //________Current Year Expenses
-    private function CurrentYearExpenses($expenses_group, $start_date, $end_date){
+    private function CurrentYearExpenses($expenses_group, $start_date, $end_date)
+    {
 
         $expenses = GeneralLedger::select(
             'ledger_masters.name as ledger_name',
@@ -384,7 +425,8 @@ class BalanceSheetController extends Controller
     }
 
     //_______Current Year Loan Intt. Recoverable
-    private function CurrentYearLoanInttRecoverable($start_date, $end_date){
+    private function CurrentYearLoanInttRecoverable($start_date, $end_date)
+    {
 
         //_______Loan Interest Recoverables
         $recoverableAmountTotal = 0;
@@ -416,8 +458,13 @@ class BalanceSheetController extends Controller
     }
 
 
+
+
+
+
     //________Current Year Bank Fd Interest Recoverables
-    private function bankfdInterestRecoverable($end_date){
+    private function bankfdInterestRecoverable($end_date)
+    {
 
         // $bankInterestRecoverable = DB::table('bank_fd_deposit')
         //     ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
@@ -430,7 +477,8 @@ class BalanceSheetController extends Controller
     }
 
     //________Current Year Bank Fd Interest Payables
-    private function CurrentFdInterestPayable($start_date, $end_date){
+    private function CurrentFdInterestPayable($start_date, $end_date)
+    {
 
         $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
 
@@ -579,7 +627,8 @@ class BalanceSheetController extends Controller
     }
 
     //________Current Year Bank Daily Deposit Interest Payables
-    private function CurrentDailyDepositPayable($end_date){
+    private function CurrentDailyDepositPayable($end_date)
+    {
 
         $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
@@ -695,7 +744,8 @@ class BalanceSheetController extends Controller
     }
 
 
-    private function CurrentRdInterestPayable($start_date, $end_date){
+    private function CurrentRdInterestPayable($start_date, $end_date)
+    {
 
         $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
@@ -714,15 +764,23 @@ class BalanceSheetController extends Controller
                 scheme_masters.id as schid,
                 scheme_masters.name as schname,
                 scheme_masters.secheme_type,
-                SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                IF(
-                    re_curring_rds.date >= ?
-                    AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                    AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                    'Active',
-                    re_curring_rds.status
-                ) AS current_status
-            ", [$end_date, $start_date, $end_date])
+                  SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+            IF(
+               DATE(re_curring_rds.date) <= ?
+               AND (DATE(re_curring_rds.actual_maturity_date) >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+               AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+               'Active',
+               re_curring_rds.status
+           ) AS current_status
+       ", [$end_date, $start_date, $end_date])
+
+
+
+
+
+
+
+
             ->leftJoin('member_accounts', function (JoinClause $join) {
                 $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
                     ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
@@ -789,15 +847,16 @@ class BalanceSheetController extends Controller
                 scheme_masters.id as schid,
                 scheme_masters.name as schname,
                 scheme_masters.secheme_type,
-                SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                    IF(
-                        re_curring_rds.date >= ?
-                        AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                        AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                        'Active',
-                        re_curring_rds.status
-                    ) AS current_status
-                ", [$end_date, $start_date, $end_date])
+                   SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+            IF(
+               DATE(re_curring_rds.date) <= ?
+               AND (DATE(re_curring_rds.actual_maturity_date) >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+               AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+               'Active',
+               re_curring_rds.status
+           ) AS current_status
+       ", [$end_date, $start_date, $end_date])
+
             ->leftJoin('member_accounts', function (JoinClause $join) {
                 $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
                     ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
@@ -864,15 +923,16 @@ class BalanceSheetController extends Controller
                     scheme_masters.id as schid,
                     scheme_masters.name as schname,
                     scheme_masters.secheme_type,
-                    SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                    IF(
-                        re_curring_rds.date >= ?
-                        AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                        AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                        'Active',
-                        re_curring_rds.status
-                    ) AS current_status
-                    ", [$end_date, $start_date, $end_date])
+                       SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+            IF(
+               DATE(re_curring_rds.date) <= ?
+               AND (DATE(re_curring_rds.actual_maturity_date) >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+               AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+               'Active',
+               re_curring_rds.status
+           ) AS current_status
+       ", [$end_date, $start_date, $end_date])
+
             ->leftJoin('member_accounts', function (JoinClause $join) {
                 $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
                     ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
@@ -932,7 +992,8 @@ class BalanceSheetController extends Controller
 
 
     //________Current Year Bank RD Interest Payables
-    private function LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate){
+    private function LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate)
+    {
 
         $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
@@ -1165,7 +1226,8 @@ class BalanceSheetController extends Controller
 
 
     //________Current Year Bank Fd Interest Payables
-    private function LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate){
+    private function LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate)
+    {
 
         $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
 
@@ -1314,7 +1376,8 @@ class BalanceSheetController extends Controller
     }
 
     //________Current Year Bank Daily Deposit Interest Payables
-    private function LbsCurrentDailyDepositPayable($lastYearEndDate){
+    private function LbsCurrentDailyDepositPayable($lastYearEndDate)
+    {
 
         $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
@@ -1430,7 +1493,8 @@ class BalanceSheetController extends Controller
     }
 
     //_______Current Year Loan Intt. Recoverable
-    private function LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate){
+    private function LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate)
+    {
         //_______Loan Interest Recoverables
         $recoverableAmountTotal = 0;
         $loanmasters = MemberLoan::where('is_delete', '!=', 'Yes')
@@ -1459,7 +1523,8 @@ class BalanceSheetController extends Controller
     }
 
     //________Current Year Bank Fd Interest Recoverables
-    private function LbsbankfdInterestRecoverable($lastYearEndDate){
+    private function LbsbankfdInterestRecoverable($lastYearEndDate)
+    {
         // $bankInterestRecoverable = DB::table('bank_fd_deposit')
         //     ->select('bank_fd_deposit.*', 'bank_fd_masters.id as bankId', 'bank_fd_masters.bank_name', 'bank_fd_masters.ledgerCode')
         //     ->leftJoin('bank_fd_masters', 'bank_fd_masters.id', '=', 'bank_fd_deposit.bank_fd_type')

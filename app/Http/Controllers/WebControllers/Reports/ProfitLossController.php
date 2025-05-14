@@ -103,13 +103,13 @@ class ProfitLossController extends Controller
                     $currentLoanRecoverable = $this->CurrentYearLoanInttRecoverable($start_date, $end_date);
 
                     //_______Current FD Interest Payable
-                    $currentFdInterestPayable = $this->CurrentFdInterestPayable($start_date, $end_date);
+                    // $currentFdInterestPayable = $this->CurrentFdInterestPayable($start_date, $end_date);
 
                     //_______Current Daily Deposit Interest Payables
-                    $currentDailyDepositPayable = $this->CurrentDailyDepositPayable($end_date);
-
+                    // $currentDailyDepositPayable = $this->CurrentDailyDepositPayable($end_date);
+//
                     //_______Current RD Interest Payable
-                    $currentRdInterestPayable = $this->CurrentRdInterestPayable($start_date, $end_date);
+                    // $currentRdInterestPayable = $this->CurrentRdInterestPayable($start_date, $end_date);
                     // dd($currentRdInterestPayable);
 
                 }
@@ -161,10 +161,10 @@ class ProfitLossController extends Controller
                         $lastYearEndDate = $lastSession->endDate;
 
                         // $LbsbankInterestRecoverable     = $this->LbsbankfdInterestRecoverable($lastYearEndDate);
-                        $LbscurrentLoanRecoverable      = $this->LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate);
-                        $LbscurrentFdInterestPayable    = $this->LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate);
-                        $LbscurrentDailyDepositPayable  = $this->LbsCurrentDailyDepositPayable($lastYearEndDate);
-                        $LbscurrentRdInterestPayable    = $this->LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate);
+                        // $LbscurrentLoanRecoverable      = $this->LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate);
+                        // $LbscurrentFdInterestPayable    = $this->LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate);
+                        // $LbscurrentDailyDepositPayable  = $this->LbsCurrentDailyDepositPayable($lastYearEndDate);
+                        // $LbscurrentRdInterestPayable    = $this->LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate);
 
                         // Fetch any custom overrides
                         // $customPayableRecoverbles = DB::table('old_payables_recoverables')
@@ -245,502 +245,502 @@ class ProfitLossController extends Controller
     }
 
     //________Current Year Bank RD Interest Payables
-    private function CurrentRdInterestPayable($start_date, $end_date)
-    {
-        $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
+    // private function CurrentRdInterestPayable($start_date, $end_date)
+    // {
+    //     $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
-        $data['memberType'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                re_curring_rds.rd_account_no,
-                re_curring_rds.interest,
-                re_curring_rds.month,
-                re_curring_rds.date,
-                re_curring_rds.secheme_id,
-                member_accounts.accountNo,
-                member_accounts.name,
-                member_accounts.memberType as amtp,
-                rd_receiptdetails.rc_account_no as rcac,
-                rd_receiptdetails.memberType as rc_member_type,
-                scheme_masters.id as schid,
-                scheme_masters.name as schname,
-                scheme_masters.secheme_type,
-                SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                IF(
-                    re_curring_rds.date >= ?
-                    AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                    AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                    'Active',
-                    re_curring_rds.status
-                ) AS current_status
-            ", [$end_date, $start_date, $end_date])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($end_date) {
-                $query->where(function ($q) use ($end_date) {
-                    $q->where('re_curring_rds.date', '<=', $end_date)
-                        ->where(function ($q2) use ($end_date) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($end_date) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $end_date)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'Member')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
-
-
-        $data['nonmemberType'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                re_curring_rds.rd_account_no,
-                re_curring_rds.interest,
-                re_curring_rds.month,
-                re_curring_rds.date,
-                member_accounts.accountNo,
-                member_accounts.name,
-                member_accounts.memberType as amtp,
-                rd_receiptdetails.rc_account_no as rcac,
-                rd_receiptdetails.memberType as rc_member_type,
-                re_curring_rds.secheme_id,
-                scheme_masters.id as schid,
-                scheme_masters.name as schname,
-                scheme_masters.secheme_type,
-                SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                    IF(
-                        re_curring_rds.date >= ?
-                        AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                        AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                        'Active',
-                        re_curring_rds.status
-                    ) AS current_status
-                ", [$end_date, $start_date, $end_date])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($end_date) {
-                $query->where(function ($q) use ($end_date) {
-                    $q->where('re_curring_rds.date', '<=', $end_date)
-                        ->where(function ($q2) use ($end_date) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($end_date) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $end_date)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'NonMember')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
+    //     $data['memberType'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //             re_curring_rds.rd_account_no,
+    //             re_curring_rds.interest,
+    //             re_curring_rds.month,
+    //             re_curring_rds.date,
+    //             re_curring_rds.secheme_id,
+    //             member_accounts.accountNo,
+    //             member_accounts.name,
+    //             member_accounts.memberType as amtp,
+    //             rd_receiptdetails.rc_account_no as rcac,
+    //             rd_receiptdetails.memberType as rc_member_type,
+    //             scheme_masters.id as schid,
+    //             scheme_masters.name as schname,
+    //             scheme_masters.secheme_type,
+    //             SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //             IF(
+    //                 re_curring_rds.date >= ?
+    //                 AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                 AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                 'Active',
+    //                 re_curring_rds.status
+    //             ) AS current_status
+    //         ", [$end_date, $start_date, $end_date])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($end_date) {
+    //             $query->where(function ($q) use ($end_date) {
+    //                 $q->where('re_curring_rds.date', '<=', $end_date)
+    //                     ->where(function ($q2) use ($end_date) {
+    //                         $q2->whereNull('re_curring_rds.actual_maturity_date')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($end_date) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $end_date)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'Member')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
 
 
-        $data['Staff'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                    re_curring_rds.rd_account_no,
-                    re_curring_rds.interest,
-                    re_curring_rds.month,
-                    re_curring_rds.date,
-                    member_accounts.accountNo,
-                    member_accounts.name,
-                    member_accounts.memberType as amtp,
-                    rd_receiptdetails.rc_account_no as rcac,
-                    rd_receiptdetails.memberType as rc_member_type,
-                    re_curring_rds.secheme_id,
-                    scheme_masters.id as schid,
-                    scheme_masters.name as schname,
-                    scheme_masters.secheme_type,
-                    SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                    IF(
-                        re_curring_rds.date >= ?
-                        AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                        AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                        'Active',
-                        re_curring_rds.status
-                    ) AS current_status
-                    ", [$end_date, $start_date, $end_date])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($end_date) {
-                $query->where(function ($q) use ($end_date) {
-                    $q->where('re_curring_rds.date', '<=', $end_date)
-                        ->where(function ($q2) use ($end_date) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($end_date) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $end_date)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'Staff')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
+    //     $data['nonmemberType'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //             re_curring_rds.rd_account_no,
+    //             re_curring_rds.interest,
+    //             re_curring_rds.month,
+    //             re_curring_rds.date,
+    //             member_accounts.accountNo,
+    //             member_accounts.name,
+    //             member_accounts.memberType as amtp,
+    //             rd_receiptdetails.rc_account_no as rcac,
+    //             rd_receiptdetails.memberType as rc_member_type,
+    //             re_curring_rds.secheme_id,
+    //             scheme_masters.id as schid,
+    //             scheme_masters.name as schname,
+    //             scheme_masters.secheme_type,
+    //             SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //                 IF(
+    //                     re_curring_rds.date >= ?
+    //                     AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                     AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                     'Active',
+    //                     re_curring_rds.status
+    //                 ) AS current_status
+    //             ", [$end_date, $start_date, $end_date])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($end_date) {
+    //             $query->where(function ($q) use ($end_date) {
+    //                 $q->where('re_curring_rds.date', '<=', $end_date)
+    //                     ->where(function ($q2) use ($end_date) {
+    //                         $q2->whereNull('re_curring_rds.actual_maturity_date')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($end_date) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $end_date)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'NonMember')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
 
-        return $data;
-    }
+
+    //     $data['Staff'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //                 re_curring_rds.rd_account_no,
+    //                 re_curring_rds.interest,
+    //                 re_curring_rds.month,
+    //                 re_curring_rds.date,
+    //                 member_accounts.accountNo,
+    //                 member_accounts.name,
+    //                 member_accounts.memberType as amtp,
+    //                 rd_receiptdetails.rc_account_no as rcac,
+    //                 rd_receiptdetails.memberType as rc_member_type,
+    //                 re_curring_rds.secheme_id,
+    //                 scheme_masters.id as schid,
+    //                 scheme_masters.name as schname,
+    //                 scheme_masters.secheme_type,
+    //                 SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //                 IF(
+    //                     re_curring_rds.date >= ?
+    //                     AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                     AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                     'Active',
+    //                     re_curring_rds.status
+    //                 ) AS current_status
+    //                 ", [$end_date, $start_date, $end_date])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($end_date) {
+    //             $query->where(function ($q) use ($end_date) {
+    //                 $q->where('re_curring_rds.date', '<=', $end_date)
+    //                     ->where(function ($q2) use ($end_date) {
+    //                         $q2->whereNull('re_curring_rds.actual_maturity_date')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $end_date);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($end_date) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $end_date)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($end_date)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'Staff')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$end_date])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
+
+    //     return $data;
+    // }
 
     //________Current Year Bank Fd Interest Payables
-    private function CurrentFdInterestPayable($start_date, $end_date)
-    {
-        $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
+    // private function CurrentFdInterestPayable($start_date, $end_date)
+    // {
+    //     $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
 
-        // Query for Member type
-        $memberData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$start_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
-            ->where('member_fds_scheme.memberType', 'Member')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$end_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$end_date'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for Member type
+    //     $memberData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$start_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
+    //         ->where('member_fds_scheme.memberType', 'Member')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$end_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$end_date'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Query for NonMember type
-        $nonMemberData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$start_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
-            ->where('member_fds_scheme.memberType', 'NonMember')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$end_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$end_date'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for NonMember type
+    //     $nonMemberData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$start_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
+    //         ->where('member_fds_scheme.memberType', 'NonMember')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$end_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$end_date'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Query for Staff type
-        $staffData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$start_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
-            ->where('member_fds_scheme.memberType', 'Staff')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$end_date'
-                        AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$end_date'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for Staff type
+    //     $staffData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$start_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $end_date)
+    //         ->where('member_fds_scheme.memberType', 'Staff')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$end_date'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$end_date' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$end_date'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Combine all results
-        $data = $memberData->merge($nonMemberData)->merge($staffData);
+    //     // Combine all results
+    //     $data = $memberData->merge($nonMemberData)->merge($staffData);
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
     //________Current Year Bank Daily Deposit Interest Payables
-    private function CurrentDailyDepositPayable($end_date)
-    {
+    // private function CurrentDailyDepositPayable($end_date)
+    // {
 
-        $qq = DB::table('scheme_masters')->where('secheme_type', 'DDS')->orderBy('id', 'ASC')->pluck('id');
+    //     $qq = DB::table('scheme_masters')->where('secheme_type', 'DDS')->orderBy('id', 'ASC')->pluck('id');
 
-        $data['memberType'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-                // 'daily_collectionsavings.sch_id'
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'Member')
-            ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
-            // ->whereIn('daily_collectionsavings.sch_id',$qq)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-                // 'daily_collectionsavings.sch_id'
-            )
-            ->get();
-
-
-        $data['nonmemberType'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'NonMember')
-            ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-            )
-            ->get();
+    //     $data['memberType'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //             // 'daily_collectionsavings.sch_id'
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'Member')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
+    //         // ->whereIn('daily_collectionsavings.sch_id',$qq)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //             // 'daily_collectionsavings.sch_id'
+    //         )
+    //         ->get();
 
 
+    //     $data['nonmemberType'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'NonMember')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //         )
+    //         ->get();
 
-        $data['Staff'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'Staff')
-            ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-            )
-            ->get();
 
-        return $data;
-    }
+
+    //     $data['Staff'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'Staff')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $end_date)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //         )
+    //         ->get();
+
+    //     return $data;
+    // }
 
     //_______Current Year Loan Intt. Recoverable
     private function CurrentYearLoanInttRecoverable($start_date, $end_date)
@@ -791,503 +791,503 @@ class ProfitLossController extends Controller
     //______________________________________Last Year LBS Recoverables/Payables Details____________________________________
 
     //________Current Year Bank RD Interest Payables
-    private function LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate)
-    {
+    // private function LbsCurrentRdInterestPayable($lastYearStartDate, $lastYearEndDate)
+    // {
 
-        $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
+    //     $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
-        $data['memberType'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                    re_curring_rds.rd_account_no,
-                    re_curring_rds.interest,
-                    re_curring_rds.month,
-                    re_curring_rds.date,
-                    member_accounts.accountNo,
-                    member_accounts.name,
-                    member_accounts.memberType as amtp,
-                    rd_receiptdetails.rc_account_no as rcac,
-                    rd_receiptdetails.memberType as rc_member_type,
-                    re_curring_rds.secheme_id,
-                    scheme_masters.id as schid,
-                    scheme_masters.name as schname,
-                    scheme_masters.secheme_type,
-                    SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                    IF(
-                        re_curring_rds.date >= ?
-                        AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                        AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                        'Active',
-                        re_curring_rds.status
-                    ) AS current_status
-                ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($lastYearEndDate) {
-                $query->where(function ($q) use ($lastYearEndDate) {
-                    $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                        ->where(function ($q2) use ($lastYearEndDate) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($lastYearEndDate) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'Member')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
-
-
-        $data['nonmemberType'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                     re_curring_rds.rd_account_no,
-                    re_curring_rds.interest,
-                    re_curring_rds.month,
-                    re_curring_rds.date,
-                    member_accounts.accountNo,
-                    member_accounts.name,
-                    member_accounts.memberType as amtp,
-                    rd_receiptdetails.rc_account_no as rcac,
-                    rd_receiptdetails.memberType as rc_member_type,
-                    re_curring_rds.secheme_id,
-                    scheme_masters.id as schid,
-                    scheme_masters.name as schname,
-                    scheme_masters.secheme_type,
-                    SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                        IF(
-                            re_curring_rds.date >= ?
-                            AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                            AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                            'Active',
-                            re_curring_rds.status
-                        ) AS current_status
-                    ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($lastYearEndDate) {
-                $query->where(function ($q) use ($lastYearEndDate) {
-                    $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                        ->where(function ($q2) use ($lastYearEndDate) {
-                            $q2->whereNull('re_curring_rds.actual_maturity_date')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($lastYearEndDate) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'NonMember')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
+    //     $data['memberType'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //                 re_curring_rds.rd_account_no,
+    //                 re_curring_rds.interest,
+    //                 re_curring_rds.month,
+    //                 re_curring_rds.date,
+    //                 member_accounts.accountNo,
+    //                 member_accounts.name,
+    //                 member_accounts.memberType as amtp,
+    //                 rd_receiptdetails.rc_account_no as rcac,
+    //                 rd_receiptdetails.memberType as rc_member_type,
+    //                 re_curring_rds.secheme_id,
+    //                 scheme_masters.id as schid,
+    //                 scheme_masters.name as schname,
+    //                 scheme_masters.secheme_type,
+    //                 SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //                 IF(
+    //                     re_curring_rds.date >= ?
+    //                     AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                     AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                     'Active',
+    //                     re_curring_rds.status
+    //                 ) AS current_status
+    //             ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($lastYearEndDate) {
+    //             $query->where(function ($q) use ($lastYearEndDate) {
+    //                 $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                     ->where(function ($q2) use ($lastYearEndDate) {
+    //                         $q2->whereNull('re_curring_rds.actual_maturity_date')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($lastYearEndDate) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'Member')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
 
 
-        $data['Staff'] = DB::table('re_curring_rds')
-            ->selectRaw("
-                    re_curring_rds.rd_account_no,
-                    re_curring_rds.interest,
-                    re_curring_rds.month,
-                    re_curring_rds.date,
-                    member_accounts.accountNo,
-                    member_accounts.name,
-                    member_accounts.memberType as amtp,
-                    rd_receiptdetails.rc_account_no as rcac,
-                    rd_receiptdetails.memberType as rc_member_type,
-                    re_curring_rds.secheme_id,
-                    scheme_masters.id as schid,
-                    scheme_masters.name as schname,
-                    scheme_masters.secheme_type,
-                        SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
-                        IF(
-                            re_curring_rds.date >= ?
-                            AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
-                            AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
-                            'Active',
-                            re_curring_rds.status
-                        ) AS current_status
-                        ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
-            ->leftJoin('member_accounts', function (JoinClause $join) {
-                $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
-                    ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
-                $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
-                    ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
-            })
-            ->leftJoin('scheme_masters', function (JoinClause  $join) {
-                $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
-                    ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
-                    // ->on('scheme_masters.secheme_type', '=', 'RD');
-            })
-            ->where(function ($query) use ($lastYearEndDate) {
-                $query->where(function ($q) use ($lastYearEndDate) {
-                    $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                        ->where(function ($q2) use ($lastYearEndDate) {
-                            $q2->whereNull('re_curring_rds. ')
-                                ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
-                        })
-                        ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
-                })
-                    ->orWhere(function ($q) use ($lastYearEndDate) {
-                        $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
-                            ->where('re_curring_rds.date', '<=', $lastYearEndDate)
-                            ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
-                    });
-            })
-            ->where('re_curring_rds.memberType', 'Staff')
-            ->groupBy(
-                're_curring_rds.rd_account_no',
-                're_curring_rds.interest',
-                're_curring_rds.month',
-                're_curring_rds.date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'member_accounts.memberType',
-                'rd_receiptdetails.rc_account_no',
-                'rd_receiptdetails.memberType',
-                're_curring_rds.actual_maturity_date',
-                're_curring_rds.status',
-                're_curring_rds.secheme_id',
-                'scheme_masters.id',
-                'scheme_masters.name',
-                'scheme_masters.secheme_type',
-            )
-            ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
-            ->orderBy('re_curring_rds.date', 'ASC')
-            ->get();
+    //     $data['nonmemberType'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //                  re_curring_rds.rd_account_no,
+    //                 re_curring_rds.interest,
+    //                 re_curring_rds.month,
+    //                 re_curring_rds.date,
+    //                 member_accounts.accountNo,
+    //                 member_accounts.name,
+    //                 member_accounts.memberType as amtp,
+    //                 rd_receiptdetails.rc_account_no as rcac,
+    //                 rd_receiptdetails.memberType as rc_member_type,
+    //                 re_curring_rds.secheme_id,
+    //                 scheme_masters.id as schid,
+    //                 scheme_masters.name as schname,
+    //                 scheme_masters.secheme_type,
+    //                 SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //                     IF(
+    //                         re_curring_rds.date >= ?
+    //                         AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                         AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                         'Active',
+    //                         re_curring_rds.status
+    //                     ) AS current_status
+    //                 ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($lastYearEndDate) {
+    //             $query->where(function ($q) use ($lastYearEndDate) {
+    //                 $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                     ->where(function ($q2) use ($lastYearEndDate) {
+    //                         $q2->whereNull('re_curring_rds.actual_maturity_date')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($lastYearEndDate) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'NonMember')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
 
-        return $data;
-    }
+
+    //     $data['Staff'] = DB::table('re_curring_rds')
+    //         ->selectRaw("
+    //                 re_curring_rds.rd_account_no,
+    //                 re_curring_rds.interest,
+    //                 re_curring_rds.month,
+    //                 re_curring_rds.date,
+    //                 member_accounts.accountNo,
+    //                 member_accounts.name,
+    //                 member_accounts.memberType as amtp,
+    //                 rd_receiptdetails.rc_account_no as rcac,
+    //                 rd_receiptdetails.memberType as rc_member_type,
+    //                 re_curring_rds.secheme_id,
+    //                 scheme_masters.id as schid,
+    //                 scheme_masters.name as schname,
+    //                 scheme_masters.secheme_type,
+    //                     SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) as amount,
+    //                     IF(
+    //                         re_curring_rds.date >= ?
+    //                         AND (re_curring_rds.actual_maturity_date >= ? OR re_curring_rds.actual_maturity_date IS NULL)
+    //                         AND re_curring_rds.status NOT IN ('Closed', 'Mature', 'PreMature'),
+    //                         'Active',
+    //                         re_curring_rds.status
+    //                     ) AS current_status
+    //                     ", [$lastYearEndDate, $lastYearStartDate, $lastYearEndDate])
+    //         ->leftJoin('member_accounts', function (JoinClause $join) {
+    //             $join->on('member_accounts.accountNo', '=', 're_curring_rds.accountNo')
+    //                 ->on('member_accounts.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('rd_receiptdetails', function (JoinClause  $join) {
+    //             $join->on('rd_receiptdetails.rc_account_no', '=', 're_curring_rds.id')
+    //                 ->on('rd_receiptdetails.memberType', '=', 're_curring_rds.memberType');
+    //         })
+    //         ->leftJoin('scheme_masters', function (JoinClause  $join) {
+    //             $join->on('scheme_masters.id', '=', 're_curring_rds.secheme_id')
+    //                 ->on('scheme_masters.memberType', '=', 're_curring_rds.memberType');
+    //                 // ->on('scheme_masters.secheme_type', '=', 'RD');
+    //         })
+    //         ->where(function ($query) use ($lastYearEndDate) {
+    //             $query->where(function ($q) use ($lastYearEndDate) {
+    //                 $q->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                     ->where(function ($q2) use ($lastYearEndDate) {
+    //                         $q2->whereNull('re_curring_rds. ')
+    //                             ->orWhere('re_curring_rds.actual_maturity_date', '>=', $lastYearEndDate);
+    //                     })
+    //                     ->whereNotIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature']);
+    //             })
+    //                 ->orWhere(function ($q) use ($lastYearEndDate) {
+    //                     $q->whereIn('re_curring_rds.status', ['Closed', 'Mature', 'PreMature'])
+    //                         ->where('re_curring_rds.date', '<=', $lastYearEndDate)
+    //                         ->where('re_curring_rds.actual_maturity_date', '>', Carbon::parse($lastYearEndDate)->subDay()->format('Y-m-d'));
+    //                 });
+    //         })
+    //         ->where('re_curring_rds.memberType', 'Staff')
+    //         ->groupBy(
+    //             're_curring_rds.rd_account_no',
+    //             're_curring_rds.interest',
+    //             're_curring_rds.month',
+    //             're_curring_rds.date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType',
+    //             'rd_receiptdetails.rc_account_no',
+    //             'rd_receiptdetails.memberType',
+    //             're_curring_rds.actual_maturity_date',
+    //             're_curring_rds.status',
+    //             're_curring_rds.secheme_id',
+    //             'scheme_masters.id',
+    //             'scheme_masters.name',
+    //             'scheme_masters.secheme_type',
+    //         )
+    //         ->havingRaw("SUM(CASE WHEN rd_receiptdetails.payment_date <= ? THEN rd_receiptdetails.amount ELSE 0 END) > 0", [$lastYearEndDate])
+    //         ->orderBy('re_curring_rds.date', 'ASC')
+    //         ->get();
+
+    //     return $data;
+    // }
 
 
     //________Current Year Bank Fd Interest Payables
-    private function LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate)
-    {
-        $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
+    // private function LbsCurrentFdInterestPayable($lastYearStartDate, $lastYearEndDate)
+    // {
+    //     $depositeTypesId = DB::table('fd_type_master')->orderBy('id', 'ASC')->pluck('id');
 
-        // Query for Member type
-        $memberData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$lastYearStartDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
-            ->where('member_fds_scheme.memberType', 'Member')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$lastYearEndDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$lastYearEndDate'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for Member type
+    //     $memberData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$lastYearStartDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
+    //         ->where('member_fds_scheme.memberType', 'Member')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$lastYearEndDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$lastYearEndDate'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Query for NonMember type
-        $nonMemberData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$lastYearStartDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
-            ->where('member_fds_scheme.memberType', 'NonMember')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$lastYearEndDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$lastYearEndDate'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for NonMember type
+    //     $nonMemberData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$lastYearStartDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
+    //         ->where('member_fds_scheme.memberType', 'NonMember')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$lastYearEndDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$lastYearEndDate'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Query for Staff type
-        $staffData = DB::table('member_fds_scheme')
-            ->select(
-                'member_fds_scheme.*',
-                'member_accounts.accountNo as ac',
-                'member_accounts.name',
-                'member_accounts.memberType as mt',
-                'member_fds_scheme.openingDate',
-                'member_fds_scheme.fdType',
-                'fd_type_master.id as typeids',
-                'fd_type_master.type as fdname',
-                'member_fds_scheme.secheme_id',
-                DB::raw(
-                    "IF(
-                        member_fds_scheme.openingDate >= '$lastYearStartDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                        AND member_fds_scheme.status != 'Matured'
-                        AND member_fds_scheme.status != 'Renewed',
-                        member_fds_scheme.status, 'Other'
-                    ) AS status"
-                )
-            )
-            ->leftJoin('member_accounts', function ($join) {
-                $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
-                    ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
-            })
-            ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
-            ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
-            ->where('member_fds_scheme.memberType', 'Staff')
-            ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
-            ->whereRaw(
-                "NOT (
-                    (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                    AND (
-                        member_fds_scheme.openingDate <= '$lastYearEndDate'
-                        AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
-                    )
-                )"
-            )
-            ->orWhereRaw(
-                "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
-                AND member_fds_scheme.openingDate > '$lastYearEndDate'"
-            )
-            ->orderBy('member_fds_scheme.openingDate', 'ASC')
-            ->get();
+    //     // Query for Staff type
+    //     $staffData = DB::table('member_fds_scheme')
+    //         ->select(
+    //             'member_fds_scheme.*',
+    //             'member_accounts.accountNo as ac',
+    //             'member_accounts.name',
+    //             'member_accounts.memberType as mt',
+    //             'member_fds_scheme.openingDate',
+    //             'member_fds_scheme.fdType',
+    //             'fd_type_master.id as typeids',
+    //             'fd_type_master.type as fdname',
+    //             'member_fds_scheme.secheme_id',
+    //             DB::raw(
+    //                 "IF(
+    //                     member_fds_scheme.openingDate >= '$lastYearStartDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                     AND member_fds_scheme.status != 'Matured'
+    //                     AND member_fds_scheme.status != 'Renewed',
+    //                     member_fds_scheme.status, 'Other'
+    //                 ) AS status"
+    //             )
+    //         )
+    //         ->leftJoin('member_accounts', function ($join) {
+    //             $join->on('member_accounts.accountNo', '=', 'member_fds_scheme.membershipno')
+    //                 ->on('member_accounts.memberType', '=', 'member_fds_scheme.memberType');
+    //         })
+    //         ->leftJoin('fd_type_master', 'fd_type_master.id', '=', 'member_fds_scheme.fdType')
+    //         ->whereDate('member_fds_scheme.openingDate', '<=', $lastYearEndDate)
+    //         ->where('member_fds_scheme.memberType', 'Staff')
+    //         ->whereIn('member_fds_scheme.fdType', $depositeTypesId)
+    //         ->whereRaw(
+    //             "NOT (
+    //                 (member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //                 AND (
+    //                     member_fds_scheme.openingDate <= '$lastYearEndDate'
+    //                     AND (member_fds_scheme.actualMaturityDate <= '$lastYearEndDate' OR member_fds_scheme.actualMaturityDate IS NULL)
+    //                 )
+    //             )"
+    //         )
+    //         ->orWhereRaw(
+    //             "(member_fds_scheme.status = 'Matured' OR member_fds_scheme.status = 'Renewed')
+    //             AND member_fds_scheme.openingDate > '$lastYearEndDate'"
+    //         )
+    //         ->orderBy('member_fds_scheme.openingDate', 'ASC')
+    //         ->get();
 
-        // Combine all results
-        $data = $memberData->merge($nonMemberData)->merge($staffData);
+    //     // Combine all results
+    //     $data = $memberData->merge($nonMemberData)->merge($staffData);
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
     //________Current Year Bank Daily Deposit Interest Payables
-    private function LbsCurrentDailyDepositPayable($lastYearEndDate)
-    {
-        $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
+    // private function LbsCurrentDailyDepositPayable($lastYearEndDate)
+    // {
+    //     $qq = DB::table('scheme_masters')->where('secheme_type', 'RD')->orderBy('id', 'ASC')->pluck('id');
 
-        $data['memberType'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-                // 'daily_collectionsavings.sch_id'
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'Member')
-            ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
-            // ->whereIn('daily_collectionsavings.sch_id',$qq)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-                // 'daily_collectionsavings.sch_id'
-            )
-            ->get();
-
-
-        $data['nonmemberType'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'NonMember')
-            ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-            )
-            ->get();
+    //     $data['memberType'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //             // 'daily_collectionsavings.sch_id'
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'Member')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
+    //         // ->whereIn('daily_collectionsavings.sch_id',$qq)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //             // 'daily_collectionsavings.sch_id'
+    //         )
+    //         ->get();
 
 
+    //     $data['nonmemberType'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'NonMember')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //         )
+    //         ->get();
 
-        $data['Staff'] = DB::table('daily_collectionsavings')
-            ->select(
-                'dailyaccountid',
-                DB::raw('SUM(deposit) AS total_amount'),
-                DB::raw('SUM(withdraw) AS withdraw'),
-                'daily_collections.id as ids',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo as anumber',
-                'member_accounts.name',
-                'scheme_masters.id as schid',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name as schname',
-            )
-            ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
-            ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
-            ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
-            ->where('daily_collectionsavings.memberType', 'Staff')
-            ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
-            ->groupBy(
-                'dailyaccountid',
-                'daily_collections.id',
-                'daily_collections.interest',
-                'daily_collections.days',
-                'daily_collections.opening_date',
-                'member_accounts.accountNo',
-                'member_accounts.name',
-                'scheme_masters.id',
-                'daily_collectionsavings.memberType',
-                'scheme_masters.name',
-            )
-            ->get();
 
-        return $data;
-    }
+
+    //     $data['Staff'] = DB::table('daily_collectionsavings')
+    //         ->select(
+    //             'dailyaccountid',
+    //             DB::raw('SUM(deposit) AS total_amount'),
+    //             DB::raw('SUM(withdraw) AS withdraw'),
+    //             'daily_collections.id as ids',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo as anumber',
+    //             'member_accounts.name',
+    //             'scheme_masters.id as schid',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name as schname',
+    //         )
+    //         ->leftJoin('daily_collections', 'daily_collections.id', '=', 'daily_collectionsavings.dailyaccountid')
+    //         ->leftJoin('member_accounts', 'member_accounts.accountNo', '=', 'daily_collectionsavings.membershipno')
+    //         ->leftJoin('scheme_masters', 'scheme_masters.id', '=', 'daily_collectionsavings.sch_id')
+    //         ->where('daily_collectionsavings.memberType', 'Staff')
+    //         ->where('daily_collectionsavings.receipt_date', '<=', $lastYearEndDate)
+    //         ->groupBy(
+    //             'dailyaccountid',
+    //             'daily_collections.id',
+    //             'daily_collections.interest',
+    //             'daily_collections.days',
+    //             'daily_collections.opening_date',
+    //             'member_accounts.accountNo',
+    //             'member_accounts.name',
+    //             'scheme_masters.id',
+    //             'daily_collectionsavings.memberType',
+    //             'scheme_masters.name',
+    //         )
+    //         ->get();
+
+    //     return $data;
+    // }
 
     //_______Current Year Loan Intt. Recoverable
     private function LbsCurrentYearLoanInttRecoverable($lastYearStartDate, $lastYearEndDate)

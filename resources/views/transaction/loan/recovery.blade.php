@@ -587,9 +587,9 @@
                         "<a onclick=\"deleteItem('" + val.id +
                         "', 'deleteDistrict')\" href='javascript:void(0);'>" +
                         "<i class='ti ti-trash me-1'></i></a>" +
-                        "<a onclick=\"editItem('" + val.id +
-                        "', 'editDistrict')\" href='javascript:void(0);'>" +
-                        "<i class='ti ti-pencil me-1'></i></a>" +
+                        // "<a onclick=\"editItem('" + val.id +
+                        // "', 'editDistrict')\" href='javascript:void(0);'>" +
+                        // "<i class='ti ti-pencil me-1'></i></a>" +
                         "</td>" +
                         "</tr>";
                 });

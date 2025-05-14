@@ -1243,7 +1243,6 @@ if (document.readyState == "complete") {
                         } else {
                             notify(res.messages, 'warning');
                         }
-
                     },
                     error: function(xhr, status, error) {
                         console.error(error);
