@@ -40,13 +40,20 @@
             </a>
 
             <ul class="menu-sub">
-                <li class="menu-item">
+
+                    <li class="menu-item">
+                    <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
+                        <div data-i18n="Head Office">Head Office</div>
+                    </a>
+                </li>
                 <li class="menu-item">
                     <a href="{{ route('sessionindex') }}" class="menu-link">
                         <div data-i18n="Session">Session</div>
                     </a>
                 </li>
-                {{-- <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
+
+                {{-- <li class="menu-item">
+                        <a href="{{ route('master', ['type' => 'branchMaster']) }}" class="menu-link">
                             <div data-i18n="Head Office">Head Office</div>
                         </a>
                    </li>
@@ -263,7 +270,7 @@
                 </li>
 
                 <li class="menu-item">
-                    <a href="{{route('journalVoucher.index')}}" class="menu-link">
+                    <a href="{{ route('journalVoucher.index') }}" class="menu-link">
                         <div data-i18n="Journal Voucher">Journal Voucher</div>
                     </a>
                 </li>

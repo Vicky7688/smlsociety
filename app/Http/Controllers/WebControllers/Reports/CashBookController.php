@@ -41,9 +41,7 @@ class CashBookController extends Controller
             ->where('transactionType', 'Cr')
             ->where('is_delete', 'No')
             ->sum('transactionAmount');
-
         $opening_balance = $previous_amount + $debit_amount - $credit_amount;
-
 
         $serial_numbers = DB::table('general_ledgers')
             ->where('ledgerCode', $cashcode->ledgerCode)

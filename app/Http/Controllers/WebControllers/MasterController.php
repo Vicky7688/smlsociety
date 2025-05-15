@@ -976,6 +976,7 @@ class MasterController extends Controller
                 break;
 
             case 'branchMaster':
+                // dd($post->all());
                 $rules = array(
                     //  'type' => 'required',
                     'name' => 'required',
@@ -992,13 +993,21 @@ class MasterController extends Controller
                     'phone' => 'required|max:10',
                 );
 
-                $validator = \Validator::make($post->all(), $rules);
+                $validator = Validator::make($post->all(), $rules);
                 if ($validator->fails()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
                 $insert = $post->all();
+
+                // Convert the date string to MySQL format if it's present
+                if (!empty($insert['registrationDate'])) {
+                    $insert['registrationDate'] = \Carbon\Carbon::createFromFormat('d-m-Y', $insert['registrationDate'])->format('Y-m-d');
+                }
+
                 $insert['updatedBy'] = $post->user()->id;
+
                 $action = BranchMaster::updateOrCreate(['id' => $post->id], $insert);
+
                 if ($action) {
                     return response()->json(['status' => 'success'], 200);
                 } else {
@@ -1163,8 +1172,12 @@ class MasterController extends Controller
                 ]);
             }
 
-            DB::table('ledger_masters')->where('loanmasterId', $loanMaster->id)->delete();
-            DB::table('loan_masters')->where('id', $post->id)->delete();
+            DB::table('ledger_masters')
+                ->where('loanmasterId', $loanMaster->id)
+                ->delete();
+            DB::table('loan_masters')
+                ->where('id', $post->id)
+                ->delete();
 
             return response()->json([
                 'status' => 'success',

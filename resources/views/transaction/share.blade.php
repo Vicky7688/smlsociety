@@ -652,15 +652,17 @@
 
 
                         if (data.openingBal) {
-                            // tbody += "<tr>" +
-                            //             "<td></td>" +
-                            //             "<td>" + moment(data.openingBal.TransferDate).format('DD-MM-YYYY') + "</td>" +
-                            //             "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
-                            //             "<td>" + 0 + "</td>" +
-                            //             "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
-                            //             "<td>" + "Opeing Account Balance" + "</td>" +
-                            //             "<td>" + " " + "</td>" +
-                            //             `<td style="display: flex;justify-content: space-evenly; align-items: center;"></td> `;
+                            tbody += "<tr>" +
+                                        "<td></td>" +
+                                        "<td>" + moment(data.openingBal.transferDate).format('DD-MM-YYYY') + "</td>" +
+                                        // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
+                                        "<td>" + (parseInt(data.totalBalance)) + "</td>" +
+                                        "<td>" + 0 + "</td>" +
+                                        // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
+                                        "<td>" + (parseInt(data.totalBalance)) + "</td>" +
+                                        "<td>" + "Opeing Account Balance" + "</td>" +
+                                        "<td>" + " " + "</td>" +
+                                        `<td style="display: flex;justify-content: space-evenly; align-items: center;"></td> `;
                         }
                         if (data.txndetails.length === 0) {} else {
                             if (data.openingBal && data.openingBal.opening_amount) {

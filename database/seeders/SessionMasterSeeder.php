@@ -18,8 +18,8 @@ class SessionMasterSeeder extends Seeder
         DB::table('session_masters')->truncate();
         DB::table('session_masters')->insert(
             [
-                'startDate' => '2023-04-01',
-                'endDate' => '2024-03-31',
+                'startDate' => '2024-04-01',
+                'endDate' => '2025-03-31',
                 'status' => 'Active',
                 'auditPerformed' => 'No',
             ]

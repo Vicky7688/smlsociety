@@ -16,12 +16,13 @@ class ShareListController extends Controller
 {
     public function index()
     {
-         $branch = BranchMaster::first();
-        return view('report.shareList',compact('branch'));
+        $branch = BranchMaster::first();
+        return view('report.shareList', compact('branch'));
     }
 
     public function getData(Request $request)
     {
+        // dd($request->all());
 
         $validator = Validator::make($request->all(), [
             'endDate' => 'required',
@@ -34,71 +35,71 @@ class ShareListController extends Controller
                 'message' => 'Something Went Wrong. Please check all inputs'
             ]);
         }
-       // $start_date = date('Y-m-d', strtotime($request->startDate));
+        // $start_date = date('Y-m-d', strtotime($request->startDate));
         $end_date = date('Y-m-d', strtotime($request->endDate));
         $membertype = $request->memberType;
 
 
-        $query = MemberAccount::
-              where(['memberType' => 'Member'])
+        $query = MemberAccount::where(['memberType' => 'Member'])
             ->where('is_delete', 'No')
-             ->orderByRaw("CAST(accountNo AS UNSIGNED) ASC")
-            ->get(['accountNo','fatherName','name','id','status']);
+            ->orderByRaw("CAST(accountNo AS UNSIGNED) ASC")
+            ->get(['accountNo', 'fatherName', 'name', 'id', 'status']);
+            // dd($query);
         $resultsArray = [];
 
         foreach ($query as $data) {
 
-                $Balence = $this->getbalance($data->accountNo,$end_date);
-                // dd($Balence);
+            $Balence = $this->getbalance($data->accountNo, $end_date);
+            // dd($Balence);
 
-                if ($Balence != 0) {
+            if ($Balence != 0) {
 
-                    if ($data->status == "Transfer") {
-                        $memberid = $data->id;
-                        $transfer_member = TransferedAccount::where(['accountId' => $memberid])->first();
-                        $resultsArray[] = [
-                            "Ac_no" => $transfer_member->accountNo,
-                            "member_name" => $transfer_member->name,
-                            "father_husband" => $transfer_member->fatherName,
-                            "memberbalence" => $Balence,
-                        ];
-                    } else {
-                        $resultsArray[] = [
-                            "Ac_no" => $data->accountNo,
-                            "member_name" => $data->name,
-                            "father_husband" => $data->fatherName,
-                            "memberbalence" => $Balence,
-                        ];
-                    }
-
+                if ($data->status == "Transfer") {
+                    $memberid = $data->id;
+                    $transfer_member = TransferedAccount::where(['accountId' => $memberid])->first();
+                    $resultsArray[] = [
+                        "Ac_no" => $transfer_member->accountNo,
+                        "member_name" => $transfer_member->name,
+                        "father_husband" => $transfer_member->fatherName,
+                        "memberbalence" => $Balence,
+                    ];
+                } else {
+                    $resultsArray[] = [
+                        "Ac_no" => $data->accountNo,
+                        "member_name" => $data->name,
+                        "father_husband" => $data->fatherName,
+                        "memberbalence" => $Balence,
+                    ];
                 }
+            }
         }
         // dd($resultsArray);
 
         return response()->json(['status' => true, 'data' => $resultsArray]);
     }
 
-    public function print(Request $request){
-         $branch = BranchMaster::first();
-        if(session()->has('formattedData')){
+    public function print(Request $request)
+    {
+        $branch = BranchMaster::first();
+        if (session()->has('formattedData')) {
             $formattedData = session('formattedData');
 
             $grandTotal = 0;
-            foreach($formattedData as $row){
+            foreach ($formattedData as $row) {
                 $grandTotal += $row['memberbalence'];
             }
 
-            return view('report.sharePrint', compact('formattedData', 'grandTotal','branch'));
-        }else{
+            return view('report.sharePrint', compact('formattedData', 'grandTotal', 'branch'));
+        } else {
             return response()->json(['status' => false, 'Invalid request']);
         }
     }
 
 
- public function getbalance($ac, $lastDate)
+    public function getbalance($ac, $lastDate)
     {
-        $openingBal = DB::table('member_accounts')->where('accountNo',$ac)->first();
-        $shareBal = $openingBal->opening_amount ?? 0 ;
+        $openingBal = DB::table('member_accounts')->where('accountNo', $ac)->first();
+        $shareBal = $openingBal->opening_amount ?? 0;
         $credit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Deposit')->whereDate('transactionDate', '<=', $lastDate)->sum("depositAmount");
         $debit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Withdraw')->whereDate('transactionDate', '<=', $lastDate)->sum("withdrawAmount");
         return $shareBal + $credit - $debit;

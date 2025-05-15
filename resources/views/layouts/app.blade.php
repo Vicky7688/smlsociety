@@ -134,13 +134,14 @@
                             <i class="ti ti-menu-2 ti-sm"></i>
                         </a>
                     </div>
-                    <!--      <div class="navbar-nav align-items-center">-->
-                    <!--  <div class="nav-item navbar-search-wrapper mb-0">-->
-                    <!--    <a class="nav-item nav-link search-toggler d-flex align-items-center px-0" href="javascript:void(0);">-->
-                    <!--        <h4 class="align-middle"> {{ session('Branchname') ?? '' }} </h4>-->
-                    <!--    </a>-->
-                    <!--  </div>-->
-                    <!--</div>-->
+                    {{-- <div class="navbar-nav align-items-center">
+                        <div class="nav-item navbar-search-wrapper mb-0">
+                            <a class="nav-item nav-link search-toggler d-flex align-items-center px-0"
+                                href="javascript:void(0);">
+                                <h4 class="align-middle"> {{ session('Branchname') ?? '' }} </h4>
+                            </a>
+                        </div>
+                    </div> --}}
 
                     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
                         <div class="navbar-nav align-items-center">
@@ -153,18 +154,26 @@
                                 <ul class="dropdown-menu dropdown-menu-start dropdown-styles">
                                     <li>
                                         <a class="dropdown-item" href="javascript:void(0);" data-theme="light">
-                                            <span class="align-middle"><i class="ti ti-sun me-2"></i>Light</span>
+                                            <span class="align-middle">
+                                                <i class="ti ti-sun me-2"></i>
+                                                Light
+                                            </span>
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="javascript:void(0);" data-theme="dark">
-                                            <span class="align-middle"><i class="ti ti-moon me-2"></i>Dark</span>
+                                            <span class="align-middle">
+                                                <i class="ti ti-moon me-2"></i>
+                                                Dark
+                                            </span>
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="javascript:void(0);" data-theme="system">
-                                            <span class="align-middle"><i
-                                                    class="ti ti-device-desktop me-2"></i>System</span>
+                                            <span class="align-middle">
+                                                <i class="ti ti-device-desktop me-2"></i>
+                                                System
+                                            </span>
                                         </a>
                                     </li>
                                 </ul>
@@ -174,10 +183,7 @@
                                     <h4 class="align-middle text-uppercase"> {{ session('Branchname') ?? '' }} </h4>
                                 </div>
                             </div>
-
                         </div>
-
-
 
                         <ul class="navbar-nav flex-row align-items-center justify-content-end">
                             <li class="col-lg-4">
@@ -198,7 +204,8 @@
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                     <h4 class="align-middle text-uppercase">
                                         {{ date('Y', strtotime(session('sessionStart'))) }} -
-                                        {{ date('Y', strtotime(session('sessionEnd'))) }} </h4>
+                                        {{ date('Y', strtotime(session('sessionEnd'))) }}
+                                    </h4>
                                 </a>
                             </li>
 
@@ -212,7 +219,7 @@
 
                             <ul class="dropdown-menu dropdown-menu-end">
                                 @php
-                                    $sessions = App\Models\SessionMaster::orderby('sortno')->get();
+                                    $sessions = App\Models\SessionMaster::orderby('id', 'DESC')->get();
                                 @endphp
                                 @foreach ($sessions as $session)
                                     <li>
@@ -400,10 +407,12 @@
                         datatype: 'json',
                         beforeSend: function() {
 
-                            $('#searchForm').find('button:submit').html('Loading..').attr("disabled", true).addClass('btn btn-secondary');
+                            $('#searchForm').find('button:submit').html('Loading..').attr("disabled", true)
+                                .addClass('btn btn-secondary');
                         },
                         complete: function() {
-                            $('#searchForm').find('button:submit').html('Submit').attr('disabled', false).removeClass('btn-secondary');
+                            $('#searchForm').find('button:submit').html('Submit').attr('disabled', false)
+                                .removeClass('btn-secondary');
                             $('#formReset').find('button:submit').html('Submit').attr('disabled', false)
                                 .removeClass('btn-secondary');
                             $('#searchForm').find('button:submit').html('Search').attr("disabled", false)
@@ -648,7 +657,7 @@
                     console.log('error in ', $(this).attr("name"));
                     $(this).after(
                         '<p class="error-message text-danger">Please enter a valid date in the format dd-mm-yyyy.</p>'
-                        );
+                    );
                     isValid = false;
                 }
             });

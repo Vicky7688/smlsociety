@@ -56,7 +56,19 @@ class JournalVoucherController extends Controller
             ->whereNotIn(
                 'ledger_masters.groupCode',
                 [
-                    'SHAM001','SAVM001','SAVN001','SAVS001','FDOM001','FDON001','FDOS001','RDOM001','RDON001','RDOS001','LONM001','LONN001','LONS001','DCOM001','DCON001','DCOS001','MISM001','MISN001','MISS001','MEM01','NON01','STA02','GRTDAI01','LOA02','RDL01'
+                    'SHAM001',
+                    'SAVN001',
+                    'SAVS001',
+                    'SAVM001',
+                    'FDOM001',
+                    'FDON001',
+                    'FDOS001',
+                    'RDOM001',
+                    'RDON001',
+                    'RDOS001',
+                    'LONM001',
+                    'LONN001',
+                    'LONS001',
                 ]
             )
             ->where('ledger_masters.name', 'LIKE', $name . '%')
@@ -416,103 +428,103 @@ class JournalVoucherController extends Controller
     }
 
     // public function store(Request $post)
-        // {
-        //     $rules = [
-        //         'entries' => 'required|array',
-        //         'entries.*.groupCode' => 'required',
-        //         'entries.*.ledgerCode' => 'required',
-        //         'entries.*.drAmount' => 'required',
-        //         'entries.*.crAmount' => 'required',
-        //     ];
-        //     $validator = Validator::make($post->all(), $rules);
-        //     if ($validator->fails()) {
-        //         return response()->json([
-        //             'status' => false,
-        //             'errors' => $validator->errors(),
-        //             'message' => 'Please check all inputs'
-        //         ]);
-        //     }
-        //     DB::beginTransaction();
-        //     try {
-        //         // Generate a unique serial number
-        //         do {
-        //             $serialNo = "voucher" . rand(1111111, 9999999);
-        //         } while (GeneralLedger::where("serialNo", "=", $serialNo)->first() instanceof GeneralLedger);
-        //         $lastVoucherId = JournalVoucher::max('id');
-        //         // Increment it by 1 for the next voucher
-        //         $nextVoucherId = $lastVoucherId + 1;
-        //         $vodatess = date("Y-m-d", strtotime($post->voucherDate));
+    // {
+    //     $rules = [
+    //         'entries' => 'required|array',
+    //         'entries.*.groupCode' => 'required',
+    //         'entries.*.ledgerCode' => 'required',
+    //         'entries.*.drAmount' => 'required',
+    //         'entries.*.crAmount' => 'required',
+    //     ];
+    //     $validator = Validator::make($post->all(), $rules);
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'errors' => $validator->errors(),
+    //             'message' => 'Please check all inputs'
+    //         ]);
+    //     }
+    //     DB::beginTransaction();
+    //     try {
+    //         // Generate a unique serial number
+    //         do {
+    //             $serialNo = "voucher" . rand(1111111, 9999999);
+    //         } while (GeneralLedger::where("serialNo", "=", $serialNo)->first() instanceof GeneralLedger);
+    //         $lastVoucherId = JournalVoucher::max('id');
+    //         // Increment it by 1 for the next voucher
+    //         $nextVoucherId = $lastVoucherId + 1;
+    //         $vodatess = date("Y-m-d", strtotime($post->voucherDate));
 
 
-        //         $totalDrAmount = 0;
-        //         $totalCrAmount = 0;
-        //         $narrations = [];
-        //         $updatedBy = $post->user()->id;
-        //         $voucherDetails = [];
-        //         foreach ($post->entries as $entry) {
-        //             $voucherDetails[] = [
-        //                 'groupCode' => $entry['groupCode'],
-        //                 'ledgerCode' => $entry['ledgerCode'],
-        //                 'drAmount' => $entry['drAmount'],
-        //                 'crAmount' => $entry['crAmount'],
-        //                 'narration' => $entry['narration'],
-        //                 'branchId' => $entry['branchId'],
-        //                 'sessionId' => $entry['sessionId'],
-        //                 'serialNo' => $serialNo,
-        //                 'updatedBy' => auth()->user()->id,
-        //                 // Add other fields if needed
-        //             ];
-        //             $totalDrAmount += $entry['drAmount'];
-        //             $totalCrAmount += $entry['crAmount'];
-        //             $narrations[] = $entry['narration'];
-        //         }
-        //         $voucher = JournalVoucher::create([
-        //             'voucherDate' => $vodatess,
-        //             'drAmount' => $totalDrAmount,
-        //             'crAmount' => $totalCrAmount,
-        //             'narration' => implode(', ', $narrations),
-        //             'branchId' => session('branchId') ? session('branchId') : 1,
-        //             'sessionId' => session('sessionId') ? session('sessionId') : 1,
-        //             'voucherId' => $nextVoucherId,
-        //             'updatedBy' => $updatedBy,
-        //         ]);
-        //         $agentId = $post->input('agentId') ?? AgentMaster::min('id');
-        //         $sessionId = session('sessionId') ?? 1;
-        //         foreach ($voucherDetails as $detail) {
-        //             $detail['voucherId'] = $voucher->id;
-        //             JournalVoucherDetail::create($detail);
-        //             $genralledger = new GeneralLedger;
-        //             $genralledger->serialNo = $serialNo;
-        //             $genralledger->memberType = "Member";
-        //             $genralledger->groupCode = $detail['groupCode'];
-        //             $genralledger->ledgerCode = $detail['ledgerCode'];
-        //             $genralledger->formName = "JournalVoucher";
-        //             $genralledger->referenceNo = $voucher->id;
-        //             $genralledger->entryMode = "Manual";
-        //             $genralledger->narration = $detail['narration'];
-        //             $genralledger->transactionDate = $vodatess;
-        //             $genralledger->transactionAmount = abs($detail['drAmount'] - $detail['crAmount']);
-        //             $genralledger->transactionType = ($detail['drAmount'] > 0) ? "Dr" : "Cr";
-        //             $genralledger->branchId = $detail['branchId'];
-        //             $genralledger->agentId = $agentId; // Assuming this is correct
-        //             $genralledger->sessionId = $sessionId ;
-        //             $genralledger->updatedBy = auth()->user()->id;
-        //             $genralledger->save();
-        //         }
-        //         DB::commit();
-        //         return response()->json([
-        //             'status' => true,
-        //             'message' => 'Journal entries saved successfully',
-        //             'data' => ['voucherId' => $voucher->id],
-        //         ]);
-        //     } catch (\Exception $e) {
-        //         DB::rollback();
-        //         return response()->json([
-        //             'status' => false,
-        //             'message' => 'Transaction Failed',
-        //             'errors' => $e->getMessage()
-        //         ]);
-        //     }
+    //         $totalDrAmount = 0;
+    //         $totalCrAmount = 0;
+    //         $narrations = [];
+    //         $updatedBy = $post->user()->id;
+    //         $voucherDetails = [];
+    //         foreach ($post->entries as $entry) {
+    //             $voucherDetails[] = [
+    //                 'groupCode' => $entry['groupCode'],
+    //                 'ledgerCode' => $entry['ledgerCode'],
+    //                 'drAmount' => $entry['drAmount'],
+    //                 'crAmount' => $entry['crAmount'],
+    //                 'narration' => $entry['narration'],
+    //                 'branchId' => $entry['branchId'],
+    //                 'sessionId' => $entry['sessionId'],
+    //                 'serialNo' => $serialNo,
+    //                 'updatedBy' => auth()->user()->id,
+    //                 // Add other fields if needed
+    //             ];
+    //             $totalDrAmount += $entry['drAmount'];
+    //             $totalCrAmount += $entry['crAmount'];
+    //             $narrations[] = $entry['narration'];
+    //         }
+    //         $voucher = JournalVoucher::create([
+    //             'voucherDate' => $vodatess,
+    //             'drAmount' => $totalDrAmount,
+    //             'crAmount' => $totalCrAmount,
+    //             'narration' => implode(', ', $narrations),
+    //             'branchId' => session('branchId') ? session('branchId') : 1,
+    //             'sessionId' => session('sessionId') ? session('sessionId') : 1,
+    //             'voucherId' => $nextVoucherId,
+    //             'updatedBy' => $updatedBy,
+    //         ]);
+    //         $agentId = $post->input('agentId') ?? AgentMaster::min('id');
+    //         $sessionId = session('sessionId') ?? 1;
+    //         foreach ($voucherDetails as $detail) {
+    //             $detail['voucherId'] = $voucher->id;
+    //             JournalVoucherDetail::create($detail);
+    //             $genralledger = new GeneralLedger;
+    //             $genralledger->serialNo = $serialNo;
+    //             $genralledger->memberType = "Member";
+    //             $genralledger->groupCode = $detail['groupCode'];
+    //             $genralledger->ledgerCode = $detail['ledgerCode'];
+    //             $genralledger->formName = "JournalVoucher";
+    //             $genralledger->referenceNo = $voucher->id;
+    //             $genralledger->entryMode = "Manual";
+    //             $genralledger->narration = $detail['narration'];
+    //             $genralledger->transactionDate = $vodatess;
+    //             $genralledger->transactionAmount = abs($detail['drAmount'] - $detail['crAmount']);
+    //             $genralledger->transactionType = ($detail['drAmount'] > 0) ? "Dr" : "Cr";
+    //             $genralledger->branchId = $detail['branchId'];
+    //             $genralledger->agentId = $agentId; // Assuming this is correct
+    //             $genralledger->sessionId = $sessionId ;
+    //             $genralledger->updatedBy = auth()->user()->id;
+    //             $genralledger->save();
+    //         }
+    //         DB::commit();
+    //         return response()->json([
+    //             'status' => true,
+    //             'message' => 'Journal entries saved successfully',
+    //             'data' => ['voucherId' => $voucher->id],
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollback();
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'Transaction Failed',
+    //             'errors' => $e->getMessage()
+    //         ]);
+    //     }
     // }
 
 }

@@ -174,14 +174,18 @@
                             let currentLoanRecoverable = res.currentLoanRecoverable || 0;
                             let currentRdInterestPayable = res.currentRdInterestPayable || [];
                             let currentFdInterestPayable = res.currentFdInterestPayable || [];
-                            let currentDailyDepositPayable = res.currentDailyDepositPayable || [];
+                            let currentDailyDepositPayable = res.currentDailyDepositPayable ||
+                            [];
                             let lastpayables = res.lastpayables || [];
                             let lastfinancialYear = res.lastfinancialYear;
 
                             let LbscurrentLoanRecoverable = res.LbscurrentLoanRecoverable || 0;
-                            let LbscurrentFdInterestPayable = res.LbscurrentFdInterestPayable || [];
-                            let LbscurrentDailyDepositPayable = res.LbscurrentDailyDepositPayable || [];
-                            let LbscurrentRdInterestPayable = res.LbscurrentRdInterestPayable || [];
+                            let LbscurrentFdInterestPayable = res.LbscurrentFdInterestPayable ||
+                                [];
+                            let LbscurrentDailyDepositPayable = res
+                                .LbscurrentDailyDepositPayable || [];
+                            let LbscurrentRdInterestPayable = res.LbscurrentRdInterestPayable ||
+                                [];
                             let profitOrLoss = res.profitOrLoss || [];
 
 
@@ -403,7 +407,8 @@
                                                 <td></td>
                                             </tr>
                                         `);
-                                        recoverbalesssubtotal += parseFloat(data.amount);
+                                        recoverbalesssubtotal += parseFloat(data
+                                        .amount);
                                         totalIncome += parseFloat(data.amount);
                                         assetsgrandTotal += parseFloat(data.amount);
                                     }
@@ -457,19 +462,23 @@
                                     var principal = parseFloat(row.principalAmount);
                                     var totalAmount = principal;
 
-                                    var [day, month, year] = endDate.split('-').map(Number);
+                                    var [day, month, year] = endDate.split('-').map(
+                                        Number);
                                     var currentDate = new Date(year, month - 1, day);
                                     var openingDate = new Date(row.openingDate);
 
-                                    var daysElapsed = Math.round((currentDate - openingDate) / (1000 * 60 * 60 * 24));
+                                    var daysElapsed = Math.round((currentDate -
+                                        openingDate) / (1000 * 60 * 60 * 24));
                                     var interest = 0;
 
                                     if (daysElapsed >= 0) {
-                                        interest = calculateTotalInterest(row.interestType, principal, row
+                                        interest = calculateTotalInterest(row
+                                            .interestType, principal, row
                                             .interestRate, daysElapsed);
                                     }
 
-                                    row.interestAmount = parseFloat(interest.toFixed(2));
+                                    row.interestAmount = parseFloat(interest.toFixed(
+                                    2));
                                     groupTotal[fdType] += totalAmount;
                                     groupInterestTotal[fdType] += row.interestAmount;
                                     fdpayablesGrandTotal += row.interestAmount;
@@ -491,7 +500,8 @@
                                         </tr>`
                                     );
 
-                                    libilitiesgrandTotal += parseFloat(groupInterestTotal[fdType]);
+                                    libilitiesgrandTotal += parseFloat(
+                                        groupInterestTotal[fdType]);
                                 });
 
                                 libilitiesBody.append(
@@ -553,28 +563,34 @@
                                     let ww = parseFloat(row.withdraw || 0);
                                     var principal = ss - ww;
                                     let rate = parseFloat(row.interest || 0);
-                                    let months = calculateMonthDifference(openingDate, endDate);
-                                    let rdAmount = calculateRDAmount(principal, rate, months);
-                                    let interest = Math.round(calculateInterest(principal, rate, months));
+                                    let months = calculateMonthDifference(openingDate,
+                                        endDate);
+                                    let rdAmount = calculateRDAmount(principal, rate,
+                                        months);
+                                    let interest = Math.round(calculateInterest(
+                                        principal, rate, months));
 
                                     let totalInterest = 0;
                                     const quarterlyRate = rate / 4 / 100;
                                     const daysInQuarter = 91;
                                     const totalDays = months * 30.44;
-                                    const completedQuarters = Math.floor(totalDays / daysInQuarter);
+                                    const completedQuarters = Math.floor(totalDays /
+                                        daysInQuarter);
                                     const remainingDays = totalDays % daysInQuarter;
 
                                     let maturityAmount = principal;
 
                                     for (let i = 0; i < completedQuarters; i++) {
-                                        const quarterlyInterest = maturityAmount * quarterlyRate;
+                                        const quarterlyInterest = maturityAmount *
+                                            quarterlyRate;
                                         totalInterest += quarterlyInterest;
                                         maturityAmount += quarterlyInterest;
                                     }
 
                                     if (remainingDays > 0) {
                                         const dailyRate = quarterlyRate / daysInQuarter;
-                                        const dailyInterest = maturityAmount * dailyRate * remainingDays;
+                                        const dailyInterest = maturityAmount *
+                                            dailyRate * remainingDays;
                                         totalInterest += dailyInterest;
                                         maturityAmount += dailyInterest;
                                     }
@@ -583,7 +599,8 @@
                                     InttPayableTotal += totalInterest;
                                     NetGrandTotal += maturityAmount;
 
-                                    row.interestAmount = parseFloat(totalInterest.toFixed(2));
+                                    row.interestAmount = parseFloat(totalInterest
+                                        .toFixed(2));
                                     groupDDSTotal[schid] += principal;
                                     groupDDSInterestTotal[schid] += row.interestAmount;
                                     ddspayablesGrandTotal += row.interestAmount;
@@ -593,7 +610,8 @@
 
                                 Object.keys(groupDDSTotal).forEach((schid) => {
                                     const matchingRow = dataArrays.find(row => String(
-                                            row.schid).trim() === String(schid).trim());
+                                            row.schid).trim() === String(schid)
+                                        .trim());
                                     const shcname = matchingRow ? matchingRow.schname :
                                         "Unknown";
 
@@ -608,7 +626,8 @@
                                         </tr>`
                                     );
 
-                                    libilitiesgrandTotal += parseFloat(groupDDSInterestTotal[schid]);
+                                    libilitiesgrandTotal += parseFloat(
+                                        groupDDSInterestTotal[schid]);
                                 });
 
                                 libilitiesBody.append(
@@ -711,28 +730,34 @@
                                     let ww = parseFloat(row.withdraw || 0);
                                     var principal = ss - ww;
                                     let rate = parseFloat(row.interest || 0);
-                                    let months = calculateMonthDifference(openingDate, endDate);
-                                    let rdAmount = calculateRDAmount(principal, rate, months);
-                                    let interest = Math.round(calculateInterest(principal, rate, months));
+                                    let months = calculateMonthDifference(openingDate,
+                                        endDate);
+                                    let rdAmount = calculateRDAmount(principal, rate,
+                                        months);
+                                    let interest = Math.round(calculateInterest(
+                                        principal, rate, months));
 
                                     let totalInterest = 0;
                                     const quarterlyRate = rate / 4 / 100;
                                     const daysInQuarter = 91;
                                     const totalDays = months * 30.44;
-                                    const completedQuarters = Math.floor(totalDays / daysInQuarter);
+                                    const completedQuarters = Math.floor(totalDays /
+                                        daysInQuarter);
                                     const remainingDays = totalDays % daysInQuarter;
 
                                     let maturityAmount = principal;
 
                                     for (let i = 0; i < completedQuarters; i++) {
-                                        const quarterlyInterest = maturityAmount * quarterlyRate;
+                                        const quarterlyInterest = maturityAmount *
+                                            quarterlyRate;
                                         totalInterest += quarterlyInterest;
                                         maturityAmount += quarterlyInterest;
                                     }
 
                                     if (remainingDays > 0) {
                                         const dailyRate = quarterlyRate / daysInQuarter;
-                                        const dailyInterest = maturityAmount * dailyRate * remainingDays;
+                                        const dailyInterest = maturityAmount *
+                                            dailyRate * remainingDays;
                                         totalInterest += dailyInterest;
                                         maturityAmount += dailyInterest;
                                     }
@@ -741,9 +766,11 @@
                                     InttPayableTotal += totalInterest;
                                     NetGrandTotal += maturityAmount;
 
-                                    row.interestAmount = parseFloat(totalInterest.toFixed(2));
+                                    row.interestAmount = parseFloat(totalInterest
+                                        .toFixed(2));
                                     lbsgroupDDSTotal[schid] += principal;
-                                    lbsgroupDDSInterestTotal[schid] += row.interestAmount;
+                                    lbsgroupDDSInterestTotal[schid] += row
+                                        .interestAmount;
                                     totalIncome += row.interestAmount;
 
                                 });
@@ -802,8 +829,10 @@
                                     }
 
                                     let transactionDate = new Date(row.date);
-                                    let day = transactionDate.getDate().toString().padStart(2, '0');
-                                    let month = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+                                    let day = transactionDate.getDate().toString()
+                                        .padStart(2, '0');
+                                    let month = (transactionDate.getMonth() + 1)
+                                        .toString().padStart(2, '0');
                                     let year = transactionDate.getFullYear();
                                     let formattedDate = `${day}-${month}-${year}`;
 
@@ -813,16 +842,21 @@
                                     let interest = 0;
                                     let totalAmount = 0;
                                     let rate = parseFloat(row.interest);
-                                    let months = calculateMonthDifference(transactionDate, endDate);
-                                    let rdAmount = calculateRDAmount(principal, rate, months);
-                                    interest = calculateInterest(principal, rate, months);
+                                    let months = calculateMonthDifference(
+                                        transactionDate, endDate);
+                                    let rdAmount = calculateRDAmount(principal, rate,
+                                        months);
+                                    interest = calculateInterest(principal, rate,
+                                        months);
 
                                     if (row.current_status === 'Active') {
                                         a = principal;
                                         totalAmount = principal + interest;
-                                        row.interestAmount = parseFloat(interest.toFixed(2));
+                                        row.interestAmount = parseFloat(interest
+                                            .toFixed(2));
                                         grandRdTotal[schid] += principal;
-                                        groupRdInterestTotal[schid] += row.interestAmount;
+                                        groupRdInterestTotal[schid] += row
+                                            .interestAmount;
                                         totalExpenses += row.interestAmount;
                                     }
 
@@ -832,7 +866,8 @@
                                     const matchingRow = dataRdArrays.find(row => String(
                                             row.schid).trim() === String(schid)
                                         .trim());
-                                    const shcname = matchingRow ? matchingRow.schname : "Unknown";
+                                    const shcname = matchingRow ? matchingRow.schname :
+                                        "Unknown";
 
                                     libilitiesBody.append(
                                         `<tr>
@@ -843,8 +878,10 @@
                                         </tr>`
                                     );
 
-                                    libilitiesgrandTotal += parseFloat(groupRdInterestTotal[schid]);
-                                    grandRdTotalsssss += parseFloat(groupRdInterestTotal[schid]);
+                                    libilitiesgrandTotal += parseFloat(
+                                        groupRdInterestTotal[schid]);
+                                    grandRdTotalsssss += parseFloat(
+                                        groupRdInterestTotal[schid]);
                                 });
 
                                 libilitiesBody.append(
@@ -883,8 +920,10 @@
                                     }
 
                                     let transactionDate = new Date(row.date);
-                                    let day = transactionDate.getDate().toString().padStart(2, '0');
-                                    let month = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
+                                    let day = transactionDate.getDate().toString()
+                                        .padStart(2, '0');
+                                    let month = (transactionDate.getMonth() + 1)
+                                        .toString().padStart(2, '0');
                                     let year = transactionDate.getFullYear();
                                     let formattedDate = `${day}-${month}-${year}`;
 
@@ -894,23 +933,30 @@
                                     let interest = 0;
                                     let totalAmount = 0;
                                     let rate = parseFloat(row.interest);
-                                    let months = calculateMonthDifference(transactionDate, endDate);
-                                    let rdAmount = calculateRDAmount(principal, rate, months);
-                                    interest = calculateInterest(principal, rate, months);
+                                    let months = calculateMonthDifference(
+                                        transactionDate, endDate);
+                                    let rdAmount = calculateRDAmount(principal, rate,
+                                        months);
+                                    interest = calculateInterest(principal, rate,
+                                        months);
 
                                     a = principal;
                                     totalAmount = principal + interest;
 
-                                    row.interestAmount = parseFloat(interest.toFixed(2));
+                                    row.interestAmount = parseFloat(interest.toFixed(
+                                    2));
                                     LBSgrandRdTotal[schid] += principal;
-                                    LBSgroupRdInterestTotal[schid] += row.interestAmount;
+                                    LBSgroupRdInterestTotal[schid] += row
+                                    .interestAmount;
                                     totalIncome += row.interestAmount;
                                 });
 
                                 Object.keys(LBSgrandRdTotal).forEach((schid) => {
                                     const matchingRow = dataRdLBSArrays.find(row =>
-                                        String(row.schid).trim() === String(schid).trim());
-                                    const shcname = matchingRow ? matchingRow.schname : "Unknown";
+                                        String(row.schid).trim() === String(schid)
+                                        .trim());
+                                    const shcname = matchingRow ? matchingRow.schname :
+                                        "Unknown";
                                 });
                             }
 

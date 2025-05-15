@@ -22,7 +22,7 @@ class IssueLoanReportController extends Controller
     public function getData(Request $request)
     {
         $startDate = date('Y-m-d', strtotime($request->input('startDate')));
-        $endDate = $request->input('endDate');
+        $endDate =  date('Y-m-d', strtotime($request->input('endDate')));
         $memberType = $request->input('memberType');
         $loanType = $request->input('loanType');
         // dd($startDate, $endDate, $memberType, $loanType);

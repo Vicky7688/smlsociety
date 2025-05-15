@@ -106,8 +106,7 @@
                                                     </div> --}}
                                                     <div
                                                         class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding saving_column">
-                                                        <label class="form-label" for="MEMBERSHIPNO">MEMBERSHIP
-                                                            NO</label>
+                                                        <label class="form-label" for="MEMBERSHIPNO">Employee Code</label>
                                                         <input type="text" id="member_ship_no"
                                                             onchange="handleMembershipfun(this)"
                                                             class="form-control form-control-sm" name="member_ship_no"
@@ -199,12 +198,12 @@
                                                         <input type="text" id="ledger_no"
                                                             class="form-control form-control-sm" name="ledger_no">
                                                     </div>
-                                                    <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
+                                                    {{-- <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
                                                         <label class="form-label" for="EMPLOYEECODE">EMPLOYEE
                                                             CODE</label>
                                                         <input type="text" id="emp_code"
                                                             class="form-control form-control-sm" name="emp_code">
-                                                    </div>
+                                                    </div> --}}
                                                     {{-- <div class="col-lg-3 col-md-3 col-sm-4 col-6 py-3 inputesPadding">
                                                         <label class="form-label" for="AGENT">AGENT</label>
                                                         <select name="agent" id="agent"

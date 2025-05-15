@@ -16,7 +16,8 @@ class DatabaseSeeder extends Seeder
             UserRoleSeeder::class,
             UserSeeder::class,
             GroupMasterSeeder::class,
-            LedgerMasterSeeder::class
+            LedgerMasterSeeder::class,
+            SessionMasterSeeder::class
         ]);
     }
 }

@@ -33,7 +33,6 @@ class BalanceSheetController extends Controller
     {
 
 
-
         //     // Fetch ccl_payments where serialNo not in general_ledgers
         // $cclPayments = DB::table('ccl_payments')
         //     ->whereNotIn(
@@ -167,11 +166,13 @@ class BalanceSheetController extends Controller
         $currentfinancialYear = '';
 
         if (session("sessionId")) {
-            $currentSort = DB::table('session_masters')->where('id', session("sessionId"))->value('sortno');
+            $currentSort = DB::table('session_masters')->where('id', session("sessionId"))->value('id');
+
             if ($currentSort) {
                 $previousSort = $currentSort;
 
-                $currentsession = SessionMaster::where('sortno', $previousSort)->first();
+                $currentsession = SessionMaster::where('id', $previousSort)->first();
+                // dd($currentsession);
                 //_______Get Current Financial Year
                 $session_master = SessionMaster::find(Session::get('sessionId'));
                 $sYear = date('Y', strtotime($currentsession->startDate));
@@ -233,14 +234,16 @@ class BalanceSheetController extends Controller
         if (session("sessionId")) {
             $currentSort = DB::table('session_masters')
                 ->where('id', session("sessionId"))
-                ->value('sortno');
+                ->value('id');
+
 
             if ($currentSort) {
-                $previousSort = $currentSort - 1;
-
-                $lastSession = SessionMaster::where('sortno', $previousSort)->first();
+                // $previousSort = $currentSort - 1;
+                $lastSession = SessionMaster::where('id', $currentSort)->first();
+                // dd($lastSession);    
 
                 $lastYearStartDate = $lastSession->startDate;
+
                 $lastYearEndDate = $lastSession->endDate;
                 $sYear = date('Y', strtotime($lastYearStartDate));
                 $lYear = date('y', strtotime($lastYearEndDate));

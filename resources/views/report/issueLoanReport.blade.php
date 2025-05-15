@@ -27,7 +27,7 @@
                     <div class="card-body">
                         <form action="javascript:void(0)" id="formData" name="formData">
                             <div class="row">
-                                @php
+                                  @php
                                     $currentDate =
                                         Session::get('currentdate') ??
                                         date('d-m-Y', strtotime(session('sessionStart')));
@@ -35,12 +35,17 @@
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="startDate" class="form-label">Date From</label>
                                     <input type="text" class="form-control formInputsReport" placeholder="YYYY-MM-DD"
-                                        id="startDate" name="startDate" value="{{ $currentDate }}" />
+                                        id="startDate" name="startDate" value="{{ date('d-m-Y', strtotime(session('sessionStart'))) }}" />
                                 </div>
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
+                                {{-- <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="endDate" class="form-label">Date To</label>
-                                    <input type="date" class="form-control formInputsReport" placeholder="YYYY-MM-DD"
-                                        id="endDate" name="endDate" value="{{ now()->format('Y-m-d') }}" />
+                                    <input type="date" class="form-control formInputs mydatepic" placeholder="YYYY-MM-DD"
+                                        id="endDate" name="endDate" value="{{ date('d-m-Y', strtotime(session('sessionEnd'))) }}" />
+                                </div> --}}
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
+                                    <label for="endDate" class="form-label">DATE TO</label>
+                                    <input type="text" class="form-control formInputs mydatepic" placeholder="YYYY-MM-DD"
+                                        id="endDate" name="endDate" value="{{ date('d-m-Y', strtotime(session('sessionEnd'))) }}" />
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="memberType" class="form-label">Member Type</label>

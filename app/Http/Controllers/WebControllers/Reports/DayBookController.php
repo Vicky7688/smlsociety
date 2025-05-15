@@ -110,6 +110,7 @@ class DayBookController extends Controller
                 )
             // ->orderBy('general_ledgers.transactionDate', 'ASC')
             ->get();
+            // dd($debitbalance,$startDate,$endDate);
 
 
 

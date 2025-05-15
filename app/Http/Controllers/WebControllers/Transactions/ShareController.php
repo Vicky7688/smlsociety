@@ -14,8 +14,10 @@ use App\Models\GeneralLedger;
 use App\Models\LedgerMaster;
 use Illuminate\Support\Facades\DB;
 use App\Models\MemberSaving;
-use Session;
+use Illuminate\Support\Facades\Session;
 use App\Models\GroupMaster;
+use Illuminate\Support\Facades\Validator;
+
 class ShareController extends Controller
 {
     public function index()
@@ -30,27 +32,27 @@ class ShareController extends Controller
 
     public function transaction(Request $post)
     {
-        // dd($post->all());
         switch ($post->actiontype) {
             case 'getdata':
 
-                if($post->actiontype === 'deposit' || $post->actiontype === 'withdrawal'){
+                if ($post->actiontype === 'deposit' || $post->actiontype === 'withdrawal') {
                     $acdetails = MemberAccount::where('accountNo', $post->account)->where("memberType", $post->membertype)->first('name');
 
                     if (!$acdetails) {
                         return response()->json(['status' => "Invalid Account number"]);
                     }
 
-                    $SessionMaster =SessionMaster::find(Session::get('sessionId'));
+                    $SessionMaster = SessionMaster::find(Session::get('sessionId'));
                     $txnacdetails = MemberShare::where('accountNo', $post->account)
                         ->where('is_delete', 'No')->whereBetween('transactionDate', [$SessionMaster->startDate, $SessionMaster->endDate])
                         ->orderBy('transactionDate', 'asc')
                         ->get();
 
 
+
                     $txnacdetailsamount = MemberShare::where('accountNo', $post->account)
                         ->where('is_delete', 'No')
-                        ->where('transactionDate', '<=',$SessionMaster->startDate)
+                        ->where('transactionDate', '<=', $SessionMaster->startDate)
                         ->orderBy('transactionDate', 'asc')
                         ->get();
 
@@ -60,29 +62,30 @@ class ShareController extends Controller
                         return $detail->depositAmount - $detail->withdrawAmount;
                     });
 
-                    $sessionenddate=$SessionMaster->endDate;
+                    $sessionenddate = $SessionMaster->endDate;
                     $openingBal = DB::table('member_accounts')
-                        ->where('accountNo','=',$post->account)
+                        ->where('accountNo', '=', $post->account)
                         // ->where('accType','Share')
                         ->first();
 
-                    return response()->json(['status' => "success", "sessionenddate" => $sessionenddate, "acdetails" => $acdetails, "totalBalance"=>$totalBalance, "openingBal"=>$openingBal,'txndetails' => $txnacdetails, 'balance' => $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)))]);
+                    return response()->json(['status' => "success", "sessionenddate" => $sessionenddate, "acdetails" => $acdetails, "totalBalance" => $totalBalance, "openingBal" => $openingBal, 'txndetails' => $txnacdetails, 'balance' => $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)))]);
+                } else {
 
-                }else{
                     $acdetails = MemberAccount::where('accountNo', $post->account)->where("memberType", $post->membertype)->first('name');
                     if (!$acdetails) {
                         return response()->json(['status' => "Invalid Account number"]);
                     }
 
-                    $SessionMaster =SessionMaster::find(Session::get('sessionId'));
+                    $SessionMaster = SessionMaster::find(Session::get('sessionId'));
                     $txnacdetails = MemberShare::where('accountNo', $post->account)
                         ->where('is_delete', 'No')->whereBetween('transactionDate', [$SessionMaster->startDate, $SessionMaster->endDate])
                         ->orderBy('transactionDate', 'asc')
                         ->get();
 
+
                     $txnacdetailsamount = MemberShare::where('accountNo', $post->account)
                         ->where('is_delete', 'No')
-                        ->where('transactionDate', '<=',$SessionMaster->startDate)
+                        ->where('transactionDate', '<=', $SessionMaster->startDate)
                         ->orderBy('transactionDate', 'asc')
                         ->get();
 
@@ -92,31 +95,32 @@ class ShareController extends Controller
                         return $detail->depositAmount - $detail->withdrawAmount;
                     });
 
-                    $sessionenddate=$SessionMaster->endDate;
+                    $sessionenddate = $SessionMaster->endDate;
                     $openingBal = DB::table('member_accounts')
-                        ->where('accountNo','=',$post->account)
+                        ->where('accountNo', '=', $post->account)
                         // ->where('accType','Share')
                         ->first();
+                        // dd($openingBal);
 
                     //_______Saving Accounts
-                    $saving_account = DB::table('opening_accounts')
-                        ->select('opening_accounts.*','member_accounts.accountNo as membership','member_accounts.name as customer_name')
-                        ->leftJoin('member_accounts','member_accounts.accountNo','=','opening_accounts.membershipno')
-                        ->where('opening_accounts.membershipno',$post->account)
-                        ->where('opening_accounts.membertype',$post->membertype)
-                        ->where('opening_accounts.accountname','=','Saving')
-                        ->where('opening_accounts.status','=','Active')
-                        ->first();
+                    // $saving_account = DB::table('opening_accounts')
+                    //     ->select('opening_accounts.*','member_accounts.accountNo as membership','member_accounts.name as customer_name')
+                    //     ->leftJoin('member_accounts','member_accounts.accountNo','=','opening_accounts.membershipno')
+                    //     ->where('opening_accounts.membershipno',$post->account)
+                    //     ->where('opening_accounts.membertype',$post->membertype)
+                    //     ->where('opening_accounts.accountname','=','Saving')
+                    //     ->where('opening_accounts.status','=','Active')
+                    //     ->first();
 
                     return response()->json([
                         'status' => "success",
                         "sessionenddate" => $sessionenddate,
                         "acdetails" => $acdetails,
-                        "totalBalance"=>$totalBalance,
-                        "openingBal"=>$openingBal,
+                        "totalBalance" => $totalBalance,
+                        "openingBal" => $openingBal,
                         'txndetails' => $txnacdetails,
                         'balance' => $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate))),
-                        'saving_account' => $saving_account
+                        // 'saving_account' => $saving_account
                     ]);
                 }
 
@@ -127,7 +131,7 @@ class ShareController extends Controller
                     'action' => 'required',
                     'account' => 'required',
                 );
-                $validator = \Validator::make($post->all(), $rules);
+                $validator = Validator::make($post->all(), $rules);
                 if ($validator->fails()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
@@ -145,12 +149,12 @@ class ShareController extends Controller
                 }
 
                 do {
-                    $generalLedgers = "shr" . rand(1111111, 9999999);
+                    $generalLedgers = "share" . rand(1111111, 9999999);
                 } while (GeneralLedger::where("serialNo", "=", $generalLedgers)->first() instanceof GeneralLedger);
-                $result = $this->isDateBetween(date('Y-m-d', strtotime($post->transactionDate))) ;
+                $result = $this->isDateBetween(date('Y-m-d', strtotime($post->transactionDate)));
                 if (!$result) {
-                         return response()->json(['statuscode'=>'ERR', 'status'=>'Please Check your session', 'message' => "Please Check your session"],400);
-                   }
+                    return response()->json(['statuscode' => 'ERR', 'status' => 'Please Check your session', 'message' => "Please Check your session"], 400);
+                }
                 if ($post->action == "withdrawal") {
 
                     $balance =  $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)));
@@ -225,7 +229,7 @@ class ShareController extends Controller
                         // dd($e->getMessage());
                         return response()->json(['status' => "failed", "message" => "Some Technical issue occurred"], 200);
                     }
-                } else if($post->action == "transfer"){
+                } else if ($post->action == "transfer") {
                     // dd($post->all());
 
                     $saving_acc = $post->saving_no;
@@ -248,7 +252,7 @@ class ShareController extends Controller
                         ->first();
 
 
-                      $balance =  $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)));
+                    $balance =  $this->getbalance($post->account, date('Y-m-d', strtotime($post->transactionDate)));
                     if ($balance < $post->amount) {
                         return response()->json(['status' => "Insufficient Balance", "message" => "Insufficient Balance"], 200);
                     }
@@ -280,56 +284,56 @@ class ShareController extends Controller
                         // ]);
 
 
-                         //___________Entry in Member Share Table
-                    $saving_trfd_share = new MemberShare();
-                    $saving_trfd_share->serialNo = $generalLedgers;
-                    $saving_trfd_share->accountId = $post->saving_no;
-                    $saving_trfd_share->accountNo = $post->account;
-                    $saving_trfd_share->memberType = $post->memberType;
-                    $saving_trfd_share->groupCode = 'SHAM001';
-                    $saving_trfd_share->ledgerCode = 'SHAM001';
-                    $saving_trfd_share->shareNo = '';
-                    $saving_trfd_share->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
-                    $saving_trfd_share->transactionType = 'Withdraw';
-                    $saving_trfd_share->depositAmount = 0;
-                    $saving_trfd_share->withdrawAmount = $post->amount;
-                    $saving_trfd_share->dividendAmount = 0;
-                    $saving_trfd_share->chequeNo = 'trfdSaving';
-                    $saving_trfd_share->narration = 'Saving A/c- '. $post->saving_no. ' Trfd Share' ?  'Saving A/c-' . $post->saving_no . 'Trfd Share' : $post->saving_no;
-                    $saving_trfd_share->branchId = session('branchId') ? session('branchId') : 1;
-                    $saving_trfd_share->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $saving_trfd_share->agentId = $post->agentId;
-                    $saving_trfd_share->updatedBy = $post->user()->id;
-                    $saving_trfd_share->txnType = 'transfer';
-                    $saving_trfd_share->is_delete = 'No';
-                    $saving_trfd_share->save();
+                        //___________Entry in Member Share Table
+                        $saving_trfd_share = new MemberShare();
+                        $saving_trfd_share->serialNo = $generalLedgers;
+                        $saving_trfd_share->accountId = $post->saving_no;
+                        $saving_trfd_share->accountNo = $post->account;
+                        $saving_trfd_share->memberType = $post->memberType;
+                        $saving_trfd_share->groupCode = 'SHAM001';
+                        $saving_trfd_share->ledgerCode = 'SHAM001';
+                        $saving_trfd_share->shareNo = '';
+                        $saving_trfd_share->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
+                        $saving_trfd_share->transactionType = 'Withdraw';
+                        $saving_trfd_share->depositAmount = 0;
+                        $saving_trfd_share->withdrawAmount = $post->amount;
+                        $saving_trfd_share->dividendAmount = 0;
+                        $saving_trfd_share->chequeNo = 'trfdSaving';
+                        $saving_trfd_share->narration = 'Saving A/c- ' . $post->saving_no . ' Trfd Share' ?  'Saving A/c-' . $post->saving_no . 'Trfd Share' : $post->saving_no;
+                        $saving_trfd_share->branchId = session('branchId') ? session('branchId') : 1;
+                        $saving_trfd_share->sessionId = session('sessionId') ? session('sessionId') : 1;
+                        $saving_trfd_share->agentId = $post->agentId;
+                        $saving_trfd_share->updatedBy = $post->user()->id;
+                        $saving_trfd_share->txnType = 'transfer';
+                        $saving_trfd_share->is_delete = 'No';
+                        $saving_trfd_share->save();
 
-                    $lastInsertedId = $saving_trfd_share->id;
+                        $lastInsertedId = $saving_trfd_share->id;
 
-                    //___________Entry in Member Saving Table
-                    $saving_withdraw = new MemberSaving();
-                    $saving_withdraw->secheme_id = $saving_account->sch_id;
-                    $saving_withdraw->serialNo = $generalLedgers;
-                    $saving_withdraw->accountId = $post->saving_no;
-                    $saving_withdraw->accountNo = $post->account;
-                    $saving_withdraw->memberType = $post->memberType;
-                    $saving_withdraw->groupCode = $saving_account->groupCode;
-                    $saving_withdraw->ledgerCode = $saving_account->ledgerCode;
-                    $saving_withdraw->savingNo = '';
-                    $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
-                    $saving_withdraw->transactionType = 'toshare';
-                    $saving_withdraw->depositAmount = $post->amount;
-                    $saving_withdraw->withdrawAmount = 0;
-                    $saving_withdraw->paymentType = $post->groupCode;
-                    $saving_withdraw->bank = $post->bank;
-                    $saving_withdraw->chequeNo = 'trfdSaving';
-                    $saving_withdraw->narration = 'Saving A/c- '. $post->account. ' Trfd Share' ?  'Saving A/c-' . $post->account . 'Trfd Share' : $post->account;
-                    $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
-                    $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
-                    $saving_withdraw->agentId = $post->agentId;
-                    $saving_withdraw->updatedBy = $post->user()->id;
-                    $saving_withdraw->is_delete = 'No';
-                    $saving_withdraw->save();
+                        //___________Entry in Member Saving Table
+                        $saving_withdraw = new MemberSaving();
+                        $saving_withdraw->secheme_id = $saving_account->sch_id;
+                        $saving_withdraw->serialNo = $generalLedgers;
+                        $saving_withdraw->accountId = $post->saving_no;
+                        $saving_withdraw->accountNo = $post->account;
+                        $saving_withdraw->memberType = $post->memberType;
+                        $saving_withdraw->groupCode = $saving_account->groupCode;
+                        $saving_withdraw->ledgerCode = $saving_account->ledgerCode;
+                        $saving_withdraw->savingNo = '';
+                        $saving_withdraw->transactionDate = date('Y-m-d', strtotime($post->transactionDate));
+                        $saving_withdraw->transactionType = 'toshare';
+                        $saving_withdraw->depositAmount = $post->amount;
+                        $saving_withdraw->withdrawAmount = 0;
+                        $saving_withdraw->paymentType = $post->groupCode;
+                        $saving_withdraw->bank = $post->bank;
+                        $saving_withdraw->chequeNo = 'trfdSaving';
+                        $saving_withdraw->narration = 'Saving A/c- ' . $post->account . ' Trfd Share' ?  'Saving A/c-' . $post->account . 'Trfd Share' : $post->account;
+                        $saving_withdraw->branchId = session('branchId') ? session('branchId') : 1;
+                        $saving_withdraw->sessionId = session('sessionId') ? session('sessionId') : 1;
+                        $saving_withdraw->agentId = $post->agentId;
+                        $saving_withdraw->updatedBy = $post->user()->id;
+                        $saving_withdraw->is_delete = 'No';
+                        $saving_withdraw->save();
 
 
 
@@ -379,7 +383,6 @@ class ShareController extends Controller
                         // dd($e->getMessage());
                         return response()->json(['status' => "failed", "message" => "Some Technical issue occurred"], 200);
                     }
-
                 } else {
                     // dd($post->all());
                     DB::beginTransaction();
@@ -457,7 +460,7 @@ class ShareController extends Controller
                     'action' => 'required',
                 );
                 // dd($post->all());
-                $validator = \Validator::make($post->all(), $rules);
+                $validator = Validator::make($post->all(), $rules);
                 if ($validator->fails()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
@@ -487,7 +490,7 @@ class ShareController extends Controller
                     ]);
 
                     DB::table('general_ledgers')->where([
-                         'accountNo' =>  $check->accountNo,
+                        'accountNo' =>  $check->accountNo,
                         'referenceNo' => $check->id,
                         'groupCode' => $check->groupCode,
                         'ledgerCode' => $check->ledgerCode,
@@ -529,10 +532,10 @@ class ShareController extends Controller
                     return response()->json(['status' => "failed", "message" => "Transaction not found"], 200);
                 }
 
-                 $result = $this->isDateBetween(date('Y-m-d', strtotime($action->transactionDate))) ;
+                $result = $this->isDateBetween(date('Y-m-d', strtotime($action->transactionDate)));
                 if (!$result) {
-                         return response()->json(['statuscode'=>'ERR', 'status'=>'Please Check your session', 'message' => "Please Check your session"],400);
-                   }
+                    return response()->json(['statuscode' => 'ERR', 'status' => 'Please Check your session', 'message' => "Please Check your session"], 400);
+                }
                 DB::beginTransaction();
                 try {
                     GeneralLedger::where([
@@ -548,11 +551,12 @@ class ShareController extends Controller
                     ])->delete();
 
                     //________Delete Member Share
-                    DB::table('member_savings')
-                        ->where('accountId', $action->accountId)
-                        ->where('accountNo', $action->accountNo)
-                        ->where('serialNo', $action->serialNo)
-                        ->delete();
+                    // DB::table('member_savings')
+                    //     ->where('accountId', $action->accountId)
+                    //     ->where('accountNo', $action->accountNo)
+
+                    //     ->where('serialNo', $action->serialNo)
+                    //     ->delete();
 
                     MemberShare::where('id', $post->id)->delete();
                     DB::commit();
@@ -573,11 +577,27 @@ class ShareController extends Controller
         }
     }
 
-    public function getbalance($ac, $lastDate){
-        $openingBal = DB::table('member_accounts')->where('accountNo',$ac)->first();
-        $shareBal = $openingBal->opening_amount ?? 0 ;
+    public function getbalance($ac, $lastDate)
+    {
+        $openingBal = DB::table('member_accounts')->where('accountNo', $ac)->first();
+        $shareBal = $openingBal->opening_amount ?? 0;
         $credit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Deposit')->whereDate('transactionDate', '<=', $lastDate)->sum("depositAmount");
         $debit =  MemberShare::where('accountNo', $ac)->where('is_delete', 'No')->where('transactionType', 'Withdraw')->whereDate('transactionDate', '<=', $lastDate)->sum("withdrawAmount");
         return $shareBal + $credit - $debit;
+    }
+    public function GetLedgders(Request $post)
+    {
+        $groups_code = $post->groups_code;
+        if ($groups_code) {
+            $ledgers = LedgerMaster::where('groupCode', $groups_code)->where('ledgerCode', '!=', 'BANKFD01')->where('status', 'Active')->orderBy('name', 'ASC')->get();
+
+            if (! empty($ledgers)) {
+                return response()->json(['status' => 'success', 'ledgers' => $ledgers]);
+            } else {
+                return response()->json(['status' => 'Fail', 'messages' => 'Ledger Not Found']);
+            }
+        } else {
+            return response()->json(['status' => 'Fail', 'messages' => 'Group Not Found']);
+        }
     }
 }

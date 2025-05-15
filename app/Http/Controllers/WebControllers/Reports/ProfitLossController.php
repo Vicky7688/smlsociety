@@ -63,13 +63,13 @@ class ProfitLossController extends Controller
         $currentfinancialYear = '';
 
         if (session("sessionId")) {
-            $currentSort = DB::table('session_masters')->where('id', session("sessionId"))->value('sortno');
+            $currentSort = DB::table('session_masters')->where('id', session("sessionId"))->value('id');
 
 
             if ($currentSort) {
                 $previousSort = $currentSort;
 
-                $currentsession = SessionMaster::where('sortno', $previousSort)->first();
+                $currentsession = SessionMaster::where('id', $previousSort)->first();
                 //_______Get Current Financial Year
                 $session_master = SessionMaster::find(Session::get('sessionId'));
                 $sYear = date('Y', strtotime($currentsession->startDate));
@@ -78,7 +78,7 @@ class ProfitLossController extends Controller
 
                 if (in_array($currentsession->id, [3, 4, 5])) {
 
-                    $custom_2023_2024_pay_recoverable = array();;
+                    $custom_2023_2024_pay_recoverable = array();
                     $bankInterestRecoverable = array();
                     $currentLoanRecoverable = array();
                     $currentFdInterestPayable = array();
@@ -127,12 +127,12 @@ class ProfitLossController extends Controller
         if (session("sessionId")) {
             $currentSort = DB::table('session_masters')
                 ->where('id', session("sessionId"))
-                ->value('sortno');
+                ->value('id');
 
             if ($currentSort) {
-                $previousSort = $currentSort - 1;
+                // $previousSort = $currentSort - 1;
 
-                $lastSession = SessionMaster::where('sortno', $previousSort)->first();
+                $lastSession = SessionMaster::where('id', $currentSort)->first();
 
 
 
