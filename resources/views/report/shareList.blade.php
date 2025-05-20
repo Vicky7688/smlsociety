@@ -71,7 +71,7 @@
                     <thead class="table_head verticleAlignCenterReport">
                         <tr>
                             <th class="fw-bold">SR NO</th>
-                            <th class="fw-bold">A/C NO</th>
+                            <th class="fw-bold">Employee Code</th>
                             <th class="fw-bold">Name</th>
                             <th class="fw-bold">Father Name</th>
                             <th class="fw-bold">Balance</th>

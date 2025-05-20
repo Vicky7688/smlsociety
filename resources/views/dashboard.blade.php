@@ -80,7 +80,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 col-sm-6 mb-4">
+            {{-- <div class="col-lg-3 col-sm-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
@@ -98,11 +98,11 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
 
 
-            <div class="col-lg-3 col-sm-6 mb-4">
+            {{-- <div class="col-lg-3 col-sm-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
@@ -120,17 +120,17 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
             <div class="col-lg-3 col-sm-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
                             <h5 class="mb-0 me-2">
-                                @isset($membersaving)
-                                {{$membersaving}}
+                                @isset($contributions)
+                                {{$contributions}}
                                 @endisset
                             </h5>
-                            <small>Saving</small>
+                            <small>Contributions</small>
                         </div>
                         <div class="card-icon">
                             <span class="badge bg-label-primary rounded-pill p-2">
@@ -159,7 +159,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-sm-6 mb-4">
+            {{-- <div class="col-lg-3 col-sm-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div class="card-title mb-0">
@@ -177,7 +177,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
             <div class="col-lg-3 col-sm-6 mb-4">
                 <div class="card h-100">
                     <div class="card-body d-flex justify-content-between align-items-center">

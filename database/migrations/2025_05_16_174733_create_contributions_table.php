@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('member_shares', function (Blueprint $table) {
+        Schema::create('contributions', function (Blueprint $table) {
             $table->id()->index();
-            $table->string('serialNo')->nullable();
+             $table->string('serialNo')->nullable();
             $table->unsignedBigInteger('accountId')->nullable();
             $table->string('accountNo')->nullable();
             $table->enum('memberType',['Member','NonMember','Staff'])->nullable();
             $table->string('groupCode')->nullable();
             $table->string('ledgerCode')->nullable();
-            $table->string('shareNo')->nullable();
+            $table->string('contributionNo')->nullable();
             $table->date('transactionDate')->nullable();
             $table->enum('transactionType',['Deposit','Withdraw'])->nullable();
             $table->double('depositAmount', 20, 4)->default(0);
@@ -43,6 +43,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('member_shares');
+        Schema::dropIfExists('contributions');
     }
 };

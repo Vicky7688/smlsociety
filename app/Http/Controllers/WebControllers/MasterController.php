@@ -616,9 +616,6 @@ class MasterController extends Controller
 
                         $id = $ledger_master->id;
 
-                        LoanMaster::where('id', $loanId)->update([
-                            'ledger_master_id' => $id
-                        ]);
 
                         // Ledger Master Entry 2
                         $ledger_master = new LedgerMaster();
@@ -649,6 +646,17 @@ class MasterController extends Controller
                         $ledger_master->updatedBy = $post->user()->id;
                         $ledger_master->is_delete = 'No';
                         $ledger_master->save();
+
+                        LoanMaster::where('id', $loanId)->update([
+                            'ledger_master_id' => $id,
+                            'loangroupCode' => $groupCode,
+                            'loanledgerCode' => $ledgerCode,
+                            'interestgroupCode' => "INCM001",
+                            'interestledgerCode' => $ledgerCode . (string) ($loanId + 1),
+                            'penaltygroupCode' => 'INCM001',
+                            'penaltyledgerCode' => $ledgerCode . (string) $loanId,
+                        ]);
+
 
                         DB::commit();
 

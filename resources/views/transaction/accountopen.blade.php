@@ -1084,7 +1084,7 @@
                         $("#designation").val(response.data.member.designation);
                         $("#ledger_no").val(response.data.member.ledgerNo);
                         $("#page_no").val(response.data.member.pageNo);
-                        $("#member_dob").val(response.data.member.birthDate);
+                       $("#member_dob").val(moment(response.data.member.birthDate).format('DD-MM-YYYY'));
                         $("#emp_code").val(response.data.member.employeeCode);
                         // $("#agent").val(response.data.member.agentId);
 

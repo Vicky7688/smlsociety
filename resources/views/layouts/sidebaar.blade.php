@@ -233,6 +233,10 @@
                     <a href="{{ route('share') }}" class="menu-link">
                         <div data-i18n="Share">Share</div>
                     </a>
+                <li class="menu-item">
+                    <a href="{{ route('contribution') }}" class="menu-link">
+                        <div data-i18n="Contribution">Contribution</div>
+                    </a>
                 </li>
                 {{-- <li class="menu-item">
                     <a href="{{route('savingaccountindex')}}" class="menu-link">
@@ -290,7 +294,6 @@
                                 <div data-i18n="Daily Collection Saving">Daily Collection Saving</div>
                             </a>
                         </li>
-
                     </ul>
                 </li> --}}
                 {{-- <li class="menu-item">
@@ -304,7 +307,6 @@
                         <div data-i18n="Security On Commission">Security On Commission</div>
                     </a>
                 </li> --}}
-
 
             </ul>
         </li>
@@ -354,6 +356,11 @@
                         <div data-i18n="Share List">Share List</div>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="{{ route('contributionList.index') }}" class="menu-link">
+                        <div data-i18n="Contribution List">Contribution List</div>
+                    </a>
+                </li>
 
                 {{-- <li class="menu-item">
                     <a href="{{route('fdReport.index')}}" class="menu-link">
@@ -392,6 +399,12 @@
                         <div data-i18n="Issue Loan List">Issue Loan Report</div>
                     </a>
                 </li>
+
+                <li class="menu-item">
+                    <a href="{{route('balancebookindex')}}" class="menu-link">
+                        <div data-i18n="Balance Book">Balance Book</div>
+                    </a>
+                </li>
                 {{-- <li class="menu-item">
                     <a href="{{route('dailyreportindex')}}" class="menu-link">
                         <div data-i18n="DailyCollection Report">DailyCollection Report</div>
@@ -404,11 +417,7 @@
                     </a>
                 </li>
 
-                <li class="menu-item">
-                    <a href="{{route('balancebookindex')}}" class="menu-link">
-                        <div data-i18n="Balance Book">Balance Book</div>
-                    </a>
-                </li>
+
 
                 <li class="menu-item">
                     <a href="{{route('securitylistIndex')}}" class="menu-link">

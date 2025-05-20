@@ -13,11 +13,11 @@
             <div class="card-body py-2">
                 <div class="row justify-content-between">
                     <div class="col-md-6 d-flex align-items-center savingAccountHeading">
-                        <h4 class=""><span class="text-muted fw-light">Transactions / </span> Share</h4>
+                        <h4 class=""><span class="text-muted fw-light">Transactions / </span> Contributions</h4>
                     </div>
                     <div class="col-md-3 accountHolderDetails">
                         <h6 class="m-0"><span class="text-muted fw-light">Name: </span><span id="name"></span></h6>
-                        <h6 class="pt-2 mb-0"><span class="text-muted fw-light">Share Balance: </span><span
+                        <h6 class="pt-2 mb-0"><span class="text-muted fw-light">Contribution Balance: </span><span
                                 id="saving"></span>
                         </h6>
                     </div>
@@ -30,10 +30,10 @@
             <div class="col-12 mb-4 cards">
                 <div class="card mb-3">
                     <div class="card-body cardsY">
-                        <form id="sharemember" action="{{ route('shareupdate') }}" method="post">
+                        <form id="contribution" action="{{ route('contributionupdate') }}" method="post">
                             {{ csrf_field() }}
                             <div class="row row-gap-2">
-                                <input type="hidden" name="actiontype" value="share" />
+                                <input type="hidden" name="actiontype" value="contributionsave" />
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3  inputesPadding">
                                     <label for="txndate" class="form-label">Date</label>
                                     <input id="transactionDate" type="text" name="transactionDate"
@@ -55,7 +55,7 @@
                                     <select class="form-select formInputsSelect" id="memberType" name="memberType">
                                         <option value="Member">Member</option>
                                         <!-- <option value="NonMember">Non Member</option>
-                                                    <option value="Staff">Staff</option> -->
+                                                        <option value="Staff">Staff</option> -->
                                     </select>
                                     <p class="error"></p>
                                 </div>
@@ -69,7 +69,8 @@
                                     <input type="text" name="amount" class="form-control formInputs"
                                         placeholder="Enter value" required />
                                 </div>
-                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-2 saving_column inputesPadding"    id="groupdiv">
+                                <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-2 saving_column inputesPadding"
+                                    id="groupdiv">
                                     <label for="paymentType" class="form-label">Payment Type</label>
                                     <select class="form-select formInputsSelect" id="groupCode" name="groupCode"
                                         onchange="getledgerCode('this')">
@@ -90,7 +91,7 @@
                                     <p class="error"></p>
                                 </div>
                                 <!-- </div>
-                                            <div class="row"> -->
+                                                <div class="row"> -->
 
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding" id="accountdiv">
                                     <label for="txndate" class="form-label">Saving No</label>
@@ -105,19 +106,19 @@
                                 <!-- </div> -->
                                 <!-- <div class="row"> -->
                                 <!-- <div class=" col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding accountdetails" style="display: none;">
-                                        <label for="txndate" class="form-label">Name</label>
-                                        <input id="name" type="text" name="name" class="form-control" placeholder="Enter value" required />
-                                    </div>
-                                    <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding accountdetails" style="display: none;">
-                                        <label for="saving" class="form-label">Balance Share</label>
-                                        <input id="saving" type="text" name="saving" class="form-control" placeholder="Enter value" required />
-                                </div> -->
+                                            <label for="txndate" class="form-label">Name</label>
+                                            <input id="name" type="text" name="name" class="form-control" placeholder="Enter value" required />
+                                        </div>
+                                        <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPadding accountdetails" style="display: none;">
+                                            <label for="saving" class="form-label">Balance Share</label>
+                                            <input id="saving" type="text" name="saving" class="form-control" placeholder="Enter value" required />
+                                    </div> -->
                             </div>
 
                             <!-- <div class="modal-footer">
-                                                <button id="submitButton" class="btn btn-primary waves-effect waves-light reportSmallBtnCustom" type="submit" data-loading-text=" <span class='spinner-border me-1' role='status' aria-hidden='true'></span>
+                                                    <button id="submitButton" class="btn btn-primary waves-effect waves-light reportSmallBtnCustom" type="submit" data-loading-text=" <span class='spinner-border me-1' role='status' aria-hidden='true'></span>
                         Loading...">Save</button>
-                                            </div> -->
+                                                </div> -->
                             <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 inputesPadding savingColumnButton">
                                 <div class="d-flex h-100 justify-content-end text-end">
                                     <button id="submitButton"
@@ -155,12 +156,12 @@
                     <!-- </div> -->
                 </div>
                 <!-- <div class="container-xxl flex-grow-1 container-p-y">
-                                    <div class="card">
-                                        <h5 class="card-header">Striped rows</h5>
+                                        <div class="card">
+                                            <h5 class="card-header">Striped rows</h5>
 
 
-                                    </div>
-                                </div> -->
+                                        </div>
+                                    </div> -->
             </div>
 
         </div>
@@ -174,9 +175,9 @@
                     <h5 class="modal-title" id="exampleModalLabel1"> <span class="msg">Add</span> Transaction </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="updateShare" action="{{ route('shareupdate') }}" method="post">
+                <form id="updateContribution" action="{{ route('contributionupdate') }}" method="post">
                     {{ csrf_field() }}
-                    <input type="hidden" name="actiontype" value="updateshare" />
+                    <input type="hidden" name="actiontype" value="updatecontribution" />
                     <input type="hidden" name="id" value="" />
                     <div class="modal-body">
                         <div class="row row-gap-2">
@@ -196,7 +197,7 @@
                                 </select>
                             </div>
                             <!-- </div>
-                                        <div class="row"> -->
+                                            <div class="row"> -->
                             <div class="col-lg-6 col-sm-6">
                                 <label for="txndate" class="form-label">Amount</label>
                                 <input type="text" name="amount" class="form-control formInputs"
@@ -257,7 +258,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            $("#sharemember").validate({
+            $("#contribution").validate({
                 rules: {
                     account: {
                         required: true,
@@ -293,7 +294,7 @@
                     }
                 },
                 submitHandler: function() {
-                    var form = $('#sharemember');
+                    var form = $('#contribution');
                     form.ajaxSubmit({
                         dataType: 'json',
                         beforeSubmit: function() {
@@ -309,11 +310,11 @@
                         success: function(data) {
 
                             if (data.status == "success") {
-                                var account = $('#sharemember').find(
+                                var account = $('#contribution').find(
                                     'input[name="account"]').val();
-                                var member = $('#sharemember').find(
+                                var member = $('#contribution').find(
                                     'select[name="memberType"]').val();
-                                var txndate = $('#sharemember').find(
+                                var txndate = $('#contribution').find(
                                     'input[name="transactionDate"]').val();
                                 getaccountdetails(account, member, txndate);
                                 form[0].reset();
@@ -334,7 +335,7 @@
             $('#account').keyup(function() {
                 var inputValue = $(this).val();
                 $.ajax({
-                    url: "{{ route('shareupdate') }}",
+                    url: "{{ route('contributionupdate') }}",
                     type: "POST",
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
@@ -375,7 +376,7 @@
                     preConfirm: () => {
                         return new Promise((resolve) => {
                             $.ajax({
-                                url: "{{ route('shareupdate') }}",
+                                url: "{{ route('contributionupdate') }}",
                                 type: "POST",
                                 headers: {
                                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr(
@@ -384,11 +385,11 @@
                                 success: function(data) {
 
                                     if (data.status == "success") {
-                                        var account = $('#sharemember').find(
+                                        var account = $('#contribution').find(
                                             'input[name="account"]').val();
-                                        var member = $('#sharemember').find(
+                                        var member = $('#contribution').find(
                                             'select[name="memberType"]').val();
-                                        var txndate = $('#sharemember').find(
+                                        var txndate = $('#contribution').find(
                                                 'input[name="transactionDate"]')
                                             .val();
                                         getaccountdetails(account, member, txndate);
@@ -407,7 +408,7 @@
 
 
 
-            $("#updateShare").validate({
+            $("#updateContribution").validate({
                 rules: {
                     account: {
                         required: true,
@@ -443,7 +444,7 @@
                     }
                 },
                 submitHandler: function() {
-                    var form = $('#updateShare');
+                    var form = $('#updateContribution');
                     form.ajaxSubmit({
                         dataType: 'json',
                         beforeSubmit: function() {
@@ -459,11 +460,11 @@
 
                         success: function(data) {
                             if (data.status == "success") {
-                                var account = $('#sharemember').find(
+                                var account = $('#contribution').find(
                                     'input[name="account"]').val();
-                                var member = $('#sharemember').find(
+                                var member = $('#contribution').find(
                                     'select[name="memberType"]').val();
-                                var txndate = $('#sharemember').find(
+                                var txndate = $('#contribution').find(
                                     'input[name="transactionDate"]').val();
                                 getaccountdetails(account, member, txndate);
 
@@ -488,9 +489,9 @@
             $("#account").change(function() {
                 var account = $(this).closest('form').find('input[name="account"]').val();
                 var txndate = $(this).closest('form').find('input[name="transactionDate"]').val();
-                var member = $('#sharemember').find('select[name="memberType"]').val();
+                var member = $('#contribution').find('select[name="memberType"]').val();
                 getaccountdetails(account, member, txndate);
-                $("#sharemember").block({
+                $("#contribution").block({
                     message: '<div class="sk-wave sk-primary mx-auto"><div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div> <div class="sk-rect sk-wave-rect"></div></div>',
                     timeout: 1000,
                     css: {
@@ -505,7 +506,7 @@
             });
         });
 
-        function deleteshare(id) {
+        function deletecontribution(id) {
             swal({
                 title: 'Are you sure ?',
                 text: "You want to delete a transaction. It cannot be recovered",
@@ -517,25 +518,25 @@
                 preConfirm: () => {
                     return new Promise((resolve) => {
                         $.ajax({
-                            url: "{{ route('shareupdate') }}",
+                            url: "{{ route('contributionupdate') }}",
                             type: "POST",
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
                             dataType: 'json',
                             data: {
-                                'actiontype': "deleteshare",
+                                'actiontype': "deletecontribution",
                                 'id': id,
                             },
                             success: function(data) {
                                 swal.close();
                                 if (data.status == "success") {
 
-                                    var account = $('#sharemember').find(
+                                    var account = $('#contribution').find(
                                         'input[name="account"]').val();
-                                    var member = $('#sharemember').find(
+                                    var member = $('#contribution').find(
                                         'select[name="memberType"]').val();
-                                    var txndate = $('#sharemember').find(
+                                    var txndate = $('#contribution').find(
                                         'input[name="transactionDate"]').val();
                                     getaccountdetails(account, member, txndate);
 
@@ -617,7 +618,7 @@
         function getaccountdetails(account, member, txndate) {
 
             $.ajax({
-                url: "{{ route('shareupdate') }}",
+                url: "{{ route('contributionupdate') }}",
                 type: "POST",
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -631,13 +632,13 @@
                 },
                 beforeSend: function() {
                     $('.transactionData').html('');
-                    //blockForm('#sharemember')
+                    //blockForm('#contribution')
                 },
                 complate: function() {
-                    //  $("#sharemember").unblock();
+                    //  $("#contribution").unblock();
                 },
                 success: function(data) {
-                    //$("#sharemember").unblock();
+                    //$("#contribution").unblock();
                     if (data.status == "success") {
                         $('#name').text(data.acdetails.name);
                         $('#saving').text(data.balance);
@@ -647,17 +648,17 @@
                         $(".transactionData").html("");
                         var tbody = '';
                         if (data.openingBal) {
-                            tbody += "<tr>" +
-                                        "<td>-</td>" +
-                                        "<td>" + moment(data.openingBal.transferDate).format('DD-MM-YYYY') + "</td>" +
-                                        // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
-                                        "<td>" + (parseInt(data.totalBalance)) + "</td>" +
-                                        "<td>" + 0 + "</td>" +
-                                        // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
-                                        "<td>" + (parseInt(data.totalBalance)) + "</td>" +
-                                        "<td>" + "Opeing Account Balance" + "</td>" +
-                                        "<td>" + " " + "</td>" +
-                                        `<td style="display: flex;justify-content: space-evenly; align-items: center;"></td> `;
+                                // tbody += "<tr>" +
+                                //     "<td>-</td>" +
+                                //     "<td>" + moment(data.openingBal.transferDate).format('DD-MM-YYYY') + "</td>" +
+                                //     // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
+                                //     "<td>" + (parseInt(data.totalBalance)) + "</td>" +
+                                //     "<td>" + 0 + "</td>" +
+                                //     // "<td>" + (parseInt(data.openingBal.opening_amount)+parseInt(data.totalBalance)) + "</td>" +
+                                //     "<td>" + (parseInt(data.totalBalance)) + "</td>" +
+                                //     "<td>" + "Opeing Account Balance" + "</td>" +
+                                //     "<td>" + " " + "</td>" +
+                                //     `<td style="display: flex;justify-content: space-evenly; align-items: center;"></td> `;
                         }
                         if (data.txndetails.length === 0) {} else {
                             if (data.openingBal && data.openingBal.opening_amount) {
@@ -676,46 +677,70 @@
                                     lastbal = (parseInt(balanceAmount) + parseInt(val.depositAmount) -
                                         parseInt(val.withdrawAmount));
                                 }
-
-                                tbody += "<tr>" +
-                                    "<td>" + srno++ + "</td>" +
-                                    "<td>" + moment(val.transactionDate).format('DD-MM-YYYY') +
-                                    "</td>" +
-                                    "<td>" + val.depositAmount + "</td>" +
-                                    "<td>" + val.withdrawAmount + "</td>" +
-                                    "<td>" + lastbal + "</td>" +
-                                    "<td>" + val.narration + "</td>" +
-                                    "<td>" + val.login.name + "</td>";
-
-                                if (val.chequeNo === 'trfdShare') {
-                                    tbody += "<td>" + '-' + "</td>";
-
-                                } else if (val.chequeNo === 'trfdSaving') {
-                                    tbody += `<td style="display: flex; justify-content: space-evenly; align-items: center;">
-
-                                <a href="javascript:void(0);" onclick="deleteshare('` + val.id + `')">
-                                    <i class="fa-solid fa-trash iconsColorCustom"></i>
-                                </a>
-                              </td>`;
-
-                                } else {
-                                    tbody += `<td style="display: flex; justify-content: space-evenly; align-items: center;">
-                                        <a href='javascript:void(0);' onclick="editSetup('` + val.id + `','` + val
-                                        .transactionDate + `','` + val.depositAmount + `','` + val
-                                        .withdrawAmount + `','` + val.narration + `','` + val
-                                        .transactionType + `')">
+                                tbody += `<tr>
+                                    <td>${srno++}</td>
+                                    <td>${moment(val.transactionDate).format('DD-MM-YYYY')}</td>
+                                    <td>${val.depositAmount}</td>
+                                    <td>${val.withdrawAmount}</td>
+                                    <td>${lastbal}</td>
+                                    <td>${val.narration}</td>
+                                    <td>${val.login.name ? val.login.name : ''}</td>
+                                    <td style="display: flex; justify-content: space-evenly; align-items: center;">
+                                        <a href="javascript:void(0);" onclick="editSetup('${val.id}', '${val.transactionDate}', '${val.depositAmount}', '${val.withdrawAmount}', '${val.narration}', '${val.transactionType}')">
                                             <i class="fa-solid fa-pen-to-square border-0 iconsColorCustom"></i>
                                         </a>
-                                        <a href="javascript:void(0);" onclick="deleteshare('` + val.id + `')">
+                                        <a href="javascript:void(0);" onclick="deletecontribution('${val.id}')">
                                             <i class="fa-solid fa-trash iconsColorCustom"></i>
                                         </a>
-                                      </td>`;
-                                }
-
-                                tbody += "</tr>";
-
-
+                                    </td>
+                                </tr>`;
                             });
+                            // $.each(data.txndetails, function(index, val) {
+                            //     if (lastbal) {
+                            //         lastbal = (parseInt(lastbal) + parseInt(val.depositAmount) -
+                            //             parseInt(val.withdrawAmount));
+                            //     } else {
+                            //         lastbal = (parseInt(balanceAmount) + parseInt(val.depositAmount) -
+                            //             parseInt(val.withdrawAmount));
+                            //     }
+                            //     tbody += "<tr>" +
+                            //         "<td>" + srno++ + "</td>" +
+                            //         "<td>" + moment(val.transactionDate).format('DD-MM-YYYY') +
+                            //         "</td>" +
+                            //         "<td>" + val.depositAmount + "</td>" +
+                            //         "<td>" + val.withdrawAmount + "</td>" +
+                            //         "<td>" + lastbal + "</td>" +
+                            //         "<td>" + val.narration + "</td>" +
+                            //         "<td>" + val.login.name ? val.login.name : '' + "</td>";
+
+                            //     if (val.chequeNo === 'trfdShare') {
+                            //         tbody += "<td>" + '-' + "</td>";
+
+                            //     } else if (val.chequeNo === 'trfdSaving') {
+                            //         tbody += `<td style="display: flex; justify-content: space-evenly; align-items: center;">
+
+                        //     <a href="javascript:void(0);" onclick="deleteshare('` + val.id + `')">
+                        //         <i class="fa-solid fa-trash iconsColorCustom"></i>
+                        //     </a>
+                        //   </td>`;
+
+                            //     } else {
+                            //         tbody += `<td style="display: flex; justify-content: space-evenly; align-items: center;">
+                        //             <a href='javascript:void(0);' onclick="editSetup('` + val.id + `','` + val
+                            //             .transactionDate + `','` + val.depositAmount + `','` + val
+                            //             .withdrawAmount + `','` + val.narration + `','` + val
+                            //             .transactionType + `')">
+                        //                 <i class="fa-solid fa-pen-to-square border-0 iconsColorCustom"></i>
+                        //             </a>
+                        //             <a href="javascript:void(0);" onclick="deleteshare('` + val.id + `')">
+                        //                 <i class="fa-solid fa-trash iconsColorCustom"></i>
+                        //             </a>
+                        //           </td>`;
+                            //     }
+
+                            //     tbody += "</tr>";
+
+                            // });
                         }
 
                         // $('#datatable').load(location+' .table');
@@ -731,7 +756,7 @@
                     }
                 },
                 error: function(error) {
-                    // $("#sharemember").unblock();
+                    // $("#contribution").unblock();
                     notify("Something went wrong", 'warning');
                 }
             });

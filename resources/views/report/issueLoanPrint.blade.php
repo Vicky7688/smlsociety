@@ -41,7 +41,7 @@ $table = "yes";
                                 <thead class="table_head verticleAlignCenterReport">
                                     <tr>
                                         <th scope="col">Sr No</th>
-                                        <th scope="col">A/C No</th>
+                                        <th scope="col">Employee Code</th>
                                         <th scope="col">Name</th>
                                         <th scope="col">Issue Date</th>
                                         <th scope="col">Pronote</th>

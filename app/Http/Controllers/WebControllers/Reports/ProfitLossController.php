@@ -1391,8 +1391,6 @@ class ProfitLossController extends Controller
                     $existsCheck->save();
                 }
             }else{
-
-
                 if ($netprofit > 0) {
                     DB::table('profit_losses')->insert([
                         'name' => 'Net Profit',

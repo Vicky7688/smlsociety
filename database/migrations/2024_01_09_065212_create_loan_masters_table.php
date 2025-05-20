@@ -25,6 +25,12 @@ return new class extends Migration
             $table->double('penaltyInterest', 20, 4)->nullable();
             $table->integer('emiDate')->nullable();
             $table->string('insType')->nullable();
+            $table->string('loangroupCode')->nullable();
+            $table->string('loanledgerCode')->nullable();
+            $table->string('interestgroupCode')->nullable();
+            $table->string('interestledgerCode	')->nullable();
+            $table->string('penaltygroupCode')->nullable();
+            $table->string('penaltyledgerCode')->nullable();
             $table->enum('advancementDate', ['Yes', 'No'])->default('Yes');
             $table->enum('recoveryDate', ['Yes', 'No'])->default('Yes');
             $table->enum('status', ['Active', 'Inactive'])->default('Active');

@@ -27,7 +27,7 @@ class SessionController extends Controller
             "endDate" => "required|unique:session_masters,endDate",
             "status" => "required",
             "auditPerformed" => "required",
-            "sortby" => "required|numeric|unique:session_masters,sortno,",
+            // "sortby" => "required|numeric|unique:session_masters,sortno,",
         ]);
 
         if ($validator->passes()) {
@@ -36,7 +36,7 @@ class SessionController extends Controller
             $session->endDate = $post->endDate;
             $session->status = $post->status;
             $session->auditPerformed = $post->auditPerformed;
-            $session->sortno = $post->sortby;
+            // $session->sortno = $post->sortby;
             $session->updatedBy = $post->user()->id;
             $session->is_delete = 'No';
             $session->save();

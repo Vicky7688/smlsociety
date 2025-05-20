@@ -21,6 +21,7 @@ use App\Http\Controllers\WebControllers\Reports\ShareListController;
 use App\Http\Controllers\WebControllers\Transactions\SavingController;
 use App\Http\Controllers\WebControllers\Transactions\AccountController;
 use App\Http\Controllers\WebControllers\Transactions\ShareController;
+use App\Http\Controllers\WebControllers\Reports\BalanceBookController;
 use App\Http\Controllers\WebControllers\LoanTransactionController;
 use App\Http\Controllers\WebControllers\UserController;
 use App\Http\Controllers\WebControllers\HomeController;
@@ -31,9 +32,8 @@ use App\Http\Controllers\WebControllers\Reports\BalanceSheetController;
 use Illuminate\Support\Facades\Route;
 use  App\Http\Controllers\Master\MasterControllers;
 use App\Http\Controllers\Master\SessionController;
-
-
-
+use App\Http\Controllers\WebControllers\Reports\ContributionListController;
+use App\Http\Controllers\WebControllers\Transactions\ContributionController;
 
 Route::any('updateledger', [HomeController::class, 'updateledger']);
 Route::get('/', [UserController::class, 'index'])->middleware('guest')->name('/');
@@ -160,6 +160,12 @@ Route::prefix('report/shareLisr')->middleware('auth')->controller(ShareListContr
     Route::get('/getData', 'getData')->name('shareList.getData');
     Route::get('/sharePrint/print', 'print')->name('sharePrint.print');
 });
+//___Contribution List
+Route::prefix('report/ContributionList')->middleware('auth')->controller(ContributionListController::class)->group(function () {
+    Route::get('/', 'index')->name('contributionList.index');
+    Route::get('/getData', 'getData')->name('ContributionList.getData');
+    // Route::get('/sharePrint/print', 'print')->name('sharePrint.print');
+});
 
 
 Route::group(['prefix' => 'transaction', 'middleware' => ['auth']], function () {
@@ -173,6 +179,10 @@ Route::group(['prefix' => 'transaction', 'middleware' => ['auth']], function () 
     Route::get('/share', [ShareController::class, 'index'])->name('share');
     Route::post('/share/update', [ShareController::class, 'transaction'])->middleware('checksession')->name('shareupdate');
     Route::post('/deleteaccount', [AccountController::class, 'deleteaccount'])->name('deleteaccount');
+
+    ////_________contribution
+    Route::get('/contribution', [ContributionController::class, 'index'])->name('contribution');
+    Route::post('/contribution/update', [ContributionController::class, 'transaction'])->middleware('checksession')->name('contributionupdate');
 });
 Route::prefix('report')->middleware('auth')->controller(IssueLoanReportController::class)->group(function () {
     Route::get('/issueLoanReport', 'index')->name('issueLoanReport.index');
@@ -217,6 +227,11 @@ Route::prefix('transactions/journalVoucher')->middleware('auth')->group(function
     Route::post('/deletevouchares', [JournalVoucherController::class, 'deletevouchares'])->name('deletevouchares');
     Route::post('/editvouchars', [JournalVoucherController::class, 'editvouchars'])->name('editvouchars');
     Route::post('/updatevouchar', [JournalVoucherController::class, 'updatevouchar'])->name('updatevouchar');
+});
+//________________Balancebook Routes
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('balancebookindex', [BalanceBookController::class, 'balancebookindex'])->name('balancebookindex');
+    Route::post('/balancebookgetdata', [BalanceBookController::class, 'balancebookgetdata'])->name('balancebookgetdata');
 });
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/loan', [LoanTransactionController::class, 'index'])->name('loan');

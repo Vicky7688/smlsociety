@@ -20,6 +20,7 @@ class GroupMasterSeeder extends Seeder
             ['name'=>'Income', 'groupCode'=>'INCM001', 'headName'=>'Income', 'type'=>'Income', 'showJournalVoucher'=>'Yes', 'status'=>'Active', 'updatedBy'=>1],
             ['name'=>'Expenses', 'groupCode'=>'EXPN001', 'headName'=>'Expenses', 'type'=>'Expenditure', 'showJournalVoucher'=>'Yes', 'status'=>'Active', 'updatedBy'=>1],
             ['name'=>'Share', 'groupCode'=>'SHAM001', 'headName'=>'Share', 'type'=>'Liability', 'showJournalVoucher'=>'Yes', 'status'=>'Active', 'updatedBy'=>1],
+            ['name'=>'Contribution', 'groupCode'=>'CON001', 'headName'=>'Contributions', 'type'=>'Liability', 'showJournalVoucher'=>'Yes', 'status'=>'Active', 'updatedBy'=>1],
 
             // ['name'=>'CDS', 'groupCode'=>'CDSM001', 'headName'=>'CDS', 'type'=>'Liability', 'showJournalVoucher'=>'No', 'status'=>'Active', 'updatedBy'=>1],
 

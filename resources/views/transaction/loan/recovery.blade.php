@@ -41,11 +41,10 @@
                                             class="form-control form-control-sm" placeholder="Enter value" required />
                                     </div>
                                     <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                                                                <label class="form-label mb-1" for="loanid">Loan </label>
-                                                                                <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
-
-                                                                                </select>
-                                                                            </div> -->
+                                                    <label class="form-label mb-1" for="loanid">Loan </label>
+                                                    <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                                    </select>
+                                            </div> -->
                                     <div class="col-md-3 col-sm-6 mb-3">
                                         <label for="name" class="form-label">Princple Inatsallment</label>
                                         <input type="text" name="PrincipalTillDate" id="TPrincipal" value="0"
@@ -86,20 +85,25 @@
                                     <div class="mb-3 col-md-3 col-sm-12">
                                         <label class="form-label mb-1" for="status-org">BY </label>
                                         <select name="loanBy" id="loanBy" class="form-select form-select-sm"
-                                            onchange="loanby(this)">
-                                            <option value="Cash">Cash</option>
+                                            onchange="getledgerCode('this')">
+                                            @if (!empty($groups))
+                                                {{-- <option value=""selected>Select Payment Type</option> --}}
+                                                @foreach ($groups as $row)
+                                                    <option value="{{ $row->groupCode }}">{{ $row->name }}</option>
+                                                @endforeach
+                                            @endif
+                                            {{-- <option value="Cash">Cash</option>
+                                            <option value="Transfer">Bank</option> --}}
                                             {{-- <option value="Transfer">Transfer</option> --}}
                                         </select>
                                     </div>
-                                    <div class="col-md-3 mb-3 col-sm-12 bank" style="display: none;">
-                                        <label for="txndate" class="form-label">Select Bank</label>
-                                        <select name="ledgerId" id="status-org" class="form-select form-select-sm"
-                                            data-placeholder="Active">
-                                            <option value="">Select</option>
-                                            @foreach ($banktypes as $banktype)
-                                                <option value="{{ $banktype->id }}">{{ $banktype->name }}</option>
-                                            @endforeach
+                                    <div class="col-lg-2 col-md-3 col-sm-4 col-12 py-2 saving_column inputesPadding"
+                                        id="ledgerdiv">
+                                        <label for="bank" class="form-label">Bank</label>
+                                        <select class="form-select formInputsSelect" id="bank" name="bank">
+                                            <option value="C002">Cash</option>
                                         </select>
+                                        <p class="error"></p>
                                     </div>
                                     <div class="col-md-3 mb-3 col-sm-12 bank" style="display: none;">
                                         <label for="chequeNo" class="form-label">Cheque No Bank</label>
@@ -187,9 +191,9 @@
                                     <td class="loanType"></td>
                                 </tr>
                                 <!-- <tr>
-                                                                        <th>Purpose</th>
-                                                                        <td class="purpose"></td>
-                                                                    </tr> -->
+                                                                                <th>Purpose</th>
+                                                                                <td class="purpose"></td>
+                                                                            </tr> -->
                                 <tr>
                                     <th>Loan By</th>
                                     <td class="loanBy"></td>
@@ -207,7 +211,7 @@
             <div class="col-sm-12 col-md-12">
                 <div class="card recovery" style="display: none;">
                     <div class="table-responsive text-nowrap">
-                        <table class="table">
+                        <table class="table recoveryTable">
                             <thead>
                                 <tr>
                                     <th>Sr</th>
@@ -275,11 +279,11 @@
                             <!--    <input type="text" id="loanAcNo" name="loanAcNo" class="form-control form-control-sm" placeholder="Enter value" required />-->
                             <!--</div>-->
                             <!-- <div class="mb-3 col ecommerce-select2-dropdown">
-                                                                                                                                    <label class="form-label mb-1" for="loanid">Loan </label>
-                                                                                                                                    <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
+                                                                                                                                            <label class="form-label mb-1" for="loanid">Loan </label>
+                                                                                                                                            <select name="loanidDetails" id="loanId" class="select2 form-select form-select-sm" data-placeholder="Active" onchange="getloanDetails(this)">
 
-                                                                                                                                    </select>
-                                                                                                                                </div> -->
+                                                                                                                                            </select>
+                                                                                                                                        </div> -->
                             <div class="col-md-4 col-sm-6 mb-3">
                                 <label for="name" class="form-label">Princple</label>
                                 <input type="text" name="PrincipalTillDate" id="TPrincipal" readonly=""
@@ -553,7 +557,7 @@
                             $('.installmentsdata').html(tbody);
                         }
                     } else {
-                        notify(data.status, 'warning');
+                        notify(data.message, 'warning');
                     }
                 }
             });
@@ -563,7 +567,7 @@
             // ✅ Safeguard against null/undefined
             if (!Array.isArray(recoveryData)) {
                 console.warn("Expected recovery to be an array, got:", recoveryData);
-                $(".recoveryData").html("<tr><td colspan='7'>No recovery data available</td></tr>");
+                $(".recoveryData").html("<tr><td colspan='7' class='text-center'>No recovery data available</td></tr>");
                 return;
             }
 
@@ -573,7 +577,7 @@
             var i = 1;
 
             if (recoveryData.length === 0) {
-                tbody = "<tr><td colspan='7'>No recovery data available</td></tr>";
+                tbody = "<tr><td colspan='7' class='text-center'>No recovery data available</td></tr>";
             } else {
                 $.each(recoveryData, function(index, val) {
                     tbody += "<tr>" +
@@ -584,12 +588,12 @@
                         "<td>" + (val.penalInterest || 0) + "</td>" +
                         "<td>" + (val.receivedAmount || 0) + "</td>" +
                         "<td>" +
-                        "<a onclick=\"deleteItem('" + val.id +
-                        "', 'deleteDistrict')\" href='javascript:void(0);'>" +
-                        "<i class='ti ti-trash me-1'></i></a>" +
-                        // "<a onclick=\"editItem('" + val.id +
-                        // "', 'editDistrict')\" href='javascript:void(0);'>" +
-                        // "<i class='ti ti-pencil me-1'></i></a>" +
+                            "<a onclick=\"deleteItem('" + val.id +
+                            "', 'deleteDistrict')\" href='javascript:void(0);'>" +
+                            "<i class='ti ti-trash me-1'></i></a>" +
+                            // "<a onclick=\"editItem('" + val.id +
+                            // "', 'editDistrict')\" href='javascript:void(0);'>" +
+                            // "<i class='ti ti-pencil me-1'></i></a>" +
                         "</td>" +
                         "</tr>";
                 });
@@ -603,11 +607,14 @@
             return moment(date).format('DD-MM-YYYY');
         }
         $(function() {
-            $('#TPrincipal, #TPendingInterest, #TInterest,#TPenalty,#TTotal,#FPrincipal,#FPendingInterest,#FInterest,#FPenalty,#FTotal')
+            $('#TPrincipal,#InterestTillDate, #TPendingInterest, #TInterest,#TPenalty,#TTotal,#FPrincipal,#FPendingInterest,#FInterest,#FPenalty,#FTotal')
                 .keyup(function() {
                     var TPrincipal = parseFloat($('#TPrincipal').val()) || 0;
                     var TPendingInterest = parseFloat($('#TPendingInterest').val()) || 0;
+
                     var TInterest = parseFloat($('#TInterest').val()) || 0;
+                    var InterestTillDate = parseFloat($('#InterestTillDate').val()) || 0;
+
                     var TPenalty = parseFloat($('#TPenalty').val()) || 0;
                     var TTotal = parseFloat($('#TTotal').val()) || 0;
                     var FPrincipal = parseFloat($('#FPrincipal').val()) || 0;
@@ -622,7 +629,9 @@
                     FianlPenalty = Math.round(TPenalty);
                     $('#FianlPenalty').val(FianlPenalty);
 
-                    TillDateTotal = Math.round(TPrincipal + TPendingInterest + TInterest + TPenalty);
+                    // TillDateTotal = Math.round(TPrincipal + TPendingInterest + TInterest + TPenalty);
+                    TillDateTotal = Math.round(TPendingInterest + TInterest + TPenalty + InterestTillDate);
+                    alert(TillDateTotal);
                     $('#TillDateTotal').val(TillDateTotal);
 
                     FianlTotal = Math.round(FPrincipal + TPendingInterest + TInterest + TPenalty);
@@ -780,7 +789,8 @@
                             success: function(data) {
                                 swal.close();
                                 if (data.status == "success") {
-                                    setReciverydate(data.recovery);
+                                   setRecoveryDate(data.recovery);
+                                    resetTable();
                                     swal(
                                         'Deleted',
                                         "Transaction deleted successfully",
@@ -798,6 +808,41 @@
                         });
                     });
                 },
+            });
+        }
+
+        function getledgerCode() {
+            let groups_code = $('#loanBy').val();
+            $.ajax({
+                url: "{{ route('getledgers') }}",
+                type: 'post',
+                data: {
+                    groups_code: groups_code
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                dataType: 'json',
+                success: function(res) {
+                    let ledgerDropdown = document.getElementById('bank');
+                    ledgerDropdown.innerHTML = '';
+
+                    if (res.status === 'success' && res.ledgers) {
+                        let ledgers = res.ledgers;
+
+                        ledgers.forEach((data) => {
+                            let option = document.createElement('option');
+                            option.value = data.ledgerCode;
+                            option.textContent = data.name;
+                            ledgerDropdown.appendChild(option);
+                        });
+                    } else {
+                        notify('No ledgers found for the selected group.', 'warning');
+                    }
+                },
+                error: function() {
+                    notify('An error occurred while fetching ledgers.', 'warning');
+                }
             });
         }
 

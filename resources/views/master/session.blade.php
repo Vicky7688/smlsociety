@@ -109,10 +109,10 @@ $table = "yes";
                             </select>
                         </div>
 
-                        <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport form-group">
+                        {{-- <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport form-group">
                             <label for="select2Basic" class="form-label">Sort By</label>
                             <input type="text" name="sortby" id="sortby"  class="form-control formInputsReport">
-                        </div>
+                        </div> --}}
 
                         <div class="col-lg-4 col-sm-4 col-6 py-2 inputesPaddingReport form-group">
                             <label class="form-label mb-1" for="status-org">Audit Perform</label>

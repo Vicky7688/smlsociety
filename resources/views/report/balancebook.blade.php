@@ -3,13 +3,13 @@
 @section('content')
     <div class="container-xxl flex-grow-1 container-p-y">
         <!-- <p class="h4"><span>Balance Book</span></p>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="#" class="text-muted fw-light">Reports</a></li>
-                <li class="breadcrumb-item"><a href="#" class="text-muted fw-light">General Reports</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Balance Book</li>
-            </ol>
-        </nav> -->
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#" class="text-muted fw-light">Reports</a></li>
+                            <li class="breadcrumb-item"><a href="#" class="text-muted fw-light">General Reports</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Balance Book</li>
+                        </ol>
+                    </nav> -->
         <div class="card page_headings cards mb-4">
             <div class="card-body py-2">
                 <div class="row">
@@ -30,8 +30,8 @@
                                 <input type="text" class="form-control formInputsReport" id="due_from_to" name="due_from_to" />
                             </div> --}}
                                 @php
-                                   /* $currentDate = Session::get('currentdate') ?? date('d-m-Y', strtotime(session('sessionEnd')));*/
-                                   $currentDate = date('d-m-Y', strtotime(session('sessionEnd')));
+                                    /* $currentDate = Session::get('currentdate') ?? date('d-m-Y', strtotime(session('sessionEnd')));*/
+                                    $currentDate = date('d-m-Y', strtotime(session('sessionEnd')));
                                 @endphp
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport">
                                     <label for="due_up_to" class="form-label">due up to</label>
@@ -42,8 +42,8 @@
                                     <label for="memberType" class="form-label">Member Type</label>
                                     <select class="form-select formInputsSelectReport" id="memberType" name="memberType">
                                         <option value="Member">Member</option>
-                                        <option value="Staff">Staff</option>
-                                        <option value="NonMember">Nominal Member</option>
+                                        {{-- <option value="Staff">Staff</option>
+                                        <option value="NonMember">Nominal Member</option> --}}
                                     </select>
                                 </div>
                                 <div class="col-lg-2 col-md-3 col-sm-4 col-6 py-3 inputesPaddingReport d-none">
@@ -114,10 +114,10 @@
                         <thead class="table_head verticleAlignCenterReport">
                             <tr>
                                 <th class="fw-bold">SR No</th>
-                                <th class="fw-bold">A/c No</th>
+                                <th class="fw-bold">Employee Code</th>
                                 <th class="fw-bold">Name</th>
                                 <th class="fw-bold">Share</th>
-                                <th class="fw-bold">Saving</th>
+                                <th class="fw-bold">Contribution</th>
                                 <th class="fw-bold">Loan Date</th>
                                 <th class="fw-bold">Loan Amt</th>
                                 <th class="fw-bold">Loan Bal</th>
@@ -135,7 +135,8 @@
             </div>
         </div>
     </div>
-    <div id="loader" style="display:none; position:fixed; top:60%; left:50%; transform:translate(-50%, -50%); z-index:9999;">
+    <div id="loader"
+        style="display:none; position:fixed; top:60%; left:50%; transform:translate(-50%, -50%); z-index:9999;">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -177,8 +178,14 @@
                 $.ajax({
                     url: "{{ route('balancebookgetdata') }}",
                     type: 'post',
-                    data: { endDate: endDate, memberType: memberType, loanType: loanType },
-                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: {
+                        endDate: endDate,
+                        memberType: memberType,
+                        loanType: loanType
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
                     dataType: 'json',
                     success: function(res) {
                         $('#loader').hide();
@@ -188,7 +195,7 @@
                             $('#tablebody').empty();
 
                             let sharegrandtotal = 0;
-                            let savinggrandtotal = 0;
+                            let conttributiongrandtotal = 0;
                             let loangrandtotal = 0;
                             let loanbalancegrandtotal = 0;
                             let interestrecoverablegrandtotal = 0;
@@ -198,37 +205,48 @@
                             if (Array.isArray(allDetails) && allDetails.length > 0) {
                                 allDetails.forEach((data, index) => {
                                     let Share = parseFloat(data.Share) || 0;
-                                    let Saving = parseFloat(data.Saving) || 0;
+                                    let Contribution = parseFloat(data.Contribution) || 0;
                                     let LoanAmount = parseFloat(data.LoanAmount) || 0;
                                     let LoanBalance = parseFloat(data.LoanBalance) || 0;
-                                    let InterestRecoverable = parseFloat(data.InterestRecoverable) || 0;
+                                    let InterestRecoverable = parseFloat(data
+                                        .InterestRecoverable) || 0;
 
-                                    let row = `<tr c>
-                                        <td>${index + 1}</td>
-                                        <td>${data.AccountNo}</td>
-                                        <td>${data.MemberName ? data.MemberName : '-'}</td>
-                                        <td>${Share.toFixed(2) ? Share.toFixed(2) : '-'}</td>
-                                        <td>${Saving.toFixed(2) ? Saving.toFixed(2) : '-'}</td>
-                                        <td>${data.LoanDate ? data.LoanDate : '-'}</td>
-                                        <td>${LoanAmount.toFixed(2) ? LoanAmount.toFixed(2) : '-'}</td>
-                                        <td>${LoanBalance.toFixed(2) ? LoanBalance.toFixed(2) : '-  '}</td>
-                                        <td>${data.LastInstDate ? data.LastInstDate : "-" }</td>
-                                        <td>${InterestRecoverable.toFixed(2) ? InterestRecoverable.toFixed(2) : '-'}</td>
+                                    // ✅ Skip this row if all values are 0
+                                    if (
+                                        Share === 0 &&
+                                        Contribution === 0 &&
+                                        LoanAmount === 0 &&
+                                        LoanBalance === 0 &&
+                                        InterestRecoverable === 0
+                                    ) {
+                                        return; // Skip this entry
+                                    }
+
+                                    let row = `<tr>
+                                        <td>${ index + 1}</td>
+                                        <td>${ data.AccountNo }</td>
+                                        <td>${ data.MemberName || '-'}</td>
+                                        <td>${ Share.toFixed(2) }</td>
+                                        <td>${ Contribution.toFixed(2) }</td>
+                                        <td>${ data.LoanDate || '-' }</td>
+                                        <td>${ LoanAmount.toFixed(2) }</td>
+                                        <td>${ LoanBalance.toFixed(2) }</td>
+                                        <td>${ data.LastInstDate || '-' }</td>
+                                        <td>${ InterestRecoverable.toFixed(2) }</td>
                                     </tr>`;
-
                                     $('#tablebody').append(row);
-
-                                    sharegrandtotal += parseFloat(data.Share);
-                                    savinggrandtotal += parseFloat(data.Saving);
-                                    loangrandtotal += parseFloat(data.LoanAmount);
-                                    loanbalancegrandtotal += parseFloat(data.LoanBalance);
-                                    interestrecoverablegrandtotal += parseFloat(data.InterestRecoverable);
+                                    // Only add to totals if you want grand totals to exclude 0s
+                                    sharegrandtotal += Share;
+                                    conttributiongrandtotal += Contribution;
+                                    loangrandtotal += LoanAmount;
+                                    loanbalancegrandtotal += LoanBalance;
+                                    interestrecoverablegrandtotal += InterestRecoverable;
                                 });
 
                                 $('#tablebody').append(`<tr style="background-color:#7367f0">
                                     <td colspan="3" style="color:white;">Grand Total</td>
                                     <td style="color:white;">${sharegrandtotal.toFixed(2)}</td>
-                                    <td style="color:white;">${savinggrandtotal.toFixed(2)}</td>
+                                    <td style="color:white;">${conttributiongrandtotal.toFixed(2)}</td>
                                     <td style="color:white;"></td>
                                     <td style="color:white;">${loangrandtotal.toFixed(2)}</td>
                                     <td style="color:white;">${loanbalancegrandtotal.toFixed(2)}</td>
@@ -236,7 +254,7 @@
                                     <td style="color:white;">${interestrecoverablegrandtotal.toFixed(2)}</td>
                                 </tr>`);
 
-                                if(interestrecoverablegrandtotal > 0){
+                                if (interestrecoverablegrandtotal > 0) {
                                     {{--  addfinancialyearendinterestpayable(interestrecoverablegrandtotal,endDate,memberType);  --}}
                                 }
                             }
@@ -362,7 +380,7 @@
                     }
                 </style>`;
 
-                        let header = `
+            let header = `
                 <div style="text-align: center; margin-bottom: 10px;">
                     <h4>{{ $branch->name }}</h4>
                     <h6>{{ $branch->address }}</h6>

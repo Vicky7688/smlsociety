@@ -17,6 +17,7 @@ class LedgerMasterSeeder extends Seeder
         DB::table('ledger_masters')->insert([
             ['groupCode'=>'C002', 'name'=>'Cash', 'ledgerCode'=>'C002', 'openingType'=>'Dr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],
             ['groupCode'=>'SHAM001', 'name'=>'Share', 'ledgerCode'=>'SHAM001', 'openingType'=>'Cr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],
+            ['groupCode'=>'CON001', 'name'=>'Contribution', 'ledgerCode'=>'CON001', 'openingType'=>'Cr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],
             // ['groupCode'=>'SAVM001', 'name'=>'Saving Member', 'ledgerCode'=>'SAVM001', 'openingType'=>'Cr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],
             // ['groupCode'=>'SAVN001', 'name'=>'Saving NonMember', 'ledgerCode'=>'SAVN001', 'openingType'=>'Cr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],
             // ['groupCode'=>'SAVS001', 'name'=>'Saving Staff', 'ledgerCode'=>'SAVS001', 'openingType'=>'Cr', 'openingAmount'=>0, 'status'=>'Active', 'updatedBy'=>1],

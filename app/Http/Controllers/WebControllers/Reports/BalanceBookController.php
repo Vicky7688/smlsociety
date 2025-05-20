@@ -66,7 +66,7 @@ class BalanceBookController extends Controller
             $totalShareAmount = $shareBal + $shareDeposit - $shareWithdraw;
 
             // Calculate savings balances
-            $savingDeposit = DB::table('member_savings')
+            $contributionDeposit = DB::table('contributions')
                 ->where('memberType', $memberType)
                 ->where('accountNo', $accounts->accountNo)
                 // ->where('transactionType', 'Deposit')
@@ -74,7 +74,7 @@ class BalanceBookController extends Controller
                ->where('is_delete', '=', 'No')
                 ->sum('depositAmount');
 
-            $savingWithdraw = DB::table('member_savings')
+            $contributionWithdraw = DB::table('contributions')
                 ->where('memberType', $memberType)
                 ->where('accountNo', $accounts->accountNo)
                 // ->where('transactionType', 'Withdraw')
@@ -82,11 +82,11 @@ class BalanceBookController extends Controller
                 ->where('is_delete', '!=', 'Yes')
                 ->sum('withdrawAmount');
 
-            $totalSavingAmount = $shareBalSaving + $savingDeposit - $savingWithdraw;
+            $totalContributionAmount = $shareBalSaving + $contributionDeposit - $contributionWithdraw;
 
             $accountDetails[$accounts->accountNo] = [
                 'Share' => $totalShareAmount,
-                'Saving' => $totalSavingAmount,
+                'Contribution' => $totalContributionAmount,
                 'MemberName' => $accounts->name,
                 'Used' => false, // Track usage of balances
             ];
@@ -115,7 +115,7 @@ class BalanceBookController extends Controller
                     'AccountNo' => $accounts->accountNo,
                     'MemberName' => $accountDetails[$accounts->accountNo]['MemberName'] ?? 0,
                     'Share' => !$accountDetails[$accounts->accountNo]['Used'] ? $accountDetails[$accounts->accountNo]['Share'] : 0,
-                    'Saving' => !$accountDetails[$accounts->accountNo]['Used'] ? $accountDetails[$accounts->accountNo]['Saving'] : 0,
+                    'Contribution' => !$accountDetails[$accounts->accountNo]['Used'] ? $accountDetails[$accounts->accountNo]['Contribution'] : 0,
                     'LoanDate' => 0,
                     'LoanAmount' => 0,
                     'LoanBalance' => 0,
@@ -148,7 +148,7 @@ class BalanceBookController extends Controller
                         'AccountNo' => $loan->accountNo,
                         'MemberName' => $accountDetails[$loan->accountNo]['MemberName'] ?? 0,
                         'Share' => !$accountDetails[$loan->accountNo]['Used'] ? $accountDetails[$loan->accountNo]['Share'] : 0,
-                        'Saving' => !$accountDetails[$loan->accountNo]['Used'] ? $accountDetails[$loan->accountNo]['Saving'] : 0,
+                        'Saving' => !$accountDetails[$loan->accountNo]['Used'] ? $accountDetails[$loan->accountNo]['Contribution'] : 0,
                         'LoanDate' => date('d-m-Y', strtotime($loan->loanDate)),
                         'LoanAmount' => $loan->loanAmount,
                         'LoanBalance' => $totalAmount,

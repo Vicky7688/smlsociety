@@ -306,7 +306,9 @@ class AccountController extends Controller
         try {
             $memberaccount = Crypt::decrypt($request->memberid);
             $query = MemberAccount::with('getjointmember')->where(['id' => $memberaccount])->first();
+
             if ($query->status == "Transfer") {
+                // dd('okkkk');
                 $transfer_table = TransferedAccount::where(['accountId' => $memberaccount])->first();
                 return response()->json([
                     'status' => 'success',
@@ -319,6 +321,7 @@ class AccountController extends Controller
                     'photoidproofjoint' => !empty($transfer_table->getjointmember) && !empty($transfer_table->getjointmember[0]->idProof) ? asset('public/uploads/MemberIdProof/' . $transfer_table->getjointmember[0]->idProof) : null,
                 ]);
             } else if ($query->status == "Active") {
+
                 return response()->json([
                     'status' => 'success',
                     'member' => $query,

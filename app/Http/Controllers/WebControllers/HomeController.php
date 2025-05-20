@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\WebControllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contribution;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\MemberAccount;
@@ -142,9 +143,10 @@ class HomeController extends Controller
         $data['title'] = "Dashboard";
         $data['memberac'] = MemberAccount::where('is_delete', 'no')->where('memberType', 'Member')->count();
         $data['nonmember'] = MemberAccount::where('is_delete', 'no')->where('memberType', 'NonMember')->count();
-        $data['staff'] = MemberAccount::where('is_delete', 'no')->where('memberType', 'Staff')->count();
+        // $data['staff'] = MemberAccount::where('is_delete', 'no')->where('memberType', 'Staff')->count();
         $data['membershare'] = MemberShare::where('is_delete', 'no')->count();
         $data['memberloan'] = MemberLoan::where('is_delete', 'no')->count();
+        $data['contributions'] = Contribution::where('is_delete', 'no')->count();
 
         $start_date = date('Y-m-d');
         $end_date = date('Y-m-d');

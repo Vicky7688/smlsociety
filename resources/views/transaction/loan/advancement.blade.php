@@ -182,10 +182,10 @@
                                     </div>
 
                                     <!-- <div class="col-md-3 mb-3 col-sm-12">
-                                                                                                                                <label for="txndate" class="form-label">Fee</label>
-                                                                                                                                <input type="text" name="fee" class="form-control form-control-sm"
-                                                                                                                                    placeholder="Enter value" required />
-                                                                                                                            </div> -->
+                                                                                                                                    <label for="txndate" class="form-label">Fee</label>
+                                                                                                                                    <input type="text" name="fee" class="form-control form-control-sm"
+                                                                                                                                        placeholder="Enter value" required />
+                                                                                                                                </div> -->
                                     <div class="col-md-3 mb-3 col-sm-12">
                                         <label for="txndate" class="form-label">Year</label>
                                         <input type="text" name="loanYear" readonly
@@ -278,14 +278,13 @@
                                     <div class="col-md-2 col-sm-12 mb-3">
                                         <label for="txndate" class="form-label">Guarantor Ac</label>
                                         <input id="gaurantor1" type="text" name="guranter1"
-                                            class="form-control form-control-sm gaurantor" placeholder="Ac no" required />
+                                            class="form-control form-control-sm gaurantor" placeholder="Ac no" />
                                     </div>
 
                                     <div class="mb-3 col-md-3 col-sm-12">
                                         <label class="form-label mb-1" for="status-org">Guarantor Name </label>
                                         <input id="gaurantor1name" type=" text" name="gaurantor1name"
-                                            class="form-control form-control-sm gaurantor" placeholder="Guarantor Name"
-                                            required />
+                                            class="form-control form-control-sm gaurantor" placeholder="Guarantor Name" />
                                     </div>
 
                                     <div class="mb-3 col-md-3 col-sm-12">
@@ -293,14 +292,12 @@
                                         <input id="gaurantor1add" type="text" name="gaurantor1add"
                                             class="form-control form-control-sm" placeholder="Address" />
                                     </div>
-
-
-                                    <div class="mb-3 col-md-3 col-sm-12 mt-4">
-                                        <button type="button" class="btn btn-info waves-effect waves-light btn-sm"
-                                            data-bs-toggle="modal" data-bs-target="#guarantorlist1">
-                                            View
-                                        </button>
-                                    </div>
+                                        {{-- <div class="mb-3 col-md-3 col-sm-12 mt-4">
+                                            <button type="button" class="btn btn-info waves-effect waves-light btn-sm"
+                                                data-bs-toggle="modal" data-bs-target="#guarantorlist1">
+                                                View
+                                            </button>
+                                        </div> --}}
                                 </div>
                                 {{-- <div class="row">
                                     <div class="col-md-2 col-sm-12 mb-3">
@@ -368,14 +365,13 @@
                                         <div class="mb-3 col-md-3 col-sm-12">
                                             <label class="form-label mb-1">Document Name</label>
                                             <input type="text" name="guranter1name[]"
-                                                class="form-control form-control-sm" placeholder="Guarantor Name"
-                                                required />
+                                                class="form-control form-control-sm" placeholder="Guarantor Name" />
                                         </div>
 
                                         <div class="mb-3 col-md-3 col-sm-12">
                                             <label class="form-label mb-1">Documents</label>
                                             <input type="file" name="documents[]"
-                                                class="form-control form-control-sm doc-input" required />
+                                                class="form-control form-control-sm doc-input" />
                                             <a class="download-link" href="" download>
                                                 <img class="docimg" src="" width="100"
                                                     style="display: none; margin-top: 10px;" />
@@ -1079,7 +1075,7 @@
                                 $('#schemesContainer').empty();
                                 notify("Task Successfully Completed", 'success');
                             } else {
-                                notify(data.status, 'warning');
+                                notify(data.message, 'warning');
                             }
                         },
                         error: function(errors) {
@@ -1130,7 +1126,12 @@
                         $('#loanmember').find('input[name="amount"]').val(data.loanAmount);
                         $('#loanmember').find('input[name="pernote"]').val(data.pernote);
                         $('#loanmember').find('input[name="bankDeduction"]').val(data.bankDeduction);
-                        $('#loanmember').find('select[name="loanBy"]').val(data.cropType).trigger('change');
+                        $('#loanmember').find('select[name="loanBy"]').val(data.loanBy).trigger('change');
+                        $('#loanmember').find('select[name="ledgerId"]').val(data.ledgerBankAccountId).trigger(
+                            'change');
+                        $('#loanmember').find('input[name="chequeNo"]').val(data.chequeNo);
+                        $('#loanmember').find('input[name="gaurantor1name"]').val(data.guranter_name).prop(
+                            'readonly', true);
 
                         // 🟢 Preview single image files (if present)
                         if (data.notice_for_installment) {
@@ -1162,7 +1163,7 @@
                             <div class="mb-3 col-md-3 col-sm-12">
                                 <label class="form-label mb-1">Document Name</label>
                                 <input type="text" name="guranter1name[]" value="${doc.document_name}"
-                                    class="form-control form-control-sm" placeholder="Guarantor Name" required />
+                                    class="form-control form-control-sm" placeholder="Guarantor Name"/>
                             </div>
 
                             <div class="mb-3 col-md-3 col-sm-12">
